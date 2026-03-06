@@ -17,25 +17,10 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Install required packages
+      - name: Install Android SDK components
         run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip wget gradle
-
-      - name: Install Android SDK command-line tools
-        run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
-          unzip -q tools.zip -d $HOME/android-sdk/cmdline-tools
-          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-
-      - name: Set ANDROID env
-        run: |
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.0"
 
       - name: Install Gradle 7.5
         run: |
@@ -46,6 +31,9 @@ jobs:
       - name: Build debug APK
         working-directory: android-webview
         run: |
+          unset ANDROID_SDK_ROOT
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
           gradle assembleDebug --no-daemon
 
       - name: Upload APK
