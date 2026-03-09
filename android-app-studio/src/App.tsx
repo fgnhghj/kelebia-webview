@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
+import { App as CapApp } from "@capacitor/app";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppLayout from "./components/AppLayout";
 import SplashScreen from "./pages/SplashScreen";
@@ -25,7 +27,7 @@ function LoadingScreen() {
         <div className="splash-icon visible">
           <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
             <rect width="72" height="72" rx="18" fill="#D97757" fillOpacity="0.12" />
-            <path d="M22 50V22h5.5l8.5 18.5L44.5 22H50v28h-4.5V31.5L38 50h-4L26.5 31.5V50H22Z" fill="#D97757" />
+            <path d="M16 18H26V54H16ZM26 26L56 18V27L26 36ZM26 36L56 45V54L26 46Z" fill="#D97757" />
           </svg>
         </div>
       </div>
@@ -54,12 +56,22 @@ const App = () => {
       StatusBar.setStyle({ style: Style.Dark });
       StatusBar.setBackgroundColor({ color: "#1A1714" });
       StatusBar.setOverlaysWebView({ overlay: false });
+
+      const handler = CapApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          window.history.back();
+        } else {
+          CapApp.exitApp();
+        }
+      });
+      return () => { handler.then(h => h.remove()); };
     }
   }, []);
 
   return (
     <BrowserRouter>
-      <AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
         <ErrorBoundary>
           <Routes>
             {/* Splash */}
@@ -89,6 +101,7 @@ const App = () => {
           </Routes>
         </ErrorBoundary>
       </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 };

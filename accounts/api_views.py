@@ -56,14 +56,11 @@ def api_verify_email(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_resend_verification(request):
-    """Resend the verification code (deprecated — auto-verified on signup)."""
-    user = request.user
-    if user.email_verified:
-        return Response({'detail': 'Email déjà vérifié.'})
-    # Email verification is now automatic on signup
-    user.email_verified = True
-    user.save(update_fields=['email_verified'])
-    return Response({'detail': 'Email vérifié automatiquement.'})
+    """Deprecated — email is auto-verified on signup. Kept for URL compatibility."""
+    return Response(
+        {'detail': 'Email verification is automatic. This endpoint is no longer needed.'},
+        status=status.HTTP_410_GONE,
+    )
 
 
 @api_view(['POST'])
@@ -195,9 +192,19 @@ def api_reset_password(request):
         return Response({'detail': 'Le mot de passe doit contenir au moins 8 caractères.'}, status=400)
     try:
         user = User.objects.get(email=email)
-        if user.verification_code != code or not code:
+        if not code or user.verification_code != code:
+            # C1: Brute-force lockout — invalidate code after 5 wrong attempts
+            cache_key = f'reset_attempts_{email}'
+            from django.core.cache import cache
+            attempts = cache.get(cache_key, 0) + 1
+            cache.set(cache_key, attempts, timeout=600)  # 10 min window
+            if attempts >= 5:
+                user.verification_code = ''
+                user.save(update_fields=['verification_code'])
+                cache.delete(cache_key)
+                return Response({'detail': 'Trop de tentatives incorrectes. Veuillez demander un nouveau code.'}, status=400)
             return Response({'detail': 'Code invalide.'}, status=400)
-        # C8: Check code expiry (10 minutes)
+        # Check code expiry (10 minutes)
         if user.code_created_at and (timezone.now() - user.code_created_at) > timedelta(minutes=10):
             user.verification_code = ''
             user.save(update_fields=['verification_code'])
@@ -206,6 +213,9 @@ def api_reset_password(request):
         user.verification_code = ''
         user.code_created_at = None
         user.save(update_fields=['password', 'verification_code', 'code_created_at'])
+        # Clear brute-force counter on success
+        from django.core.cache import cache
+        cache.delete(f'reset_attempts_{email}')
         return Response({'detail': 'Mot de passe réinitialisé avec succès !'})
     except User.DoesNotExist:
         return Response({'detail': 'Code invalide.'}, status=400)

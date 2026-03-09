@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Search, BarChart3, Bell, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const tabs = [
+const studentTabs = [
   { path: '/home', icon: Home, label: 'Home' },
   { path: '/explore', icon: Search, label: 'Explore' },
   { path: '/grades', icon: BarChart3, label: 'Grades' },
@@ -10,9 +10,17 @@ const tabs = [
   { path: '/settings', icon: User, label: 'Profile' },
 ];
 
+const teacherTabs = [
+  { path: '/home', icon: Home, label: 'Home' },
+  { path: '/explore', icon: Search, label: 'Explore' },
+  { path: '/notifications', icon: Bell, label: 'Alerts' },
+  { path: '/settings', icon: User, label: 'Profile' },
+];
+
 export default function BottomNav() {
   const location = useLocation();
-  const { unreadCount } = useAuth();
+  const { unreadCount, isTeacher } = useAuth();
+  const tabs = isTeacher ? teacherTabs : studentTabs;
 
   return (
     <nav className="bottom-nav">

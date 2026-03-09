@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import {
-  roomsAPI, sectionsAPI, assignmentsAPI, announcementsAPI,
+  roomsAPI, sectionsAPI, contentAPI, assignmentsAPI, announcementsAPI, commentsAPI,
 } from '../api/client';
 import {
   ArrowLeft, Users, FileText, ClipboardList, Megaphone,
-  ChevronRight, Clock, AlertCircle, Pin, Download,
-  ExternalLink, Loader2, Settings, UserPlus, Copy, Check,
-  Plus, LogOut,
+  ChevronRight, ChevronDown, ChevronUp, Clock, Pin, Download,
+  ExternalLink, Loader2, Settings, Copy, Check,
+  Plus, LogOut, Send, MessageSquare, X, BookOpen, Link2, Paperclip, Edit3,
 } from 'lucide-react';
 
 interface Section {
@@ -53,22 +54,79 @@ interface Announcement {
   created_at: string;
 }
 
+interface Comment {
+  id: number;
+  author: { full_name: string };
+  body: string;
+  created_at: string;
+}
+
 type Tab = 'content' | 'assignments' | 'announcements';
+
+/* ─── Small reusable modal ──────────────────────────── */
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{title}</h3>
+          <button className="icon-btn-ghost" onClick={onClose}><X size={20} /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function RoomDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isTeacher, user } = useAuth();
+  const location = useLocation();
+  const { isTeacher } = useAuth();
+  const { t } = useLanguage();
   const roomId = Number(id);
 
   const [room, setRoom] = useState<any>(null);
   const [sections, setSections] = useState<Section[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [tab, setTab] = useState<Tab>('content');
+  const [tab, setTab] = useState<Tab>((location.state as any)?.tab || 'content');
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+
+  // Teacher modals
+  const [showAddSection, setShowAddSection] = useState(false);
+  const [showAddContent, setShowAddContent] = useState(false);
+  const [showAddAssignment, setShowAddAssignment] = useState(false);
+  const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Add section form
+  const [sectionTitle, setSectionTitle] = useState('');
+  const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
+
+  // Add content form
+  const [contentForm, setContentForm] = useState({
+    title: '', description: '', content_type: 'lecture', link: '',
+  });
+  const [contentFile, setContentFile] = useState<File | null>(null);
+
+  // Add assignment form
+  const [assignForm, setAssignForm] = useState({
+    title: '', description: '', deadline: '', max_grade: '20',
+  });
+  const [assignFile, setAssignFile] = useState<File | null>(null);
+
+  // Add announcement form
+  const [annForm, setAnnForm] = useState({ title: '', body: '' });
+
+  // Comments
+  const [commentsMap, setCommentsMap] = useState<Record<number, Comment[]>>({});
+  const [openComments, setOpenComments] = useState<number | null>(null);
+  const [commentText, setCommentText] = useState('');
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -83,6 +141,7 @@ export default function RoomDetail() {
         setSections(sectionData);
         setAssignments(assignmentData);
         setAnnouncements(announcementData);
+        if (sectionData.length > 0) setSelectedSectionId(sectionData[0].id);
       } catch {
         navigate('/home', { replace: true });
       }
@@ -100,7 +159,7 @@ export default function RoomDetail() {
   };
 
   const handleLeave = async () => {
-    if (!confirm('Are you sure you want to leave this room?')) return;
+    if (!confirm(t('leave_confirm'))) return;
     try {
       await roomsAPI.leave(roomId);
       navigate('/home', { replace: true });
@@ -122,17 +181,122 @@ export default function RoomDetail() {
   };
 
   const formatDeadline = (deadline: string | null) => {
-    if (!deadline) return 'No deadline';
+    if (!deadline) return t('no_deadline');
     const d = new Date(deadline);
     const now = new Date();
     const diff = d.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-    if (diff < 0) return 'Past due';
-    if (hours < 1) return 'Due soon';
-    if (hours < 24) return `${hours}h left`;
-    if (days < 7) return `${days}d left`;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (diff < 0) return t('past_due');
+    if (hours < 1) return t('due_soon');
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}j`;
+    return d.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
+  };
+
+  /* ─── Teacher: add section ── */
+  const handleAddSection = async () => {
+    if (!sectionTitle.trim()) return;
+    setSaving(true);
+    try {
+      const created = await sectionsAPI.create({ room: roomId, title: sectionTitle, order: sections.length });
+      setSections(prev => [...prev, { ...created, contents: [] }]);
+      setSelectedSectionId(created.id);
+      setSectionTitle('');
+      setShowAddSection(false);
+    } catch { alert('Failed to create section'); }
+    setSaving(false);
+  };
+
+  /* ─── Teacher: add content ── */
+  const handleAddContent = async () => {
+    if (!contentForm.title.trim() || !selectedSectionId) return;
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append('room', String(roomId));
+      fd.append('section', String(selectedSectionId));
+      fd.append('title', contentForm.title);
+      fd.append('description', contentForm.description);
+      fd.append('content_type', contentForm.content_type);
+      if (contentForm.content_type === 'link') {
+        fd.append('link', contentForm.link);
+      } else if (contentFile) {
+        fd.append('file', contentFile);
+      }
+      const created = await contentAPI.create(fd);
+      setSections(prev => prev.map(s =>
+        s.id === selectedSectionId ? { ...s, contents: [...s.contents, created] } : s
+      ));
+      setContentForm({ title: '', description: '', content_type: 'lecture', link: '' });
+      setContentFile(null);
+      setShowAddContent(false);
+    } catch { alert('Failed to add content'); }
+    setSaving(false);
+  };
+
+  /* ─── Teacher: add assignment ── */
+  const handleAddAssignment = async () => {
+    if (!assignForm.title.trim()) return;
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append('room', String(roomId));
+      fd.append('title', assignForm.title);
+      fd.append('description', assignForm.description);
+      fd.append('max_grade', assignForm.max_grade);
+      if (assignForm.deadline) fd.append('deadline', new Date(assignForm.deadline).toISOString());
+      if (assignFile) fd.append('file', assignFile);
+      const created = await assignmentsAPI.create(fd);
+      setAssignments(prev => [...prev, created]);
+      setAssignForm({ title: '', description: '', deadline: '', max_grade: '20' });
+      setAssignFile(null);
+      setShowAddAssignment(false);
+    } catch { alert('Failed to create assignment'); }
+    setSaving(false);
+  };
+
+  /* ─── Teacher: add announcement ── */
+  const handleAddAnnouncement = async () => {
+    if (!annForm.title.trim() || !annForm.body.trim()) return;
+    setSaving(true);
+    try {
+      const created = await announcementsAPI.create({ room: roomId, ...annForm });
+      setAnnouncements(prev => [created, ...prev]);
+      setAnnForm({ title: '', body: '' });
+      setShowAddAnnouncement(false);
+    } catch { alert('Failed to post announcement'); }
+    setSaving(false);
+  };
+
+  /* ─── Comments ── */
+  const toggleComments = async (annId: number) => {
+    if (openComments === annId) {
+      setOpenComments(null);
+      return;
+    }
+    setOpenComments(annId);
+    if (commentsMap[annId]) return;
+    setLoadingComments(true);
+    try {
+      const data = await commentsAPI.list(annId);
+      setCommentsMap(prev => ({ ...prev, [annId]: data }));
+    } catch { /* ignore */ }
+    setLoadingComments(false);
+  };
+
+  const handlePostComment = async (annId: number) => {
+    if (!commentText.trim()) return;
+    setPostingComment(true);
+    try {
+      const created = await commentsAPI.create({ announcement: annId, body: commentText });
+      setCommentsMap(prev => ({ ...prev, [annId]: [...(prev[annId] || []), created] }));
+      setAnnouncements(prev => prev.map(a =>
+        a.id === annId ? { ...a, comment_count: a.comment_count + 1 } : a
+      ));
+      setCommentText('');
+    } catch { /* ignore */ }
+    setPostingComment(false);
   };
 
   if (loading) {
@@ -146,9 +310,9 @@ export default function RoomDetail() {
   if (!room) return null;
 
   const tabs: { key: Tab; label: string; icon: any; count?: number }[] = [
-    { key: 'content', label: 'Content', icon: FileText },
-    { key: 'assignments', label: 'Tasks', icon: ClipboardList, count: assignments.length },
-    { key: 'announcements', label: 'News', icon: Megaphone, count: announcements.length },
+    { key: 'content', label: t('content'), icon: FileText },
+    { key: 'assignments', label: t('tasks'), icon: ClipboardList, count: assignments.length },
+    { key: 'announcements', label: t('news'), icon: Megaphone, count: announcements.length },
   ];
 
   return (
@@ -158,15 +322,13 @@ export default function RoomDetail() {
         <div className="room-header-overlay" />
         <div className="room-header-content">
           <div className="room-header-nav">
-            <button className="icon-btn-ghost" onClick={() => navigate(-1)}>
+            <button className="icon-btn-ghost" onClick={() => navigate('/home')}>
               <ArrowLeft size={22} />
             </button>
             <div className="room-header-actions">
-              {isTeacher && (
-                <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
-                  <Settings size={20} />
-                </button>
-              )}
+              <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
+                <Settings size={20} />
+              </button>
             </div>
           </div>
           <h1 className="room-header-title">{room.name}</h1>
@@ -174,7 +336,7 @@ export default function RoomDetail() {
           <div className="room-header-stats">
             <div className="room-stat">
               <Users size={14} />
-              <span>{room.student_count} students</span>
+              <span>{room.student_count} {t('students')}</span>
             </div>
           </div>
         </div>
@@ -184,19 +346,17 @@ export default function RoomDetail() {
       {showInfo && (
         <div className="room-info-panel">
           <div className="invite-code-row">
-            <span className="invite-label">Invite Code</span>
+            <span className="invite-label">{t('invite_code')}</span>
             <button className="invite-code-btn" onClick={copyCode}>
               <span className="invite-code">{room.invite_code}</span>
               {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
             </button>
           </div>
-          {room.description && (
-            <p className="room-description">{room.description}</p>
-          )}
+          {room.description && <p className="room-description">{room.description}</p>}
           {!isTeacher && (
             <button className="btn-danger-outline btn-sm" onClick={handleLeave}>
               <LogOut size={16} />
-              Leave Room
+              {t('leave_room')}
             </button>
           )}
         </div>
@@ -221,19 +381,33 @@ export default function RoomDetail() {
 
       {/* Tab Content */}
       <div className="room-content">
+
+        {/* ── CONTENT TAB ── */}
         {tab === 'content' && (
           <div className="content-sections">
+            {isTeacher && (
+              <div className="teacher-actions-row">
+                <button className="fab-inline" onClick={() => setShowAddSection(true)}>
+                  <BookOpen size={15} /> {t('add_section')}
+                </button>
+                {sections.length > 0 && (
+                  <button className="fab-inline" onClick={() => setShowAddContent(true)}>
+                    <Plus size={15} /> {t('add_content')}
+                  </button>
+                )}
+              </div>
+            )}
             {sections.length === 0 ? (
               <div className="empty-state-sm">
                 <FileText size={32} strokeWidth={1} className="text-tertiary" />
-                <p>No content yet</p>
+                <p>{t('no_content')}</p>
               </div>
             ) : (
               sections.map((section) => (
                 <div key={section.id} className="content-section">
                   <h3 className="section-title">{section.title}</h3>
                   {section.contents.length === 0 ? (
-                    <p className="empty-hint">No items in this section</p>
+                    <p className="empty-hint">{isTeacher ? t('add_content') : t('no_content')}</p>
                   ) : (
                     <div className="content-items">
                       {section.contents.map((item) => (
@@ -272,19 +446,27 @@ export default function RoomDetail() {
           </div>
         )}
 
+        {/* ── ASSIGNMENTS TAB ── */}
         {tab === 'assignments' && (
           <div className="assignments-list">
+            {isTeacher && (
+              <div className="teacher-actions-row">
+                <button className="fab-inline" onClick={() => setShowAddAssignment(true)}>
+                  <Plus size={15} /> {t('add_assignment')}
+                </button>
+              </div>
+            )}
             {assignments.length === 0 ? (
               <div className="empty-state-sm">
                 <ClipboardList size={32} strokeWidth={1} className="text-tertiary" />
-                <p>No assignments yet</p>
+                <p>{t('no_assignments')}</p>
               </div>
             ) : (
               assignments.map((assignment) => (
                 <button
                   key={assignment.id}
                   className="assignment-card"
-                  onClick={() => navigate(`/room/${roomId}/assignment/${assignment.id}`)}
+                  onClick={() => navigate(`/room/${roomId}/assignment/${assignment.id}`, { state: { tab: 'assignments' } })}
                 >
                   <div className="assignment-card-top">
                     <h4 className="assignment-title">{assignment.title}</h4>
@@ -301,14 +483,14 @@ export default function RoomDetail() {
                     <div className={`submission-status ${assignment.my_submission.status}`}>
                       {assignment.my_submission.status === 'graded'
                         ? `✓ ${assignment.my_submission.grade?.score}/${assignment.max_grade}`
-                        : '✓ Submitted'}
+                        : `✓ ${t('submitted')}`}
                     </div>
                   )}
                   {isTeacher && (
                     <div className="assignment-stats">
-                      <span>{assignment.submissions_count} submitted</span>
+                      <span>{assignment.submissions_count} {t('submitted')}</span>
                       <span>·</span>
-                      <span>{assignment.graded_count} graded</span>
+                      <span>{assignment.graded_count} {t('graded')}</span>
                     </div>
                   )}
                 </button>
@@ -317,12 +499,20 @@ export default function RoomDetail() {
           </div>
         )}
 
+        {/* ── ANNOUNCEMENTS TAB ── */}
         {tab === 'announcements' && (
           <div className="announcements-list">
+            {isTeacher && (
+              <div className="teacher-actions-row">
+                <button className="fab-inline" onClick={() => setShowAddAnnouncement(true)}>
+                  <Edit3 size={15} /> {t('add_announcement')}
+                </button>
+              </div>
+            )}
             {announcements.length === 0 ? (
               <div className="empty-state-sm">
                 <Megaphone size={32} strokeWidth={1} className="text-tertiary" />
-                <p>No announcements yet</p>
+                <p>{t('no_announcements')}</p>
               </div>
             ) : (
               announcements.map((ann) => (
@@ -331,15 +521,58 @@ export default function RoomDetail() {
                     {ann.is_pinned && <Pin size={14} className="text-gold" />}
                     <span className="announcement-author">{ann.author.full_name}</span>
                     <span className="announcement-time">
-                      {new Date(ann.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      {new Date(ann.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                   <h4 className="announcement-title">{ann.title}</h4>
                   <p className="announcement-body">{ann.body}</p>
-                  {ann.comment_count > 0 && (
-                    <span className="announcement-comments">
-                      {ann.comment_count} comment{ann.comment_count !== 1 ? 's' : ''}
-                    </span>
+
+                  {/* Comments toggle */}
+                  <button
+                    className="comments-toggle-btn"
+                    onClick={() => toggleComments(ann.id)}
+                  >
+                    <MessageSquare size={15} />
+                    <span>{ann.comment_count} {t('comments')}</span>
+                    {openComments === ann.id ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                  </button>
+
+                  {openComments === ann.id && (
+                    <div className="comments-section">
+                      {loadingComments && !commentsMap[ann.id] ? (
+                        <Loader2 size={18} className="animate-spin text-accent mx-auto my-2" />
+                      ) : (
+                        <>
+                          {(commentsMap[ann.id] || []).length === 0 ? (
+                            <p className="empty-hint">{t('no_comments')}</p>
+                          ) : (
+                            (commentsMap[ann.id] || []).map((c) => (
+                              <div key={c.id} className="comment-item">
+                                <span className="comment-author">{c.author.full_name}</span>
+                                <p className="comment-body">{c.body}</p>
+                              </div>
+                            ))
+                          )}
+                          <div className="comment-input-row">
+                            <input
+                              type="text"
+                              className="comment-input"
+                              placeholder={t('add_comment')}
+                              value={commentText}
+                              onChange={(e) => setCommentText(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(ann.id); }}
+                            />
+                            <button
+                              className="comment-send-btn"
+                              onClick={() => handlePostComment(ann.id)}
+                              disabled={postingComment || !commentText.trim()}
+                            >
+                              {postingComment ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               ))
@@ -347,6 +580,211 @@ export default function RoomDetail() {
           </div>
         )}
       </div>
+
+      {/* ══ TEACHER MODALS ══ */}
+
+      {/* Add Section Modal */}
+      {showAddSection && (
+        <Modal title={t('add_section')} onClose={() => setShowAddSection(false)}>
+          <div className="modal-body">
+            <div className="input-group">
+              <label>{t('section_name')}</label>
+              <div className="input-wrapper">
+                <BookOpen size={18} />
+                <input
+                  type="text"
+                  placeholder={t('section_name')}
+                  value={sectionTitle}
+                  onChange={(e) => setSectionTitle(e.target.value)}
+                />
+              </div>
+            </div>
+            <button className="btn-primary" onClick={handleAddSection} disabled={saving || !sectionTitle.trim()}>
+              {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Add Content Modal */}
+      {showAddContent && (
+        <Modal title={t('add_content')} onClose={() => setShowAddContent(false)}>
+          <div className="modal-body">
+            <div className="input-group">
+              <label>{t('title')}</label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  placeholder={t('title')}
+                  value={contentForm.title}
+                  onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="input-group">
+              <label>Section</label>
+              <select
+                className="input-wrapper select-native"
+                value={selectedSectionId ?? ''}
+                onChange={(e) => setSelectedSectionId(Number(e.target.value))}
+              >
+                {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+              </select>
+            </div>
+            <div className="input-group">
+              <label>{t('content_type')}</label>
+              <select
+                className="input-wrapper select-native"
+                value={contentForm.content_type}
+                onChange={(e) => setContentForm({ ...contentForm, content_type: e.target.value })}
+              >
+                <option value="lecture">📖 Lecture</option>
+                <option value="tp">🔬 TP / Lab</option>
+                <option value="exam">📝 Exam</option>
+                <option value="link">🔗 Link</option>
+                <option value="other">📄 Other</option>
+              </select>
+            </div>
+            {contentForm.content_type === 'link' ? (
+              <div className="input-group">
+                <label>{t('link')}</label>
+                <div className="input-wrapper">
+                  <Link2 size={18} />
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={contentForm.link}
+                    onChange={(e) => setContentForm({ ...contentForm, link: e.target.value })}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="input-group">
+                <label>{t('file')} ({t('optional')})</label>
+                <label className="file-upload-btn">
+                  <Paperclip size={16} />
+                  {contentFile ? contentFile.name : 'Choisir un fichier'}
+                  <input type="file" className="hidden" onChange={(e) => setContentFile(e.target.files?.[0] || null)} />
+                </label>
+              </div>
+            )}
+            <div className="input-group">
+              <label>{t('description')} ({t('optional')})</label>
+              <div className="input-wrapper">
+                <textarea
+                  rows={2}
+                  placeholder={t('description')}
+                  value={contentForm.description}
+                  onChange={(e) => setContentForm({ ...contentForm, description: e.target.value })}
+                />
+              </div>
+            </div>
+            <button className="btn-primary" onClick={handleAddContent} disabled={saving || !contentForm.title.trim()}>
+              {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Add Assignment Modal */}
+      {showAddAssignment && (
+        <Modal title={t('add_assignment')} onClose={() => setShowAddAssignment(false)}>
+          <div className="modal-body">
+            <div className="input-group">
+              <label>{t('title')}</label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  placeholder={t('title')}
+                  value={assignForm.title}
+                  onChange={(e) => setAssignForm({ ...assignForm, title: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="input-group">
+              <label>{t('description')}</label>
+              <div className="input-wrapper">
+                <textarea
+                  rows={3}
+                  placeholder={t('description')}
+                  value={assignForm.description}
+                  onChange={(e) => setAssignForm({ ...assignForm, description: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="input-group">
+              <label>{t('deadline')} ({t('optional')})</label>
+              <div className="input-wrapper">
+                <input
+                  type="datetime-local"
+                  value={assignForm.deadline}
+                  onChange={(e) => setAssignForm({ ...assignForm, deadline: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="input-group">
+              <label>{t('max_score')}</label>
+              <div className="input-wrapper">
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="20"
+                  value={assignForm.max_grade}
+                  onChange={(e) => setAssignForm({ ...assignForm, max_grade: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="input-group">
+              <label>{t('file')} ({t('optional')})</label>
+              <label className="file-upload-btn">
+                <Paperclip size={16} />
+                {assignFile ? assignFile.name : 'Pièce jointe...'}
+                <input type="file" className="hidden" onChange={(e) => setAssignFile(e.target.files?.[0] || null)} />
+              </label>
+            </div>
+            <button className="btn-primary" onClick={handleAddAssignment} disabled={saving || !assignForm.title.trim()}>
+              {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Add Announcement Modal */}
+      {showAddAnnouncement && (
+        <Modal title={t('add_announcement')} onClose={() => setShowAddAnnouncement(false)}>
+          <div className="modal-body">
+            <div className="input-group">
+              <label>{t('title')}</label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  placeholder={t('title')}
+                  value={annForm.title}
+                  onChange={(e) => setAnnForm({ ...annForm, title: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="input-group">
+              <label>Message</label>
+              <div className="input-wrapper">
+                <textarea
+                  rows={4}
+                  placeholder="Écrivez votre annonce..."
+                  value={annForm.body}
+                  onChange={(e) => setAnnForm({ ...annForm, body: e.target.value })}
+                />
+              </div>
+            </div>
+            <button
+              className="btn-primary"
+              onClick={handleAddAnnouncement}
+              disabled={saving || !annForm.title.trim() || !annForm.body.trim()}
+            >
+              {saving ? <Loader2 size={18} className="animate-spin" /> : t('post')}
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

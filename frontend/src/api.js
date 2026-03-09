@@ -4,7 +4,9 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const api = axios.create({
     baseURL: `${API_BASE}/api`,
-    headers: { 'Content-Type': 'application/json' },
+    // Don't set a default Content-Type — Axios auto-detects it per request.
+    // Setting 'application/json' here breaks multipart/form-data retries
+    // when the 401 interceptor re-sends the original request.
 });
 
 // Attach JWT token to every request
@@ -30,7 +32,8 @@ api.interceptors.response.use(
                     localStorage.setItem('access_token', data.access);
                     original.headers.Authorization = `Bearer ${data.access}`;
                     return api(original);
-                } catch {
+                } catch (err) {
+                    console.warn('[api] Token refresh failed, redirecting to login:', err?.response?.status);
                     localStorage.removeItem('access_token');
                     localStorage.removeItem('refresh_token');
                     window.location.href = '/login';

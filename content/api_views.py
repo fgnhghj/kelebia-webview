@@ -1,4 +1,5 @@
 import csv
+import logging
 import threading
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +8,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import action, api_view, permission_classes as perm_classes
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
+from django.db.models import Max
 from django.http import HttpResponse
 from django.utils import timezone
 from datetime import timedelta
@@ -38,8 +40,10 @@ class SectionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         room = get_object_or_404(Room, pk=self.request.data.get('room'))
-        max_order = room.sections.count()
-        serializer.save(room=room, order=max_order)
+        # M4: Use Max aggregate to avoid race condition with concurrent section creation
+        max_order = room.sections.aggregate(Max('order'))['order__max']
+        next_order = (max_order or 0) + 1
+        serializer.save(room=room, order=next_order)
 
 
 class ContentViewSet(viewsets.ModelViewSet):
@@ -96,8 +100,8 @@ class ContentViewSet(viewsets.ModelViewSet):
                       f'Le professeur a publié "{content.title}" dans {room.name}.'),
                 daemon=True,
             ).start()
-        except Exception:
-            pass  # Don't crash if email thread fails
+        except Exception as e:
+            logger.warning(f'Failed to start email notification thread: {e}')  # H4: Log instead of silently ignore
 
 
 class AssignmentViewSet(viewsets.ModelViewSet):
@@ -140,8 +144,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
                       f'Le professeur a publié le devoir "{assignment.title}" dans {room.name}.'),
                 daemon=True,
             ).start()
-        except Exception:
-            pass  # Don't crash if email thread fails
+        except Exception as e:
+            logger.warning(f'Failed to start email notification thread: {e}')  # H4: Log instead of silently ignore
 
     @action(detail=True, methods=['get'])
     def export_grades(self, request, pk=None):
@@ -208,6 +212,11 @@ class SubmissionViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You are not a member of this room.")
 
+        # M3: Enforce allow_late — reject submissions after deadline if not allowed
+        if assignment.is_past_deadline and not assignment.allow_late:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("La date limite est passée et les soumissions tardives ne sont pas autorisées.")
+
         # C5: Handle duplicate submission gracefully
         try:
             submission = serializer.save(student=self.request.user, assignment=assignment)
@@ -215,10 +224,10 @@ class SubmissionViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import ValidationError
             raise ValidationError({"detail": "You have already submitted this assignment."})
 
-        # Handle multiple file uploads
+        # C4: Store original filename from the upload, not the storage path
         files = self.request.FILES.getlist('files')
         for f in files:
-            SubmissionFile.objects.create(submission=submission, file=f)
+            SubmissionFile.objects.create(submission=submission, file=f, filename=f.name)
 
         Notification.objects.create(
             user=assignment.room.teacher,
@@ -234,8 +243,8 @@ class SubmissionViewSet(viewsets.ModelViewSet):
                       f'{self.request.user.get_full_name()} a soumis le devoir "{assignment.title}".'),
                 daemon=True,
             ).start()
-        except Exception:
-            pass  # Don't crash if email thread fails
+        except Exception as e:
+            logger.warning(f'Failed to start email notification thread: {e}')  # H4: Log instead of silently ignore
 
     @action(detail=True, methods=['post'])
     def grade(self, request, pk=None):
@@ -270,10 +279,13 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @perm_classes([IsAuthenticated])
 def student_grades_overview(request):
-    """Return all graded submissions for the current student, grouped by room."""
+    """Return all graded submissions for the current student, grouped by room.
+    Teachers receive an empty list (the Grades page is student-oriented).
+    """
     user = request.user
+    # H6: Return empty list for teachers instead of 403 so the Grades page doesn't crash
     if not user.is_student:
-        return Response({'detail': 'Only students can view grades overview.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response([])
 
     submissions = (
         Submission.objects

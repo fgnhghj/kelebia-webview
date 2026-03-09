@@ -26,6 +26,9 @@ class IsRoomTeacherOrReadOnly(BasePermission):
                 return False
             if request.method not in SAFE_METHODS:
                 return room.teacher == request.user
+        elif request.method not in SAFE_METHODS and view.action in ('list', 'create'):
+            # H5: Block list-level writes with no room context — object-level permission handles detail actions
+            return False
         return True
 
     def has_object_permission(self, request, view, obj):

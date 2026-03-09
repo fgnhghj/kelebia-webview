@@ -71,6 +71,11 @@ export default function Signup() {
                 });
                 setErrors(newErrors);
             } else {
+                // Added 2FA handling
+                if (err.response?.status === 403 && err.response?.data?.detail === '2FA required') {
+                    setNeeds2FA(true);
+                    return; // finally will call setLoading(false)
+                }
                 toast.error(t('signup.error'));
             }
         } finally {
@@ -136,8 +141,9 @@ export default function Signup() {
                     {/* Name */}
                     <div className="form-row">
                         <div className="form-group">
-                            <label className="form-label">{t('signup.firstName')}</label>
+                            <label className="form-label" htmlFor="signup-first-name">{t('signup.firstName')}</label>
                             <input
+                                id="signup-first-name"
                                 type="text"
                                 className={`form-input ${errors.first_name ? 'error' : ''}`}
                                 placeholder={t('signup.firstNamePlaceholder')}
@@ -148,8 +154,9 @@ export default function Signup() {
                             {errors.first_name && <div className="form-error">{errors.first_name}</div>}
                         </div>
                         <div className="form-group">
-                            <label className="form-label">{t('signup.lastName')}</label>
+                            <label className="form-label" htmlFor="signup-last-name">{t('signup.lastName')}</label>
                             <input
+                                id="signup-last-name"
                                 type="text"
                                 className={`form-input ${errors.last_name ? 'error' : ''}`}
                                 placeholder={t('signup.lastNamePlaceholder')}
@@ -157,13 +164,15 @@ export default function Signup() {
                                 onChange={e => update('last_name', e.target.value)}
                                 required
                             />
+                            {errors.last_name && <div className="form-error">{errors.last_name}</div>}
                         </div>
                     </div>
 
                     {/* Email */}
                     <div className="form-group">
-                        <label className="form-label">{t('signup.email')}</label>
+                        <label className="form-label" htmlFor="signup-email">{t('signup.email')}</label>
                         <input
+                            id="signup-email"
                             type="email"
                             className={`form-input ${errors.email ? 'error' : ''}`}
                             placeholder={t('signup.emailPlaceholder')}
@@ -176,8 +185,9 @@ export default function Signup() {
 
                     {/* Password */}
                     <div className="form-group">
-                        <label className="form-label">{t('signup.password')}</label>
+                        <label className="form-label" htmlFor="signup-password">{t('signup.password')}</label>
                         <input
+                            id="signup-password"
                             type="password"
                             className={`form-input ${errors.password ? 'error' : ''}`}
                             placeholder={t('signup.passwordPlaceholder')}
@@ -203,8 +213,9 @@ export default function Signup() {
 
                     {/* Confirm Password */}
                     <div className="form-group">
-                        <label className="form-label">{t('signup.confirmPassword')}</label>
+                        <label className="form-label" htmlFor="signup-confirm-password">{t('signup.confirmPassword')}</label>
                         <input
+                            id="signup-confirm-password"
                             type="password"
                             className={`form-input ${passwordsMismatch ? 'error' : ''}`}
                             placeholder={t('signup.confirmPlaceholder')}
@@ -212,7 +223,7 @@ export default function Signup() {
                             onChange={e => update('confirmPassword', e.target.value)}
                             required
                         />
-                        {passwordsMatch && <div className="form-error" style={{ color: 'var(--success)' }}>{t('signup.passwordsMatch')}</div>}
+                        {passwordsMatch && <div className="form-success">{t('signup.passwordsMatch')}</div>}
                         {passwordsMismatch && <div className="form-error">{t('signup.passwordsMismatch')}</div>}
                         {errors.confirmPassword && <div className="form-error">{errors.confirmPassword}</div>}
                     </div>

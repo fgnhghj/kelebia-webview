@@ -9,12 +9,19 @@ from django.core.mail import send_mail
 logger = logging.getLogger(__name__)
 
 
+def _html_to_text(html):
+    """Strip basic HTML tags to produce a plain-text fallback."""
+    import re
+    text = re.sub(r'<[^>]+>', ' ', html)
+    return ' '.join(text.split())
+
+
 def _send_email(to_email, to_name, subject, html_body):
     """Send a single email via Django SMTP backend."""
     try:
         send_mail(
             subject=subject,
-            message='',  # plain text fallback
+            message=_html_to_text(html_body),  # L7: proper plain-text fallback
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to_email],
             html_message=html_body,

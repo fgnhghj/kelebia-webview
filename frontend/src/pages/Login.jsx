@@ -25,8 +25,7 @@ export default function Login() {
             const result = await login(email, password, needs2FA ? totpCode : undefined);
             if (result?.requires_2fa) {
                 setNeeds2FA(true);
-                setLoading(false);
-                return;
+                return;  // finally handles setLoading(false)
             }
             toast.success(t('login.success'));
             navigate('/dashboard');
@@ -68,12 +67,12 @@ export default function Login() {
                     {!needs2FA ? (
                         <>
                             <div className="form-group">
-                                <label className="form-label">{t('login.email')}</label>
-                                <input type="email" className="form-input" placeholder={t('login.emailPlaceholder')} value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
+                                <label className="form-label" htmlFor="login-email">{t('login.email')}</label>
+                                <input id="login-email" type="email" className="form-input" placeholder={t('login.emailPlaceholder')} value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
                             </div>
                             <div className="form-group">
-                                <label className="form-label">{t('login.password')}</label>
-                                <input type="password" className="form-input" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
+                                <label className="form-label" htmlFor="login-password">{t('login.password')}</label>
+                                <input id="login-password" type="password" className="form-input" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
                             </div>
                         </>
                     ) : (
@@ -81,8 +80,8 @@ export default function Login() {
                             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, color: 'var(--brand)' }}>
                                 <FiShield size={40} />
                             </div>
-                            <label className="form-label">{t('login.2faCode')}</label>
-                            <input type="text" className="form-input" placeholder="000000" maxLength={6} value={totpCode} onChange={e => setTotpCode(e.target.value.replace(/\D/g, ''))} style={{ textAlign: 'center', fontSize: 24, letterSpacing: '6px', fontWeight: 700, fontFamily: 'monospace' }} required autoFocus />
+                            <label className="form-label" htmlFor="login-totp">{t('login.2faCode')}</label>
+                            <input id="login-totp" type="text" className="form-input" placeholder="000000" maxLength={6} value={totpCode} onChange={e => setTotpCode(e.target.value.replace(/\D/g, ''))} style={{ textAlign: 'center', fontSize: 24, letterSpacing: '6px', fontWeight: 700, fontFamily: 'monospace' }} required autoFocus />
                         </div>
                     )}
 

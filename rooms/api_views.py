@@ -123,6 +123,9 @@ class RoomViewSet(viewsets.ModelViewSet):
     def leave(self, request, pk=None):
         """Leave a room (students only)."""
         room = self.get_object()
+        # C5: Teachers cannot leave their own room
+        if room.teacher == request.user:
+            return Response({'error': 'Teachers cannot leave their own room. Delete the room instead.'}, status=403)
         membership = get_object_or_404(RoomMembership, room=room, student=request.user)
         membership.delete()
         return Response({'status': 'left'})

@@ -34,7 +34,7 @@ export default function SplashScreen() {
           <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
             <rect width="72" height="72" rx="18" fill="#D97757" fillOpacity="0.12" />
             <path
-              d="M22 50V22h5.5l8.5 18.5L44.5 22H50v28h-4.5V31.5L38 50h-4L26.5 31.5V50H22Z"
+              d="M16 18H26V54H16ZM26 26L56 18V27L26 36ZM26 36L56 45V54L26 46Z"
               fill="#D97757"
             />
           </svg>
@@ -52,7 +52,7 @@ export default function SplashScreen() {
 
         {/* Progress */}
         <div className={`splash-progress ${animStage >= 3 ? 'visible' : ''}`}>
-          <div className="splash-progress-bar" />
+          <div className={`splash-progress-bar ${animStage >= 3 ? 'animate' : ''}`} />
         </div>
       </div>
 

@@ -122,7 +122,7 @@ class Submission(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='submissions')
     comment = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='submitted')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='submitted')
 
     class Meta:
         unique_together = ['assignment', 'student']

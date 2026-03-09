@@ -52,7 +52,11 @@ class RoomStudentSerializer(serializers.ModelSerializer):
     def get_is_member(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return True  # If they can see it, they're a member
+            if obj.teacher == request.user:
+                return True
+            return RoomMembership.objects.filter(
+                room=obj, student=request.user, status='approved'
+            ).exists()
         return False
 
 

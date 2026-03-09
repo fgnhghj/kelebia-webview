@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage, LANG_OPTIONS } from '../contexts/LanguageContext';
 import { authAPI } from '../api/client';
 import {
   User, Mail, Building2, FileText, Shield, ShieldCheck,
   ShieldOff, LogOut, ChevronRight, Camera, Loader2,
-  AlertCircle, CheckCircle2, Moon, Info, Heart,
+  AlertCircle, CheckCircle2, Moon, Info, Heart, Globe,
 } from 'lucide-react';
 
 export default function Settings() {
   const navigate = useNavigate();
   const { user, logout, refreshUser } = useAuth();
+  const { lang, setLang, t } = useLanguage();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     first_name: '',
@@ -275,6 +277,24 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      {/* Language */}
+      <div className="settings-section">
+        <h3>{t('language')}</h3>
+        <div className="settings-card lang-picker">
+          {LANG_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              className={`lang-option ${lang === opt.value ? 'active' : ''}`}
+              onClick={() => setLang(opt.value)}
+            >
+              <span className="lang-flag">{opt.flag}</span>
+              <span className="lang-label">{opt.label}</span>
+              {lang === opt.value && <CheckCircle2 size={16} className="text-accent lang-check" />}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* About */}
       <div className="settings-section">

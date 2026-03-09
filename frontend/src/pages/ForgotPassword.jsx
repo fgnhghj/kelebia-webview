@@ -102,8 +102,8 @@ export default function ForgotPassword() {
                 {step === 'email' && (
                     <form onSubmit={handleSendCode}>
                         <div className="form-group">
-                            <label className="form-label">{t('login.email')}</label>
-                            <input type="email" className="form-input" placeholder={t('login.emailPlaceholder')} value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
+                            <label className="form-label" htmlFor="forgot-email">{t('login.email')}</label>
+                            <input id="forgot-email" type="email" className="form-input" placeholder={t('login.emailPlaceholder')} value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
                         </div>
                         <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
                             {loading ? t('forgot.sending') : t('forgot.sendCode')}
@@ -114,17 +114,17 @@ export default function ForgotPassword() {
                 {step === 'code' && (
                     <form onSubmit={handleReset}>
                         <div className="form-group">
-                            <label className="form-label">{t('forgot.codeLabel')}</label>
-                            <input type="text" className="form-input" placeholder="000000" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+                            <label className="form-label" htmlFor="forgot-code">{t('forgot.codeLabel')}</label>
+                            <input id="forgot-code" type="text" className="form-input" placeholder="000000" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
                                 style={{ textAlign: 'center', fontSize: 24, letterSpacing: '6px', fontWeight: 700, fontFamily: 'monospace' }} required autoFocus />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">{t('forgot.newPassword')}</label>
-                            <input type="password" className="form-input" placeholder="••••••••" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                            <label className="form-label" htmlFor="forgot-new-password">{t('forgot.newPassword')}</label>
+                            <input id="forgot-new-password" type="password" className="form-input" placeholder="••••••••" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">{t('forgot.confirmPassword')}</label>
-                            <input type="password" className="form-input" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                            <label className="form-label" htmlFor="forgot-confirm-password">{t('forgot.confirmPassword')}</label>
+                            <input id="forgot-confirm-password" type="password" className="form-input" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
                         </div>
                         <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
                             {loading ? t('forgot.resetting') : t('forgot.resetButton')}

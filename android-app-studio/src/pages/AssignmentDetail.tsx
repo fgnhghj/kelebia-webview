@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { assignmentsAPI, submissionsAPI } from '../api/client';
 import {
@@ -10,8 +10,10 @@ import {
 export default function AssignmentDetail() {
   const { id, assignmentId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isTeacher, isStudent } = useAuth();
   const aId = Number(assignmentId);
+  const goBack = () => navigate(`/room/${id}`, { state: { tab: 'assignments' } });
 
   const [assignment, setAssignment] = useState<any>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -31,7 +33,7 @@ export default function AssignmentDetail() {
         setAssignment(aData);
         setSubmissions(sData);
       } catch {
-        navigate(-1);
+        goBack();
       }
       setLoading(false);
     };
@@ -101,7 +103,7 @@ export default function AssignmentDetail() {
     <div className="page-container">
       {/* Header */}
       <header className="detail-header">
-        <button className="icon-btn-ghost" onClick={() => navigate(-1)}>
+        <button className="icon-btn-ghost" onClick={goBack}>
           <ArrowLeft size={22} />
         </button>
         <h1 className="detail-title">Assignment</h1>

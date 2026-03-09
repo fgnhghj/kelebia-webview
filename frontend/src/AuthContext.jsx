@@ -12,9 +12,25 @@ export function AuthProvider({ children }) {
         if (token) {
             authAPI.me()
                 .then(res => setUser(res.data))
-                .catch(() => {
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
+                .catch(async () => {
+                    // Access token may be expired — try silent refresh
+                    const refresh = localStorage.getItem('refresh_token');
+                    if (refresh) {
+                        try {
+                            const { data } = await import('axios').then(m => m.default).then(axios =>
+                                axios.post(`${import.meta.env.VITE_API_URL || ''}/api/auth/token/refresh/`, { refresh })
+                            );
+                            localStorage.setItem('access_token', data.access);
+                            // H7: Re-fetch user after successful silent refresh
+                            const meRes = await authAPI.me();
+                            setUser(meRes.data);
+                        } catch {
+                            localStorage.removeItem('access_token');
+                            localStorage.removeItem('refresh_token');
+                        }
+                    } else {
+                        localStorage.removeItem('access_token');
+                    }
                 })
                 .finally(() => setLoading(false));
         } else {
@@ -50,7 +66,12 @@ export function AuthProvider({ children }) {
         return { user: data.user, requires_verification: data.requires_verification };
     };
 
-    const logout = () => {
+    const logout = async () => {
+        const refresh = localStorage.getItem('refresh_token');
+        if (refresh) {
+            // C3: Blacklist the refresh token on the server so it can't be reused
+            try { await api.post('/auth/token/blacklist/', { refresh }); } catch { /* ignore network errors */ }
+        }
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         setUser(null);

@@ -1,5 +1,5 @@
 import string
-import random
+import secrets
 from django.db import models
 from django.conf import settings
 
@@ -9,14 +9,14 @@ def generate_invite_code():
     from django.db import connection
     chars = string.ascii_uppercase + string.digits
     for _ in range(10):
-        code = ''.join(random.choices(chars, k=8))
+        code = ''.join(secrets.choice(chars) for _ in range(8))
         # Only check DB if tables exist (avoids error during migrations)
         if 'rooms_room' in connection.introspection.table_names():
             if not Room.objects.filter(invite_code=code).exists():
                 return code
         else:
             return code
-    return ''.join(random.choices(chars, k=8))
+    return ''.join(secrets.choice(chars) for _ in range(8))
 
 
 class Room(models.Model):
@@ -30,7 +30,7 @@ class Room(models.Model):
         ('#684A4A', 'Rust Red'),       # Muted rust
         ('#52584C', 'Olive Drab'),     # Deep olive
         ('#4A5F68', 'Ocean Slate'),    # Dark teal/slate
-        ('#68554A', 'Burnt Siena'),    # Muted copper
+        ('#68554A', 'Burnt Sienna'),    # Muted copper
         ('#2D2D2D', 'Charcoal'),       # Almost black, deep charcoal
     ]
 
