@@ -18,10 +18,11 @@ jobs:
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: isetkl-classroom.gleeze.com
+          host: 13.51.58.5
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
           script: |
-            cd /home/ubuntu/eduroom
-            git pull origin main || git pull origin master
+            cd /home/ubuntu/eduroom || { git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom && cd /home/ubuntu/eduroom; }
+            git pull origin master
             bash deploy.sh
