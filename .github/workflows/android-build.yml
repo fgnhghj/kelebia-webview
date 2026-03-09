@@ -33,16 +33,13 @@ jobs:
       - name: Generate launcher icons
         working-directory: android-webview
         run: |
-          # Generate PNG launcher icons for pre-API 26 devices
+          # Use app-icon.png from android-app-studio project as source
+          ICON_SRC="../android-app-studio/public/app-icon.png"
           for entry in "mdpi:48" "hdpi:72" "xhdpi:96" "xxhdpi:144" "xxxhdpi:192"; do
             dir=$(echo $entry | cut -d: -f1)
             size=$(echo $entry | cut -d: -f2)
             mkdir -p app/src/main/res/mipmap-$dir
-            # Blue (#2563EB) background with white "K"
-            convert -size ${size}x${size} xc:'#2563EB' \
-              -fill white -gravity center \
-              -font DejaVu-Sans-Bold -pointsize $((size * 55 / 100)) \
-              -annotate +0+0 'K' \
+            convert "$ICON_SRC" -resize ${size}x${size} \
               app/src/main/res/mipmap-$dir/ic_launcher.png
             cp app/src/main/res/mipmap-$dir/ic_launcher.png \
               app/src/main/res/mipmap-$dir/ic_launcher_round.png

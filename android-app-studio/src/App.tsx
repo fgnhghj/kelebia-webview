@@ -9,7 +9,7 @@ const App = () => {
       // Force show the status bar
       StatusBar.show();
       StatusBar.setStyle({ style: Style.Dark });
-      StatusBar.setBackgroundColor({ color: "#1a1714" });
+      StatusBar.setBackgroundColor({ color: "#2C2925" });
       StatusBar.setOverlaysWebView({ overlay: false });
     }
   }, []);

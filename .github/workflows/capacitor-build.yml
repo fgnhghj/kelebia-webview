@@ -53,13 +53,13 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-                  <item name="android:statusBarColor">#1a1714</item>
-                  <item name="android:navigationBarColor">#1a1714</item>
+                  <item name="android:statusBarColor">#2C2925</item>
+                  <item name="android:navigationBarColor">#2C2925</item>
                   <item name="android:windowLightStatusBar">false</item>
                   <item name="android:windowFullscreen">false</item>
                   <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-                  <item name="android:windowBackground">#1a1714</item>
-                  <item name="android:colorPrimaryDark">#1a1714</item>
+                  <item name="android:windowBackground">#2C2925</item>
+                  <item name="android:colorPrimaryDark">#2C2925</item>
               </style>
               <style name="AppTheme.NoActionBar" parent="AppTheme">
                   <item name="android:windowActionBar">false</item>
@@ -67,7 +67,7 @@ jobs:
                   <item name="android:windowFullscreen">false</item>
               </style>
               <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-                  <item name="android:background">#1a1714</item>
+                  <item name="android:background">#2C2925</item>
                   <item name="android:windowFullscreen">false</item>
               </style>
           </resources>
@@ -95,7 +95,7 @@ jobs:
           import androidx.core.graphics.Insets;
 
           public class MainActivity extends BridgeActivity {
-              private static final int STATUS_BAR_COLOR = Color.parseColor("#1a1714");
+              private static final int STATUS_BAR_COLOR = Color.parseColor("#2C2925");
 
               private void forceStatusBarColor() {
                   Window window = getWindow();
@@ -185,13 +185,13 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-                  <item name="android:statusBarColor">#1a1714</item>
-                  <item name="android:navigationBarColor">#1a1714</item>
+                  <item name="android:statusBarColor">#2C2925</item>
+                  <item name="android:navigationBarColor">#2C2925</item>
                   <item name="android:windowLightStatusBar">false</item>
                   <item name="android:windowFullscreen">false</item>
                   <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-                  <item name="android:windowBackground">#1a1714</item>
-                  <item name="android:colorPrimaryDark">#1a1714</item>
+                  <item name="android:windowBackground">#2C2925</item>
+                  <item name="android:colorPrimaryDark">#2C2925</item>
               </style>
               <style name="AppTheme.NoActionBar" parent="AppTheme">
                   <item name="android:windowActionBar">false</item>
@@ -199,7 +199,7 @@ jobs:
                   <item name="android:windowFullscreen">false</item>
               </style>
               <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-                  <item name="android:background">#1a1714</item>
+                  <item name="android:background">#2C2925</item>
                   <item name="android:windowFullscreen">false</item>
               </style>
           </resources>
@@ -223,7 +223,7 @@ jobs:
           import androidx.core.view.ViewCompat;
           import androidx.core.graphics.Insets;
           public class MainActivity extends BridgeActivity {
-              private static final int STATUS_BAR_COLOR = Color.parseColor("#1a1714");
+              private static final int STATUS_BAR_COLOR = Color.parseColor("#2C2925");
               private void forceStatusBarColor() {
                   Window window = getWindow();
                   window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -280,20 +280,20 @@ jobs:
           sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
           sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
 
-      - name: Install ImageMagick
-        run: sudo apt-get install -y -qq imagemagick
-
-      - name: Generate and install launcher icons
+      - name: Install launcher icons from project
         run: |
-          # Generate custom Kelebia icon PNGs for all densities
+          # Use the actual app-icon.png from the project
+          ICON_SRC="public/app-icon.png"
+
+          # Install ImageMagick for resizing
+          sudo apt-get install -y -qq imagemagick
+
+          # Resize to each density bucket
           for entry in "mdpi:48" "hdpi:72" "xhdpi:96" "xxhdpi:144" "xxxhdpi:192"; do
             dir=$(echo $entry | cut -d: -f1)
             size=$(echo $entry | cut -d: -f2)
             mkdir -p android/app/src/main/res/mipmap-$dir
-            convert -size ${size}x${size} xc:'#2563EB' \
-              -fill white -gravity center \
-              -font DejaVu-Sans-Bold -pointsize $((size * 55 / 100)) \
-              -annotate +0+0 'K' \
+            convert "$ICON_SRC" -resize ${size}x${size} \
               android/app/src/main/res/mipmap-$dir/ic_launcher.png
             cp android/app/src/main/res/mipmap-$dir/ic_launcher.png \
               android/app/src/main/res/mipmap-$dir/ic_launcher_round.png
@@ -301,49 +301,11 @@ jobs:
               android/app/src/main/res/mipmap-$dir/ic_launcher_foreground.png
           done
 
-          # Create adaptive icon XML for API 26+
-          mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-          mkdir -p android/app/src/main/res/drawable
-          mkdir -p android/app/src/main/res/values
-
-          cat > android/app/src/main/res/drawable/ic_launcher_foreground.xml << 'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="108dp"
-              android:height="108dp"
-              android:viewportWidth="108"
-              android:viewportHeight="108">
-              <path
-                  android:pathData="M38,30L38,78L46,78L46,56L60,78L70,78L54,54L68,30L58,30L46,50L46,30Z"
-                  android:fillColor="#FFFFFF"/>
-          </vector>
-          XML
-
-          # Add launcher background color (merge-safe — avoid duplicate resources)
-          # Remove any existing ic_launcher_background.xml that Capacitor may create
+          # Remove Capacitor's default ic_launcher_background.xml to avoid duplicates
           rm -f android/app/src/main/res/values/ic_launcher_background.xml
-          if [ -f android/app/src/main/res/values/colors.xml ]; then
-            # Remove existing ic_launcher_background if present, then add ours
-            sed -i '/<color name="ic_launcher_background">/d' android/app/src/main/res/values/colors.xml
-            sed -i 's|</resources>|    <color name="ic_launcher_background">#2563EB</color>\n</resources>|' android/app/src/main/res/values/colors.xml
-          else
-            cat > android/app/src/main/res/values/colors.xml << 'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <color name="ic_launcher_background">#2563EB</color>
-          </resources>
-          XML
-          fi
 
-          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@color/ic_launcher_background"/>
-              <foreground android:drawable="@drawable/ic_launcher_foreground"/>
-          </adaptive-icon>
-          XML
-          cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml \
-            android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          # Remove adaptive icon XMLs (use PNG directly — the icon already has its own bg)
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
 
       - name: Re-apply Kotlin fix after sync
         run: |
