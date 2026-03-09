@@ -28,7 +28,11 @@ export default function Login() {
       }
       navigate('/home', { replace: true });
     } catch (err: any) {
-      setError(err?.detail || err?.non_field_errors?.[0] || 'Invalid email or password.');
+      if (err instanceof TypeError || err?.message === 'Failed to fetch') {
+        setError('Network error. Please check your connection.');
+      } else {
+        setError(err?.detail || err?.non_field_errors?.[0] || 'Invalid email or password.');
+      }
       setLoading(false);
     }
   };

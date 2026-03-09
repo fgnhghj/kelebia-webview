@@ -31,8 +31,12 @@ export default function Register() {
       await signup(form);
       navigate('/home', { replace: true });
     } catch (err: any) {
-      const detail = err?.detail || err?.email?.[0] || err?.non_field_errors?.[0] || 'Registration failed.';
-      setError(detail);
+      if (err instanceof TypeError || err?.message === 'Failed to fetch') {
+        setError('Network error. Please check your connection.');
+      } else {
+        const detail = err?.detail || err?.email?.[0] || err?.password?.[0] || err?.non_field_errors?.[0] || 'Registration failed.';
+        setError(detail);
+      }
       setLoading(false);
     }
   };
