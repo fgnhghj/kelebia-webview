@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 import AppLayout from "./components/AppLayout";
 import SplashScreen from "./pages/SplashScreen";
 import Login from "./pages/Login";
@@ -17,16 +18,31 @@ import JoinRoom from "./pages/JoinRoom";
 import CreateRoom from "./pages/CreateRoom";
 import Grades from "./pages/Grades";
 
+function LoadingScreen() {
+  return (
+    <div className="splash-screen">
+      <div className="splash-content">
+        <div className="splash-icon visible">
+          <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+            <rect width="72" height="72" rx="18" fill="#D97757" fillOpacity="0.12" />
+            <path d="M22 50V22h5.5l8.5 18.5L44.5 22H50v28h-4.5V31.5L38 50h-4L26.5 31.5V50H22Z" fill="#D97757" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
   if (user) return <Navigate to="/home" replace />;
   return <>{children}</>;
 }
@@ -44,32 +60,34 @@ const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          {/* Splash */}
-          <Route path="/" element={<SplashScreen />} />
+        <ErrorBoundary>
+          <Routes>
+            {/* Splash */}
+            <Route path="/" element={<SplashScreen />} />
 
-          {/* Auth (guest only) */}
-          <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-          <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Auth (guest only) */}
+            <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+            <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* Main App (protected, with bottom nav) */}
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/explore" element={<JoinRoom />} />
-            <Route path="/grades" element={<Grades />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
+            {/* Main App (protected, with bottom nav) */}
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/explore" element={<JoinRoom />} />
+              <Route path="/grades" element={<Grades />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
 
-          {/* Detail pages (protected, no bottom nav) */}
-          <Route path="/room/create" element={<ProtectedRoute><CreateRoom /></ProtectedRoute>} />
-          <Route path="/room/:id" element={<ProtectedRoute><RoomDetail /></ProtectedRoute>} />
-          <Route path="/room/:id/assignment/:assignmentId" element={<ProtectedRoute><AssignmentDetail /></ProtectedRoute>} />
+            {/* Detail pages (protected, no bottom nav) */}
+            <Route path="/room/create" element={<ProtectedRoute><CreateRoom /></ProtectedRoute>} />
+            <Route path="/room/:id" element={<ProtectedRoute><RoomDetail /></ProtectedRoute>} />
+            <Route path="/room/:id/assignment/:assignmentId" element={<ProtectedRoute><AssignmentDetail /></ProtectedRoute>} />
 
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );

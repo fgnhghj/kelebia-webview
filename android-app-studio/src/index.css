@@ -1540,3 +1540,42 @@
 .logo-font {
   font-family: 'EB Garamond', Georgia, serif;
 }
+
+/* ══════════════════════════════════════════════════════
+   ERROR BOUNDARY
+   ══════════════════════════════════════════════════════ */
+.error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px;
+  background: var(--bg-deep);
+}
+.error-boundary-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.error-boundary-icon {
+  color: var(--warning);
+  margin-bottom: 8px;
+}
+.error-boundary-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.error-boundary-content p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.error-boundary-content .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

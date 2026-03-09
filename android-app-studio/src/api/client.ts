@@ -87,6 +87,16 @@ class ApiClient {
     return this.request<T>(path);
   }
 
+  /** GET a list endpoint — auto-unwraps DRF paginated responses */
+  async getList<T = any>(path: string): Promise<T[]> {
+    const data = await this.request<any>(path);
+    if (data && typeof data === 'object' && !Array.isArray(data) && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (Array.isArray(data)) return data;
+    return [];
+  }
+
   post<T = any>(path: string, data?: any) {
     const body = data instanceof FormData ? data : data ? JSON.stringify(data) : undefined;
     return this.request<T>(path, { method: 'POST', body });
@@ -122,7 +132,7 @@ export const authAPI = {
 
 /* ─── Rooms ─────────────────────────────────────────── */
 export const roomsAPI = {
-  list: () => api.get('/rooms/'),
+  list: () => api.getList('/rooms/'),
   get: (id: number) => api.get(`/rooms/${id}/`),
   create: (data: FormData) => api.post('/rooms/', data),
   update: (id: number, data: FormData) => api.patch(`/rooms/${id}/`, data),
@@ -135,7 +145,7 @@ export const roomsAPI = {
 
 /* ─── Sections ──────────────────────────────────────── */
 export const sectionsAPI = {
-  list: (roomId: number) => api.get(`/sections/?room=${roomId}`),
+  list: (roomId: number) => api.getList(`/sections/?room=${roomId}`),
   create: (data: any) => api.post('/sections/', data),
   update: (id: number, data: any) => api.patch(`/sections/${id}/`, data),
   delete: (id: number) => api.delete(`/sections/${id}/`),
@@ -143,7 +153,7 @@ export const sectionsAPI = {
 
 /* ─── Content ───────────────────────────────────────── */
 export const contentAPI = {
-  list: (roomId: number) => api.get(`/content/?room=${roomId}`),
+  list: (roomId: number) => api.getList(`/content/?room=${roomId}`),
   create: (data: FormData) => api.post('/content/', data),
   update: (id: number, data: FormData) => api.patch(`/content/${id}/`, data),
   delete: (id: number) => api.delete(`/content/${id}/`),
@@ -151,7 +161,7 @@ export const contentAPI = {
 
 /* ─── Assignments ───────────────────────────────────── */
 export const assignmentsAPI = {
-  list: (roomId: number) => api.get(`/assignments/?room=${roomId}`),
+  list: (roomId: number) => api.getList(`/assignments/?room=${roomId}`),
   get: (id: number) => api.get(`/assignments/${id}/`),
   create: (data: FormData) => api.post('/assignments/', data),
   update: (id: number, data: any) => api.patch(`/assignments/${id}/`, data),
@@ -160,7 +170,7 @@ export const assignmentsAPI = {
 
 /* ─── Submissions ───────────────────────────────────── */
 export const submissionsAPI = {
-  list: (assignmentId: number) => api.get(`/submissions/?assignment=${assignmentId}`),
+  list: (assignmentId: number) => api.getList(`/submissions/?assignment=${assignmentId}`),
   create: (data: FormData) => api.post('/submissions/', data),
   delete: (id: number) => api.delete(`/submissions/${id}/`),
   grade: (id: number, data: { score: number; feedback?: string }) =>
@@ -169,7 +179,7 @@ export const submissionsAPI = {
 
 /* ─── Announcements ─────────────────────────────────── */
 export const announcementsAPI = {
-  list: (roomId: number) => api.get(`/announcements/?room=${roomId}`),
+  list: (roomId: number) => api.getList(`/announcements/?room=${roomId}`),
   get: (id: number) => api.get(`/announcements/${id}/`),
   create: (data: any) => api.post('/announcements/', data),
   update: (id: number, data: any) => api.patch(`/announcements/${id}/`, data),
@@ -178,13 +188,13 @@ export const announcementsAPI = {
 
 /* ─── Comments ──────────────────────────────────────── */
 export const commentsAPI = {
-  list: (announcementId: number) => api.get(`/comments/?announcement=${announcementId}`),
+  list: (announcementId: number) => api.getList(`/comments/?announcement=${announcementId}`),
   create: (data: { announcement: number; body: string }) => api.post('/comments/', data),
 };
 
 /* ─── Notifications ─────────────────────────────────── */
 export const notificationsAPI = {
-  list: () => api.get('/notifications/'),
+  list: () => api.getList('/notifications/'),
   read: (id: number) => api.post(`/notifications/${id}/read/`),
   readAll: () => api.post('/notifications/read_all/'),
   unreadCount: () => api.get<{ count: number }>('/notifications/unread_count/'),

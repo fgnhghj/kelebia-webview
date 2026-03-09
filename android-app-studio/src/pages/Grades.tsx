@@ -36,7 +36,7 @@ export default function Grades() {
     const fetchGrades = async () => {
       try {
         const data = await gradesAPI.overview();
-        setRoomGrades(data);
+        setRoomGrades(Array.isArray(data) ? data : (data?.results ?? []));
       } catch { /* silent */ }
       setLoading(false);
     };
