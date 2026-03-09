@@ -319,11 +319,13 @@ jobs:
           </vector>
           XML
 
-          # Add launcher background color (merge-safe)
+          # Add launcher background color (merge-safe — avoid duplicate resources)
+          # Remove any existing ic_launcher_background.xml that Capacitor may create
+          rm -f android/app/src/main/res/values/ic_launcher_background.xml
           if [ -f android/app/src/main/res/values/colors.xml ]; then
-            if ! grep -q 'ic_launcher_background' android/app/src/main/res/values/colors.xml; then
-              sed -i 's|</resources>|    <color name="ic_launcher_background">#2563EB</color>\n</resources>|' android/app/src/main/res/values/colors.xml
-            fi
+            # Remove existing ic_launcher_background if present, then add ours
+            sed -i '/<color name="ic_launcher_background">/d' android/app/src/main/res/values/colors.xml
+            sed -i 's|</resources>|    <color name="ic_launcher_background">#2563EB</color>\n</resources>|' android/app/src/main/res/values/colors.xml
           else
             cat > android/app/src/main/res/values/colors.xml << 'XML'
           <?xml version="1.0" encoding="utf-8"?>
