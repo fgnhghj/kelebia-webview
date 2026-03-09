@@ -280,6 +280,9 @@ jobs:
           sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
           sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
 
+      - name: Install ImageMagick
+        run: sudo apt-get install -y -qq imagemagick
+
       - name: Generate and install launcher icons
         run: |
           # Generate custom Kelebia icon PNGs for all densities
