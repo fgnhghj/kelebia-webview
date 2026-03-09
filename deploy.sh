@@ -174,19 +174,32 @@ NGINX
 
 # --- 10. SSL/HTTPS (Let's Encrypt) ---
 echo "[10/10] Setting up SSL..."
-if ! command -v certbot &> /dev/null; then
-    sudo apt install -y -qq certbot python3-certbot-nginx
-fi
-# Auto-configure SSL for the domain
-sudo certbot --nginx -d isetkl-classroom.gleeze.com --non-interactive --agree-tos -m admin@kelebia.com || \
-    echo "  ⚠️  Certbot failed — SSL may already be configured or DNS not propagated yet"
 
+# Activate nginx config FIRST (certbot needs it)
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo rm -f /etc/nginx/sites-enabled/eduroom
 sudo rm -f /etc/nginx/sites-enabled/kelebia
-sudo ln -s /etc/nginx/sites-available/kelebia /etc/nginx/sites-enabled/kelebia
+sudo ln -sf /etc/nginx/sites-available/kelebia /etc/nginx/sites-enabled/kelebia
 sudo nginx -t
 sudo systemctl restart nginx
+
+# Install certbot if not present
+if ! command -v certbot &> /dev/null; then
+    sudo apt install -y -qq certbot python3-certbot-nginx
+fi
+
+# Only run certbot if SSL is not already configured
+if ! grep -q 'ssl_certificate' /etc/nginx/sites-available/kelebia 2>/dev/null; then
+    echo "  Requesting SSL certificate..."
+    sudo certbot --nginx -d isetkl-classroom.gleeze.com --non-interactive --agree-tos -m admin@kelebia.com --redirect || \
+        echo "  ⚠️  Certbot failed — you may need to set up SSL manually"
+else
+    echo "  SSL already configured, renewing if needed..."
+    sudo certbot renew --quiet || true
+fi
+
+# Restart nginx with SSL config
+sudo nginx -t && sudo systemctl restart nginx
 
 # Fix permissions
 sudo chown -R ubuntu:www-data $PROJECT_DIR/staticfiles $PROJECT_DIR/frontend/dist
