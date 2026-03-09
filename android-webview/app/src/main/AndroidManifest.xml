@@ -7,7 +7,6 @@
         android:allowBackup="true"
         android:label="Kelebia Classroom"
         android:usesCleartextTraffic="false"
-        android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name="com.kelebia.MainActivity" android:exported="true">
             <intent-filter>
