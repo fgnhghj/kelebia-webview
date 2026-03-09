@@ -6,6 +6,7 @@ on:
     branches: [main, master]
     paths:
       - 'android-app-studio/**'
+      - '.github/workflows/capacitor-build.yml'
 
 defaults:
   run:
