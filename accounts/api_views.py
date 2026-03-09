@@ -33,7 +33,7 @@ def api_signup(request):
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         },
-        'requires_verification': True,
+        'requires_verification': False,
     }, status=status.HTTP_201_CREATED)
 
 

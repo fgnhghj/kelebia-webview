@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -106,6 +107,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# WhiteNoise — serve static files efficiently in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
@@ -158,7 +162,7 @@ if not DEBUG:
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF trusted origins (required when DEBUG=False)
-CSRF_TRUSTED_ORIGINS = ['http://13.60.253.1', 'http://localhost:5173']
+CSRF_TRUSTED_ORIGINS = ['https://isetkl-classroom.gleeze.com', 'http://localhost:5173']
 if not DEBUG:
     if _site and _site not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(_site)
@@ -175,7 +179,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 # Sign up at https://brevo.com, get API key, verify sender email
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', '')
-SITE_URL = os.environ.get('SITE_URL', 'http://13.60.253.1')
+SITE_URL = os.environ.get('SITE_URL', 'https://isetkl-classroom.gleeze.com')
 
 # Brevo SMTP (for Django's send_mail / password reset emails)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -24,14 +24,17 @@ export default function Sidebar() {
         setMobileOpen(false);
     }, [location.pathname]);
 
+    const [isDark, setIsDark] = useState(
+        () => document.documentElement.getAttribute('data-theme') === 'dark' ||
+            (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    );
+
     const toggleTheme = () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        const next = currentTheme === 'dark' ? 'light' : 'dark';
+        const next = isDark ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
+        setIsDark(!isDark);
     };
-
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
     const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 

@@ -50,15 +50,15 @@ class ContentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         room_id = self.request.query_params.get('room')
         if room_id:
-            return Content.objects.filter(room_id=room_id)
+            return Content.objects.filter(room_id=room_id).select_related('room', 'section')
         # For detail views (update/delete), return content the user can access
         user = self.request.user
         if getattr(user, 'role', '') == 'teacher':
-            return Content.objects.filter(room__teacher=user)
+            return Content.objects.filter(room__teacher=user).select_related('room', 'section')
         return Content.objects.filter(
             room__memberships__student=user,
             room__memberships__status='approved'
-        )
+        ).select_related('room', 'section')
 
     def perform_create(self, serializer):
         content = serializer.save()
@@ -89,12 +89,15 @@ class ContentViewSet(viewsets.ModelViewSet):
             for m in members
         ]
         Notification.objects.bulk_create(notifications)
-        threading.Thread(
-            target=notify_room_members,
-            args=(room, f'Nouveau contenu dans {room.name}',
-                  f'Le professeur a publié "{content.title}" dans {room.name}.'),
-            daemon=True,
-        ).start()
+        try:
+            threading.Thread(
+                target=notify_room_members,
+                args=(room, f'Nouveau contenu dans {room.name}',
+                      f'Le professeur a publié "{content.title}" dans {room.name}.'),
+                daemon=True,
+            ).start()
+        except Exception:
+            pass  # Don't crash if email thread fails
 
 
 class AssignmentViewSet(viewsets.ModelViewSet):
@@ -105,15 +108,15 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         room_id = self.request.query_params.get('room')
         if room_id:
-            return Assignment.objects.filter(room_id=room_id)
+            return Assignment.objects.filter(room_id=room_id).select_related('room', 'section')
         # For detail views (update/delete/export_grades), return assignments the user can access
         user = self.request.user
         if getattr(user, 'role', '') == 'teacher':
-            return Assignment.objects.filter(room__teacher=user)
+            return Assignment.objects.filter(room__teacher=user).select_related('room', 'section')
         return Assignment.objects.filter(
             room__memberships__student=user,
             room__memberships__status='approved'
-        )
+        ).select_related('room', 'section')
 
     def perform_create(self, serializer):
         assignment = serializer.save()
@@ -130,12 +133,15 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             for m in members
         ]
         Notification.objects.bulk_create(notifications)
-        threading.Thread(
-            target=notify_room_members,
-            args=(room, f'Nouveau devoir dans {room.name}',
-                  f'Le professeur a publié le devoir "{assignment.title}" dans {room.name}.'),
-            daemon=True,
-        ).start()
+        try:
+            threading.Thread(
+                target=notify_room_members,
+                args=(room, f'Nouveau devoir dans {room.name}',
+                      f'Le professeur a publié le devoir "{assignment.title}" dans {room.name}.'),
+                daemon=True,
+            ).start()
+        except Exception:
+            pass  # Don't crash if email thread fails
 
     @action(detail=True, methods=['get'])
     def export_grades(self, request, pk=None):
@@ -221,12 +227,15 @@ class SubmissionViewSet(viewsets.ModelViewSet):
             message=f'{self.request.user.get_full_name()} a soumis "{assignment.title}"',
             link=f'/rooms/{assignment.room.pk}/',
         )
-        threading.Thread(
-            target=notify_teacher,
-            args=(assignment.room, 'Nouvelle soumission',
-                  f'{self.request.user.get_full_name()} a soumis le devoir "{assignment.title}".'),
-            daemon=True,
-        ).start()
+        try:
+            threading.Thread(
+                target=notify_teacher,
+                args=(assignment.room, 'Nouvelle soumission',
+                      f'{self.request.user.get_full_name()} a soumis le devoir "{assignment.title}".'),
+                daemon=True,
+            ).start()
+        except Exception:
+            pass  # Don't crash if email thread fails
 
     @action(detail=True, methods=['post'])
     def grade(self, request, pk=None):

@@ -1,0 +1,301 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Capacitor CLI
+        run: npm install @capacitor/cli
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Add Android platform
+        run: npx cap add android || true
+
+      - name: Patch Android theme to non-fullscreen BEFORE sync
+        run: |
+          # Force the theme to NOT be fullscreen
+          STYLES_FILE="android/app/src/main/res/values/styles.xml"
+          cat > "$STYLES_FILE" <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+                  <item name="android:statusBarColor">#1a1714</item>
+                  <item name="android:navigationBarColor">#1a1714</item>
+                  <item name="android:windowLightStatusBar">false</item>
+                  <item name="android:windowFullscreen">false</item>
+                  <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+                  <item name="android:windowBackground">#1a1714</item>
+                  <item name="android:colorPrimaryDark">#1a1714</item>
+              </style>
+              <style name="AppTheme.NoActionBar" parent="AppTheme">
+                  <item name="android:windowActionBar">false</item>
+                  <item name="android:windowNoTitle">true</item>
+                  <item name="android:windowFullscreen">false</item>
+              </style>
+              <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
+                  <item name="android:background">#1a1714</item>
+                  <item name="android:windowFullscreen">false</item>
+              </style>
+          </resources>
+          XML
+
+      - name: Patch MainActivity to force status bar visible
+        run: |
+          MAIN_ACTIVITY="android/app/src/main/java/app/lovable/isetclassroom/MainActivity.java"
+          cat > "$MAIN_ACTIVITY" <<'JAVA'
+          package app.lovable.isetclassroom;
+
+          import com.getcapacitor.BridgeActivity;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.view.View;
+          import android.view.ViewGroup;
+          import android.view.Window;
+          import android.view.WindowManager;
+          import android.graphics.Color;
+          import androidx.core.view.WindowCompat;
+          import androidx.core.view.WindowInsetsCompat;
+          import androidx.core.view.WindowInsetsControllerCompat;
+          import androidx.core.view.ViewCompat;
+          import androidx.core.graphics.Insets;
+
+          public class MainActivity extends BridgeActivity {
+              private static final int STATUS_BAR_COLOR = Color.parseColor("#1a1714");
+
+              private void forceStatusBarColor() {
+                  Window window = getWindow();
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+                  WindowCompat.setDecorFitsSystemWindows(window, true);
+                  window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                  window.setStatusBarColor(STATUS_BAR_COLOR);
+                  window.setNavigationBarColor(STATUS_BAR_COLOR);
+
+                  View decorView = window.getDecorView();
+                  decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+
+                  WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, decorView);
+                  if (controller != null) {
+                      controller.show(WindowInsetsCompat.Type.statusBars());
+                      controller.show(WindowInsetsCompat.Type.navigationBars());
+                      controller.setAppearanceLightStatusBars(false);
+                  }
+
+                  ViewGroup contentView = findViewById(android.R.id.content);
+                  if (contentView != null) {
+                      contentView.setFitsSystemWindows(true);
+                      contentView.setBackgroundColor(STATUS_BAR_COLOR);
+                      if (contentView.getChildCount() > 0) {
+                          contentView.getChildAt(0).setFitsSystemWindows(true);
+                      }
+                  }
+
+                  ViewCompat.setOnApplyWindowInsetsListener(decorView, (v, insets) -> {
+                      Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                      ViewGroup content = findViewById(android.R.id.content);
+                      if (content != null) {
+                          content.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                      }
+                      return WindowInsetsCompat.CONSUMED;
+                  });
+              }
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  forceStatusBarColor();
+                  // Re-apply after Capacitor finishes its own setup
+                  new Handler(Looper.getMainLooper()).postDelayed(this::forceStatusBarColor, 300);
+                  new Handler(Looper.getMainLooper()).postDelayed(this::forceStatusBarColor, 1000);
+              }
+
+              @Override
+              public void onResume() {
+                  super.onResume();
+                  forceStatusBarColor();
+                  new Handler(Looper.getMainLooper()).postDelayed(this::forceStatusBarColor, 300);
+              }
+          }
+          JAVA
+
+      - name: Remove immersive/fullscreen from AndroidManifest
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i 's/android:windowFullscreen="true"/android:windowFullscreen="false"/g' "$MANIFEST"
+          sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
+          # Remove any theme that might force fullscreen
+          sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
+
+      - name: Fix Kotlin version conflicts
+        run: |
+          cat >> android/app/build.gradle <<'GRADLE'
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+              }
+          }
+          GRADLE
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Re-apply patches after sync (sync may overwrite)
+        run: |
+          # Re-write styles.xml
+          STYLES_FILE="android/app/src/main/res/values/styles.xml"
+          cat > "$STYLES_FILE" <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+                  <item name="android:statusBarColor">#1a1714</item>
+                  <item name="android:navigationBarColor">#1a1714</item>
+                  <item name="android:windowLightStatusBar">false</item>
+                  <item name="android:windowFullscreen">false</item>
+                  <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+                  <item name="android:windowBackground">#1a1714</item>
+                  <item name="android:colorPrimaryDark">#1a1714</item>
+              </style>
+              <style name="AppTheme.NoActionBar" parent="AppTheme">
+                  <item name="android:windowActionBar">false</item>
+                  <item name="android:windowNoTitle">true</item>
+                  <item name="android:windowFullscreen">false</item>
+              </style>
+              <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
+                  <item name="android:background">#1a1714</item>
+                  <item name="android:windowFullscreen">false</item>
+              </style>
+          </resources>
+          XML
+
+          # Re-write MainActivity with same insets fix
+          MAIN_ACTIVITY="android/app/src/main/java/app/lovable/isetclassroom/MainActivity.java"
+          cat > "$MAIN_ACTIVITY" <<'JAVA'
+          package app.lovable.isetclassroom;
+
+          import com.getcapacitor.BridgeActivity;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.view.View;
+          import android.view.ViewGroup;
+          import android.view.Window;
+          import android.view.WindowManager;
+          import android.graphics.Color;
+          import androidx.core.view.WindowCompat;
+          import androidx.core.view.WindowInsetsCompat;
+          import androidx.core.view.WindowInsetsControllerCompat;
+          import androidx.core.view.ViewCompat;
+          import androidx.core.graphics.Insets;
+
+          public class MainActivity extends BridgeActivity {
+              private static final int STATUS_BAR_COLOR = Color.parseColor("#1a1714");
+
+              private void forceStatusBarColor() {
+                  Window window = getWindow();
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                  window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+                  WindowCompat.setDecorFitsSystemWindows(window, true);
+                  window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                  window.setStatusBarColor(STATUS_BAR_COLOR);
+                  window.setNavigationBarColor(STATUS_BAR_COLOR);
+                  View decorView = window.getDecorView();
+                  decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                  WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, decorView);
+                  if (controller != null) {
+                      controller.show(WindowInsetsCompat.Type.statusBars());
+                      controller.show(WindowInsetsCompat.Type.navigationBars());
+                      controller.setAppearanceLightStatusBars(false);
+                  }
+                  ViewGroup contentView = findViewById(android.R.id.content);
+                  if (contentView != null) {
+                      contentView.setFitsSystemWindows(true);
+                      contentView.setBackgroundColor(STATUS_BAR_COLOR);
+                      if (contentView.getChildCount() > 0) {
+                          contentView.getChildAt(0).setFitsSystemWindows(true);
+                      }
+                  }
+                  ViewCompat.setOnApplyWindowInsetsListener(decorView, (v, insets) -> {
+                      Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                      ViewGroup content = findViewById(android.R.id.content);
+                      if (content != null) {
+                          content.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                      }
+                      return WindowInsetsCompat.CONSUMED;
+                  });
+              }
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  forceStatusBarColor();
+                  new Handler(Looper.getMainLooper()).postDelayed(this::forceStatusBarColor, 300);
+                  new Handler(Looper.getMainLooper()).postDelayed(this::forceStatusBarColor, 1000);
+              }
+
+              @Override
+              public void onResume() {
+                  super.onResume();
+                  forceStatusBarColor();
+                  new Handler(Looper.getMainLooper()).postDelayed(this::forceStatusBarColor, 300);
+              }
+          }
+          JAVA
+
+          # Re-patch manifest
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i 's/android:windowFullscreen="true"/android:windowFullscreen="false"/g' "$MANIFEST"
+          sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
+          sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
+
+      - name: Copy app icon to Android resources
+        run: |
+          for dir in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher.png
+            cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher_round.png
+            cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher_foreground.png
+          done
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk

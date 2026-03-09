@@ -5,8 +5,17 @@ from django.conf import settings
 
 
 def generate_invite_code():
-    """Generate a unique 8-character invite code."""
+    """Generate a unique 8-character invite code with collision retry."""
+    from django.db import connection
     chars = string.ascii_uppercase + string.digits
+    for _ in range(10):
+        code = ''.join(random.choices(chars, k=8))
+        # Only check DB if tables exist (avoids error during migrations)
+        if 'rooms_room' in connection.introspection.table_names():
+            if not Room.objects.filter(invite_code=code).exists():
+                return code
+        else:
+            return code
     return ''.join(random.choices(chars, k=8))
 
 

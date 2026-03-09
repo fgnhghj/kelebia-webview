@@ -43,7 +43,7 @@ def _build_html(greeting, body_text, cta_url=None):
 
 def send_notification_email(user, subject, message):
     """Send a notification email to a single user."""
-    site_url = getattr(settings, 'SITE_URL', 'http://13.60.253.1')
+    site_url = getattr(settings, 'SITE_URL', 'https://isetkl-classroom.gleeze.com')
     html = _build_html(
         f'Bonjour {user.first_name or user.username},',
         message,
