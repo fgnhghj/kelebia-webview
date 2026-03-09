@@ -49,19 +49,25 @@ class Content(models.Model):
     @property
     def file_extension(self):
         if self.file:
-            return self.file.name.split('.')[-1].lower()
+            try:
+                return self.file.name.split('.')[-1].lower()
+            except Exception:
+                return None
         return None
 
     @property
     def file_size_display(self):
         if self.file:
-            size = self.file.size
-            if size < 1024:
-                return f"{size} B"
-            elif size < 1024 * 1024:
-                return f"{size / 1024:.1f} KB"
-            else:
-                return f"{size / (1024 * 1024):.1f} MB"
+            try:
+                size = self.file.size
+                if size < 1024:
+                    return f"{size} B"
+                elif size < 1024 * 1024:
+                    return f"{size / 1024:.1f} KB"
+                else:
+                    return f"{size / (1024 * 1024):.1f} MB"
+            except Exception:
+                return None
         return None
 
 

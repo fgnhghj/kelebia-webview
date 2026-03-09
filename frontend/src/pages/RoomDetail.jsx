@@ -270,6 +270,7 @@ export default function RoomDetail() {
     const [room, setRoom] = useState(null);
     const [tab, setTab] = useState('content');
     const [sections, setSections] = useState([]);
+    const [unsectionedContent, setUnsectionedContent] = useState([]);
     const [assignments, setAssignments] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     const [members, setMembers] = useState({ members: [], pending: [] });
@@ -332,12 +333,17 @@ export default function RoomDetail() {
             const roomRes = await roomsAPI.get(id);
             setRoom(roomRes.data);
 
-            const [secRes, assRes, annRes] = await Promise.allSettled([
-                sectionsAPI.list(id), assignmentsAPI.list(id), announcementsAPI.list(id)
+            const [secRes, assRes, annRes, contRes] = await Promise.allSettled([
+                sectionsAPI.list(id), assignmentsAPI.list(id), announcementsAPI.list(id), contentAPI.list(id)
             ]);
             if (secRes.status === 'fulfilled') setSections(secRes.value.data.results || secRes.value.data);
             if (assRes.status === 'fulfilled') setAssignments(assRes.value.data.results || assRes.value.data);
             if (annRes.status === 'fulfilled') setAnnouncements(annRes.value.data.results || annRes.value.data);
+            // Collect unsectioned content (content with section=null)
+            if (contRes.status === 'fulfilled') {
+                const allContent = contRes.value.data.results || contRes.value.data;
+                setUnsectionedContent(allContent.filter(c => !c.section));
+            }
 
             if (roomRes.data.teacher?.id === user?.id) {
                 try {
@@ -369,11 +375,23 @@ export default function RoomDetail() {
         e.preventDefault();
         setSubmitting(true);
         try {
+            let sectionId = uploadForm.section;
+            // Auto-create a default section if none exist
+            if (!sectionId && sections.length === 0) {
+                try {
+                    const secRes = await sectionsAPI.create({ room: parseInt(id), title: t('room.defaultSection') || 'General' });
+                    sectionId = secRes.data.id;
+                } catch { /* proceed without section */ }
+            }
+            // If still no section but sections exist, use the first one
+            if (!sectionId && sections.length > 0) {
+                sectionId = sections[0].id;
+            }
             const fd = new FormData();
             fd.append('room', id);
             fd.append('title', uploadForm.title);
             fd.append('content_type', uploadForm.content_type);
-            if (uploadForm.section) fd.append('section', uploadForm.section);
+            if (sectionId) fd.append('section', sectionId);
             if (uploadForm.file) fd.append('file', uploadForm.file);
             if (uploadForm.link) fd.append('link', uploadForm.link);
             await contentAPI.create(fd);
@@ -828,39 +846,29 @@ export default function RoomDetail() {
                                 </button>
                             </div>
                         )}
-                        {sections.length === 0 ? (
+                        {sections.length === 0 && unsectionedContent.length === 0 ? (
                             <div className="empty-state">
                                 <div className="icon" style={{ fontSize: 40, color: 'var(--brand)', marginBottom: 16 }}>
                                     <FiFile />
                                 </div>
                                 <h3>{t('room.noContent')}</h3>
                             </div>
-                        ) : sections.map(sec => (
-                            <div key={sec.id} className="section-block">
-                                <div className="section-header">
-                                    <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <FiFolder color="var(--brand)" /> {sec.title}
-                                    </h3>
-                                </div>
-                                <div className="content-list">
-                                    {sec.contents?.length === 0 ? (
-                                        <p style={{ fontSize: 13, color: 'var(--text-muted)', padding: '8px 0' }}>{t('room.noContentInSection')}</p>
-                                    ) : sec.contents?.map(item => (
-                                        <div key={item.id} className="content-item">
-                                            <div className="item-icon" style={{ background: 'var(--brand-bg)', color: 'var(--brand)' }}>
-                                                {TYPE_ICONS[item.content_type] || <FiPackage />}
-                                            </div>
-                                            {editingContent?.id === item.id ? (
-                                                /* Inline edit mode */
-                                                <div className="item-info" style={{ flex: 1 }}>
-                                                    <input className="form-input" value={editingContent.title} onChange={e => setEditingContent(p => ({ ...p, title: e.target.value }))} style={{ marginBottom: 4, fontSize: 14, padding: '4px 8px' }} />
-                                                    <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-                                                        <button className="btn btn-primary btn-sm btn-icon" onClick={() => handleSaveContent(item)} title={t('common.save')}><FiSave size={14} /></button>
-                                                        <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setEditingContent(null)} title={t('common.cancel')}><FiX size={14} /></button>
+                        ) : (
+                            <>
+                                {/* Unsectioned content (orphaned items without a section) */}
+                                {unsectionedContent.length > 0 && (
+                                    <div className="section-block">
+                                        <div className="section-header">
+                                            <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <FiBookOpen color="var(--brand)" /> {t('room.unsectioned') || 'Unsectioned'}
+                                            </h3>
+                                        </div>
+                                        <div className="content-list">
+                                            {unsectionedContent.map(item => (
+                                                <div key={item.id} className="content-item">
+                                                    <div className="item-icon" style={{ background: 'var(--brand-bg)', color: 'var(--brand)' }}>
+                                                        {TYPE_ICONS[item.content_type] || <FiPackage />}
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <>
                                                     <div className="item-info">
                                                         <h4>{item.title}</h4>
                                                         <p>{item.content_type} · {new Date(item.created_at).toLocaleDateString()}{item.file_size_display ? ` · ${item.file_size_display}` : ''}</p>
@@ -886,13 +894,72 @@ export default function RoomDetail() {
                                                             </>
                                                         )}
                                                     </div>
-                                                </>
-                                            )}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+                                    </div>
+                                )}
+                                {/* Sections with nested content */}
+                                {sections.map(sec => (
+                                    <div key={sec.id} className="section-block">
+                                        <div className="section-header">
+                                            <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <FiFolder color="var(--brand)" /> {sec.title}
+                                            </h3>
+                                        </div>
+                                        <div className="content-list">
+                                            {sec.contents?.length === 0 ? (
+                                                <p style={{ fontSize: 13, color: 'var(--text-muted)', padding: '8px 0' }}>{t('room.noContentInSection')}</p>
+                                            ) : sec.contents?.map(item => (
+                                                <div key={item.id} className="content-item">
+                                                    <div className="item-icon" style={{ background: 'var(--brand-bg)', color: 'var(--brand)' }}>
+                                                        {TYPE_ICONS[item.content_type] || <FiPackage />}
+                                                    </div>
+                                                    {editingContent?.id === item.id ? (
+                                                        /* Inline edit mode */
+                                                        <div className="item-info" style={{ flex: 1 }}>
+                                                            <input className="form-input" value={editingContent.title} onChange={e => setEditingContent(p => ({ ...p, title: e.target.value }))} style={{ marginBottom: 4, fontSize: 14, padding: '4px 8px' }} />
+                                                            <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                                                                <button className="btn btn-primary btn-sm btn-icon" onClick={() => handleSaveContent(item)} title={t('common.save')}><FiSave size={14} /></button>
+                                                                <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setEditingContent(null)} title={t('common.cancel')}><FiX size={14} /></button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <div className="item-info">
+                                                                <h4>{item.title}</h4>
+                                                                <p>{item.content_type} · {new Date(item.created_at).toLocaleDateString()}{item.file_size_display ? ` · ${item.file_size_display}` : ''}</p>
+                                                            </div>
+                                                            <div className="item-actions" style={{ display: 'flex', gap: 4 }}>
+                                                                {item.file && (
+                                                                    <>
+                                                                        <button className="btn btn-secondary btn-sm btn-icon" onClick={() => setPreviewFile({ url: item.file, filename: item.title + '.' + (item.file_extension || 'bin') })} title={t('room.preview')}>
+                                                                            <FiEye />
+                                                                        </button>
+                                                                        <a href={getFileUrl(item.file)} className="btn btn-primary btn-sm btn-icon" download title={t('room.download')}><FiDownload /></a>
+                                                                    </>
+                                                                )}
+                                                                {item.link && <a href={item.link} className="btn btn-secondary btn-sm btn-icon" target="_blank" rel="noreferrer"><FiExternalLink /></a>}
+                                                                {isTeacher && (
+                                                                    <>
+                                                                        <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setEditingContent({ id: item.id, title: item.title, description: item.description || '' })} title={t('room.edit')}>
+                                                                            <FiEdit3 size={14} />
+                                                                        </button>
+                                                                        <button className="btn btn-ghost btn-sm btn-icon" style={{ color: 'var(--danger)' }} onClick={() => handleDeleteContent(item.id)} title={t('room.delete')}>
+                                                                            <FiTrash2 size={14} />
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+                        )}
                     </motion.div>
                 )}
 
@@ -925,235 +992,235 @@ export default function RoomDetail() {
                                 return 0;
                             });
                             return sorted.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="icon" style={{ fontSize: 40, color: 'var(--brand)', marginBottom: 16 }}>
-                                    <FiEdit />
-                                </div>
-                                <h3>{t('room.noAssignments')}</h3>
-                            </div>
-                        ) : sorted.map(a => (
-                            <div key={a.id} className="card" style={{ marginBottom: 12 }}>
-                                {editingAssignment?.id === a.id ? (
-                                    /* Inline edit mode for assignment */
-                                    <div>
-                                        <div className="form-group" style={{ marginBottom: 8 }}>
-                                            <input className="form-input" value={editingAssignment.title} onChange={e => setEditingAssignment(p => ({ ...p, title: e.target.value }))} placeholder={t('assignmentModal.titleLabel')} />
-                                        </div>
-                                        <div className="form-group" style={{ marginBottom: 8 }}>
-                                            <textarea className="form-input" rows="2" value={editingAssignment.description} onChange={e => setEditingAssignment(p => ({ ...p, description: e.target.value }))} placeholder={t('assignmentModal.description')} />
-                                        </div>
-                                        <div className="form-row" style={{ marginBottom: 8 }}>
-                                            <div className="form-group"><input className="form-input" type="datetime-local" value={editingAssignment.deadline} onChange={e => setEditingAssignment(p => ({ ...p, deadline: e.target.value }))} /></div>
-                                            <div className="form-group"><input className="form-input" type="number" min="1" value={editingAssignment.max_grade} onChange={e => setEditingAssignment(p => ({ ...p, max_grade: e.target.value }))} /></div>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: 6 }}>
-                                            <button className="btn btn-primary btn-sm" onClick={handleSaveAssignment}><FiSave size={14} style={{ marginRight: 4 }} />{t('common.save')}</button>
-                                            <button className="btn btn-ghost btn-sm" onClick={() => setEditingAssignment(null)}>{t('common.cancel')}</button>
-                                        </div>
+                                <div className="empty-state">
+                                    <div className="icon" style={{ fontSize: 40, color: 'var(--brand)', marginBottom: 16 }}>
+                                        <FiEdit />
                                     </div>
-                                ) : (
-                                    <>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                    <h4 style={{ fontWeight: 700, fontSize: 16 }}>{a.title}</h4>
-                                                    {isTeacher && (
-                                                        <>
-                                                            <button className="btn btn-ghost btn-sm btn-icon" style={{ padding: 2 }} onClick={() => setEditingAssignment({ id: a.id, title: a.title, description: a.description || '', deadline: a.deadline ? new Date(a.deadline).toISOString().slice(0, 16) : '', max_grade: a.max_grade })} title={t('room.edit')}>
-                                                                <FiEdit3 size={14} />
+                                    <h3>{t('room.noAssignments')}</h3>
+                                </div>
+                            ) : sorted.map(a => (
+                                <div key={a.id} className="card" style={{ marginBottom: 12 }}>
+                                    {editingAssignment?.id === a.id ? (
+                                        /* Inline edit mode for assignment */
+                                        <div>
+                                            <div className="form-group" style={{ marginBottom: 8 }}>
+                                                <input className="form-input" value={editingAssignment.title} onChange={e => setEditingAssignment(p => ({ ...p, title: e.target.value }))} placeholder={t('assignmentModal.titleLabel')} />
+                                            </div>
+                                            <div className="form-group" style={{ marginBottom: 8 }}>
+                                                <textarea className="form-input" rows="2" value={editingAssignment.description} onChange={e => setEditingAssignment(p => ({ ...p, description: e.target.value }))} placeholder={t('assignmentModal.description')} />
+                                            </div>
+                                            <div className="form-row" style={{ marginBottom: 8 }}>
+                                                <div className="form-group"><input className="form-input" type="datetime-local" value={editingAssignment.deadline} onChange={e => setEditingAssignment(p => ({ ...p, deadline: e.target.value }))} /></div>
+                                                <div className="form-group"><input className="form-input" type="number" min="1" value={editingAssignment.max_grade} onChange={e => setEditingAssignment(p => ({ ...p, max_grade: e.target.value }))} /></div>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 6 }}>
+                                                <button className="btn btn-primary btn-sm" onClick={handleSaveAssignment}><FiSave size={14} style={{ marginRight: 4 }} />{t('common.save')}</button>
+                                                <button className="btn btn-ghost btn-sm" onClick={() => setEditingAssignment(null)}>{t('common.cancel')}</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        <h4 style={{ fontWeight: 700, fontSize: 16 }}>{a.title}</h4>
+                                                        {isTeacher && (
+                                                            <>
+                                                                <button className="btn btn-ghost btn-sm btn-icon" style={{ padding: 2 }} onClick={() => setEditingAssignment({ id: a.id, title: a.title, description: a.description || '', deadline: a.deadline ? new Date(a.deadline).toISOString().slice(0, 16) : '', max_grade: a.max_grade })} title={t('room.edit')}>
+                                                                    <FiEdit3 size={14} />
+                                                                </button>
+                                                                <button className="btn btn-ghost btn-sm btn-icon" style={{ padding: 2, color: 'var(--danger)' }} onClick={() => handleDeleteAssignment(a.id)} title={t('room.delete')}>
+                                                                    <FiTrash2 size={14} />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    {a.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{a.description}</p>}
+                                                    {a.file && (
+                                                        <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                            <button className="btn btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); setPreviewFile({ url: a.file, filename: a.title + '.' + (a.file.split('.').pop() || 'bin') }); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+                                                                <FiEye size={12} /> {t('room.preview')}
                                                             </button>
-                                                            <button className="btn btn-ghost btn-sm btn-icon" style={{ padding: 2, color: 'var(--danger)' }} onClick={() => handleDeleteAssignment(a.id)} title={t('room.delete')}>
-                                                                <FiTrash2 size={14} />
-                                                            </button>
-                                                        </>
+                                                            <a href={getFileUrl(a.file)} download className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+                                                                <FiDownload size={12} /> {t('room.attachedFile')}
+                                                            </a>
+                                                        </div>
                                                     )}
                                                 </div>
-                                                {a.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{a.description}</p>}
-                                                {a.file && (
-                                                    <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                        <button className="btn btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); setPreviewFile({ url: a.file, filename: a.title + '.' + (a.file.split('.').pop() || 'bin') }); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
-                                                            <FiEye size={12} /> {t('room.preview')}
-                                                        </button>
-                                                        <a href={getFileUrl(a.file)} download className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
-                                                            <FiDownload size={12} /> {t('room.attachedFile')}
-                                                        </a>
-                                                    </div>
+                                                {a.deadline && (
+                                                    a.is_past_deadline
+                                                        ? <span className="badge badge-danger" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiClock /> {t('room.late')}</span>
+                                                        : <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiClock /> {new Date(a.deadline).toLocaleDateString()}</span>
                                                 )}
                                             </div>
-                                            {a.deadline && (
-                                                a.is_past_deadline
-                                                    ? <span className="badge badge-danger" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiClock /> {t('room.late')}</span>
-                                                    : <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiClock /> {new Date(a.deadline).toLocaleDateString()}</span>
-                                            )}
-                                        </div>
-                                        {a.deadline && !a.is_past_deadline && <div style={{ marginTop: 12 }}><Countdown deadline={a.deadline} /></div>}
+                                            {a.deadline && !a.is_past_deadline && <div style={{ marginTop: 12 }}><Countdown deadline={a.deadline} /></div>}
 
-                                        <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                                            <span className="badge badge-info">Max: {a.max_grade} pts</span>
-                                            {isTeacher && (
-                                                <button className="badge badge-brand" onClick={() => handleToggleSubmissions(a.id)} style={{ cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                    <FiUsers size={12} /> {a.submissions_count || 0} {t('room.submissions')}
-                                                </button>
-                                            )}
-                                            {isTeacher && a.unsubmitted_count > 0 && (
-                                                <span className="badge badge-danger" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                    <div style={{ width: 6, height: 6, background: 'currentColor', borderRadius: '50%' }} />
-                                                    {a.unsubmitted_count} {t('room.unsubmitted')}
-                                                </span>
-                                            )}
-                                            {a.my_submission && (
-                                                <span className={`badge ${a.my_submission.is_late ? 'badge-warning' : 'badge-success'}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                    {a.my_submission.is_late ? <><FiClock /> {t('room.late')}</> : <><FiCheckCircle /> {t('room.submitted')}</>}
-                                                </span>
-                                            )}
-                                            {a.my_submission?.grade && (
-                                                <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                    <FiAward /> {a.my_submission.grade.score}/{a.max_grade}
-                                                </span>
-                                            )}
-                                        </div>
+                                            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                                                <span className="badge badge-info">Max: {a.max_grade} pts</span>
+                                                {isTeacher && (
+                                                    <button className="badge badge-brand" onClick={() => handleToggleSubmissions(a.id)} style={{ cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                        <FiUsers size={12} /> {a.submissions_count || 0} {t('room.submissions')}
+                                                    </button>
+                                                )}
+                                                {isTeacher && a.unsubmitted_count > 0 && (
+                                                    <span className="badge badge-danger" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                        <div style={{ width: 6, height: 6, background: 'currentColor', borderRadius: '50%' }} />
+                                                        {a.unsubmitted_count} {t('room.unsubmitted')}
+                                                    </span>
+                                                )}
+                                                {a.my_submission && (
+                                                    <span className={`badge ${a.my_submission.is_late ? 'badge-warning' : 'badge-success'}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                        {a.my_submission.is_late ? <><FiClock /> {t('room.late')}</> : <><FiCheckCircle /> {t('room.submitted')}</>}
+                                                    </span>
+                                                )}
+                                                {a.my_submission?.grade && (
+                                                    <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                        <FiAward /> {a.my_submission.grade.score}/{a.max_grade}
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                        {/* Teacher: Expandable submissions list */}
-                                        {isTeacher && expandedAssignment === a.id && (
-                                            <div style={{ marginTop: 12, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
-                                                <div style={{ padding: '10px 14px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FiUsers size={14} /> {t('room.allSubmissions')}</span>
-                                                    {teacherSubmissions.length > 0 && (
-                                                        <button className="btn btn-secondary btn-sm" style={{ fontSize: 11, padding: '2px 8px' }} onClick={async () => {
-                                                            try {
-                                                                const res = await exportAPI.assignmentGrades(a.id);
-                                                                const url = URL.createObjectURL(new Blob([res.data]));
-                                                                const link = document.createElement('a');
-                                                                link.href = url;
-                                                                link.download = `grades_${a.title}.csv`;
-                                                                link.click();
-                                                                URL.revokeObjectURL(url);
-                                                            } catch { toast.error(t('room.actionFailed')); }
-                                                        }}>
-                                                            <FiDownload size={11} style={{ marginRight: 4 }} /> CSV
-                                                        </button>
-                                                    )}
-                                                </div>
-                                                {loadingSubs ? (
-                                                    <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>{t('common.loading')}</div>
-                                                ) : teacherSubmissions.length === 0 ? (
-                                                    <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>{t('room.noSubmissionsYet')}</div>
-                                                ) : teacherSubmissions.map(sub => (
-                                                    <div key={sub.id} style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', fontSize: 13 }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-                                                                <div className="avatar sm" style={{ width: 28, height: 28, fontSize: 11 }}>{(sub.student?.first_name?.[0] || '?').toUpperCase()}</div>
-                                                                <div>
-                                                                    <div style={{ fontWeight: 600 }}>{sub.student?.full_name || sub.student?.username}</div>
-                                                                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(sub.submitted_at).toLocaleString()}{sub.is_late ? ` · ${t('room.late')}` : ''}</div>
-                                                                </div>
-                                                            </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                                {sub.grade ? (
-                                                                    <span className="badge badge-success" style={{ fontSize: 12 }}>{sub.grade.score}/{a.max_grade}</span>
-                                                                ) : (
-                                                                    <button className="btn btn-primary btn-sm" style={{ fontSize: 12, padding: '3px 10px' }} onClick={() => { setGradingId(gradingId === sub.id ? null : sub.id); setGradeForm({ score: '', feedback: '' }); }}>
-                                                                        <FiAward size={12} style={{ marginRight: 4 }} /> {t('room.grade')}
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        {/* Files */}
-                                                        {sub.files && sub.files.length > 0 && (
-                                                            <div style={{ marginTop: 8, paddingLeft: 36, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                                {sub.files.map(f => (
-                                                                    <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                                        <a href={getFileUrl(f.file)} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: 'var(--brand)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
-                                                                            <FiFileText size={12} /> {f.filename}
-                                                                        </a>
-                                                                        <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setPreviewFile({ url: f.file, filename: f.filename })} style={{ padding: 2 }}><FiEye size={12} /></button>
-                                                                        <a href={getFileUrl(f.file)} download className="btn btn-ghost btn-sm btn-icon" style={{ padding: 2 }}><FiDownload size={12} /></a>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {/* Grade form */}
-                                                        {gradingId === sub.id && (
-                                                            <div style={{ marginTop: 8, paddingLeft: 36, display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-                                                                <div className="form-group" style={{ marginBottom: 0, flex: '0 0 80px' }}>
-                                                                    <label className="form-label" style={{ fontSize: 11 }}>{t('room.score')}</label>
-                                                                    <input className="form-input" type="number" min="0" max={a.max_grade} placeholder={`/ ${a.max_grade}`} value={gradeForm.score} onChange={e => setGradeForm(p => ({ ...p, score: e.target.value }))} style={{ padding: '4px 8px', fontSize: 13 }} />
-                                                                </div>
-                                                                <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
-                                                                    <label className="form-label" style={{ fontSize: 11 }}>{t('room.feedback')}</label>
-                                                                    <input className="form-input" placeholder={t('room.feedbackPlaceholder')} value={gradeForm.feedback} onChange={e => setGradeForm(p => ({ ...p, feedback: e.target.value }))} style={{ padding: '4px 8px', fontSize: 13 }} />
-                                                                </div>
-                                                                <button className="btn btn-primary btn-sm" onClick={() => handleGradeSubmission(sub.id)} style={{ marginBottom: 0 }}><FiCheck size={14} /></button>
-                                                                <button className="btn btn-ghost btn-sm" onClick={() => setGradingId(null)} style={{ marginBottom: 0 }}><FiX size={14} /></button>
-                                                            </div>
+                                            {/* Teacher: Expandable submissions list */}
+                                            {isTeacher && expandedAssignment === a.id && (
+                                                <div style={{ marginTop: 12, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+                                                    <div style={{ padding: '10px 14px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FiUsers size={14} /> {t('room.allSubmissions')}</span>
+                                                        {teacherSubmissions.length > 0 && (
+                                                            <button className="btn btn-secondary btn-sm" style={{ fontSize: 11, padding: '2px 8px' }} onClick={async () => {
+                                                                try {
+                                                                    const res = await exportAPI.assignmentGrades(a.id);
+                                                                    const url = URL.createObjectURL(new Blob([res.data]));
+                                                                    const link = document.createElement('a');
+                                                                    link.href = url;
+                                                                    link.download = `grades_${a.title}.csv`;
+                                                                    link.click();
+                                                                    URL.revokeObjectURL(url);
+                                                                } catch { toast.error(t('room.actionFailed')); }
+                                                            }}>
+                                                                <FiDownload size={11} style={{ marginRight: 4 }} /> CSV
+                                                            </button>
                                                         )}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {/* Student: Submitted files with delete option */}
-                                        {a.my_submission && a.my_submission.files && a.my_submission.files.length > 0 && (
-                                            <div style={{ marginTop: 12, padding: '12px', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                    <h5 style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>{t('room.submittedFiles')}</h5>
-                                                    {!a.is_past_deadline && !a.my_submission.grade && (
-                                                        <button className="btn btn-ghost btn-sm" onClick={() => handleDeleteSubmission(a.my_submission.id)} style={{ color: 'var(--danger)', fontSize: 12, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            <FiTrash2 size={12} /> {t('room.deleteAndResubmit')}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                                    {a.my_submission.files.map(f => (
-                                                        <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                            <a href={getFileUrl(f.file)} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: 'var(--brand)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
-                                                                <FiFileText size={14} /> {f.filename}
-                                                            </a>
-                                                            <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setPreviewFile({ url: f.file, filename: f.filename })} title={t('room.preview')} style={{ padding: 2 }}>
-                                                                <FiEye size={14} />
-                                                            </button>
+                                                    {loadingSubs ? (
+                                                        <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>{t('common.loading')}</div>
+                                                    ) : teacherSubmissions.length === 0 ? (
+                                                        <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>{t('room.noSubmissionsYet')}</div>
+                                                    ) : teacherSubmissions.map(sub => (
+                                                        <div key={sub.id} style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', fontSize: 13 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                                                                    <div className="avatar sm" style={{ width: 28, height: 28, fontSize: 11 }}>{(sub.student?.first_name?.[0] || '?').toUpperCase()}</div>
+                                                                    <div>
+                                                                        <div style={{ fontWeight: 600 }}>{sub.student?.full_name || sub.student?.username}</div>
+                                                                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(sub.submitted_at).toLocaleString()}{sub.is_late ? ` · ${t('room.late')}` : ''}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                    {sub.grade ? (
+                                                                        <span className="badge badge-success" style={{ fontSize: 12 }}>{sub.grade.score}/{a.max_grade}</span>
+                                                                    ) : (
+                                                                        <button className="btn btn-primary btn-sm" style={{ fontSize: 12, padding: '3px 10px' }} onClick={() => { setGradingId(gradingId === sub.id ? null : sub.id); setGradeForm({ score: '', feedback: '' }); }}>
+                                                                            <FiAward size={12} style={{ marginRight: 4 }} /> {t('room.grade')}
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            {/* Files */}
+                                                            {sub.files && sub.files.length > 0 && (
+                                                                <div style={{ marginTop: 8, paddingLeft: 36, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                                    {sub.files.map(f => (
+                                                                        <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                            <a href={getFileUrl(f.file)} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: 'var(--brand)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
+                                                                                <FiFileText size={12} /> {f.filename}
+                                                                            </a>
+                                                                            <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setPreviewFile({ url: f.file, filename: f.filename })} style={{ padding: 2 }}><FiEye size={12} /></button>
+                                                                            <a href={getFileUrl(f.file)} download className="btn btn-ghost btn-sm btn-icon" style={{ padding: 2 }}><FiDownload size={12} /></a>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                            {/* Grade form */}
+                                                            {gradingId === sub.id && (
+                                                                <div style={{ marginTop: 8, paddingLeft: 36, display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                                                                    <div className="form-group" style={{ marginBottom: 0, flex: '0 0 80px' }}>
+                                                                        <label className="form-label" style={{ fontSize: 11 }}>{t('room.score')}</label>
+                                                                        <input className="form-input" type="number" min="0" max={a.max_grade} placeholder={`/ ${a.max_grade}`} value={gradeForm.score} onChange={e => setGradeForm(p => ({ ...p, score: e.target.value }))} style={{ padding: '4px 8px', fontSize: 13 }} />
+                                                                    </div>
+                                                                    <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+                                                                        <label className="form-label" style={{ fontSize: 11 }}>{t('room.feedback')}</label>
+                                                                        <input className="form-input" placeholder={t('room.feedbackPlaceholder')} value={gradeForm.feedback} onChange={e => setGradeForm(p => ({ ...p, feedback: e.target.value }))} style={{ padding: '4px 8px', fontSize: 13 }} />
+                                                                    </div>
+                                                                    <button className="btn btn-primary btn-sm" onClick={() => handleGradeSubmission(sub.id)} style={{ marginBottom: 0 }}><FiCheck size={14} /></button>
+                                                                    <button className="btn btn-ghost btn-sm" onClick={() => setGradingId(null)} style={{ marginBottom: 0 }}><FiX size={14} /></button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
 
-                                        {!isTeacher && !a.my_submission && (
-                                            <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-                                                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                                                    <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                                                        <FiPaperclip /> {t('room.attachFiles')}
-                                                        <input type="file" multiple hidden onChange={e => {
-                                                            if (e.target.files.length) {
-                                                                setSelectedFiles(p => ({ ...p, [a.id]: [...(p[a.id] || []), ...Array.from(e.target.files)] }));
-                                                            }
-                                                        }} />
-                                                    </label>
-
-                                                    {selectedFiles[a.id] && selectedFiles[a.id].length > 0 && (
-                                                        <div style={{ flex: 1 }}>
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-                                                                {selectedFiles[a.id].map((f, i) => (
-                                                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: '6px 12px', borderRadius: 4, fontSize: 13 }}>
-                                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><FiFile size={14} /> {f.name}</span>
-                                                                        <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setSelectedFiles(p => ({ ...p, [a.id]: p[a.id].filter((_, idx) => idx !== i) }))}>
-                                                                            <FiX />
-                                                                        </button>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                            <button className="btn btn-primary btn-sm" disabled={submitting} onClick={() => handleMultiSubmit(a.id)}>
-                                                                {submitting ? t('room.sending') : `${t('room.submitAssignment')} (${selectedFiles[a.id].length})`}
+                                            {/* Student: Submitted files with delete option */}
+                                            {a.my_submission && a.my_submission.files && a.my_submission.files.length > 0 && (
+                                                <div style={{ marginTop: 12, padding: '12px', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                        <h5 style={{ fontSize: 11, textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>{t('room.submittedFiles')}</h5>
+                                                        {!a.is_past_deadline && !a.my_submission.grade && (
+                                                            <button className="btn btn-ghost btn-sm" onClick={() => handleDeleteSubmission(a.my_submission.id)} style={{ color: 'var(--danger)', fontSize: 12, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                <FiTrash2 size={12} /> {t('room.deleteAndResubmit')}
                                                             </button>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                    </div>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                        {a.my_submission.files.map(f => (
+                                                            <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                <a href={getFileUrl(f.file)} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: 'var(--brand)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                                                                    <FiFileText size={14} /> {f.filename}
+                                                                </a>
+                                                                <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setPreviewFile({ url: f.file, filename: f.filename })} title={t('room.preview')} style={{ padding: 2 }}>
+                                                                    <FiEye size={14} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        ))
+                                            )}
+
+                                            {!isTeacher && !a.my_submission && (
+                                                <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                                                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                                        <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                                            <FiPaperclip /> {t('room.attachFiles')}
+                                                            <input type="file" multiple hidden onChange={e => {
+                                                                if (e.target.files.length) {
+                                                                    setSelectedFiles(p => ({ ...p, [a.id]: [...(p[a.id] || []), ...Array.from(e.target.files)] }));
+                                                                }
+                                                            }} />
+                                                        </label>
+
+                                                        {selectedFiles[a.id] && selectedFiles[a.id].length > 0 && (
+                                                            <div style={{ flex: 1 }}>
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                                                                    {selectedFiles[a.id].map((f, i) => (
+                                                                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: '6px 12px', borderRadius: 4, fontSize: 13 }}>
+                                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><FiFile size={14} /> {f.name}</span>
+                                                                            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setSelectedFiles(p => ({ ...p, [a.id]: p[a.id].filter((_, idx) => idx !== i) }))}>
+                                                                                <FiX />
+                                                                            </button>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                                <button className="btn btn-primary btn-sm" disabled={submitting} onClick={() => handleMultiSubmit(a.id)}>
+                                                                    {submitting ? t('room.sending') : `${t('room.submitAssignment')} (${selectedFiles[a.id].length})`}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            ))
                         })()}
                     </motion.div>
                 )}
@@ -1504,7 +1571,7 @@ export default function RoomDetail() {
                                     <div className="form-group">
                                         <label className="form-label">{t('room.colorLabel')}</label>
                                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                            {['#3A4B54','#5C504A','#485E5A','#605068','#4A5468','#684A4A','#52584C','#4A5F68','#68554A','#2D2D2D'].map(c => (
+                                            {['#3A4B54', '#5C504A', '#485E5A', '#605068', '#4A5468', '#684A4A', '#52584C', '#4A5F68', '#68554A', '#2D2D2D'].map(c => (
                                                 <button type="button" key={c} onClick={() => setRoomForm(p => ({ ...p, color_theme: c }))} style={{
                                                     width: 32, height: 32, borderRadius: '50%', background: c, border: roomForm.color_theme === c ? '3px solid var(--brand)' : '2px solid var(--border)',
                                                     cursor: 'pointer', transition: 'transform 0.15s', transform: roomForm.color_theme === c ? 'scale(1.2)' : 'scale(1)',

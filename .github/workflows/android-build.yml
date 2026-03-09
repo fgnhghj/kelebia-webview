@@ -27,24 +27,6 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Install ImageMagick
-        run: sudo apt-get install -y -qq imagemagick
-
-      - name: Generate launcher icons
-        working-directory: android-webview
-        run: |
-          # Use app-icon.png from android-app-studio project as source
-          ICON_SRC="../android-app-studio/public/app-icon.png"
-          for entry in "mdpi:48" "hdpi:72" "xhdpi:96" "xxhdpi:144" "xxxhdpi:192"; do
-            dir=$(echo $entry | cut -d: -f1)
-            size=$(echo $entry | cut -d: -f2)
-            mkdir -p app/src/main/res/mipmap-$dir
-            convert "$ICON_SRC" -resize ${size}x${size} \
-              app/src/main/res/mipmap-$dir/ic_launcher.png
-            cp app/src/main/res/mipmap-$dir/ic_launcher.png \
-              app/src/main/res/mipmap-$dir/ic_launcher_round.png
-          done
-
       - name: Build debug APK
         working-directory: android-webview
         run: |

@@ -26,15 +26,15 @@ class SectionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         room_id = self.request.query_params.get('room')
         if room_id:
-            return Section.objects.filter(room_id=room_id)
+            return Section.objects.filter(room_id=room_id).select_related('room').prefetch_related('contents')
         # For detail views (update/delete), return sections the user can access
         user = self.request.user
         if getattr(user, 'role', '') == 'teacher':
-            return Section.objects.filter(room__teacher=user)
+            return Section.objects.filter(room__teacher=user).select_related('room').prefetch_related('contents')
         return Section.objects.filter(
             room__memberships__student=user,
             room__memberships__status='approved'
-        )
+        ).select_related('room').prefetch_related('contents')
 
     def perform_create(self, serializer):
         room = get_object_or_404(Room, pk=self.request.data.get('room'))

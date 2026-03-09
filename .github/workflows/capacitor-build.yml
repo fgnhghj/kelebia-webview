@@ -75,9 +75,10 @@ jobs:
 
       - name: Patch MainActivity to force status bar visible
         run: |
-          MAIN_ACTIVITY="android/app/src/main/java/app/lovable/isetclassroom/MainActivity.java"
+          MAIN_ACTIVITY="android/app/src/main/java/app/aymen/isetclassroom/MainActivity.java"
+          mkdir -p "$(dirname $MAIN_ACTIVITY)"
           cat > "$MAIN_ACTIVITY" <<'JAVA'
-          package app.lovable.isetclassroom;
+          package app.aymen.isetclassroom;
 
           import com.getcapacitor.BridgeActivity;
           import android.os.Bundle;
@@ -205,9 +206,10 @@ jobs:
           </resources>
           XML
 
-          MAIN_ACTIVITY="android/app/src/main/java/app/lovable/isetclassroom/MainActivity.java"
+          MAIN_ACTIVITY="android/app/src/main/java/app/aymen/isetclassroom/MainActivity.java"
+          mkdir -p "$(dirname $MAIN_ACTIVITY)"
           cat > "$MAIN_ACTIVITY" <<'JAVA'
-          package app.lovable.isetclassroom;
+          package app.aymen.isetclassroom;
           import com.getcapacitor.BridgeActivity;
           import android.os.Bundle;
           import android.os.Handler;
