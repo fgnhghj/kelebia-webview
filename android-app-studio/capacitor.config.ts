@@ -5,6 +5,7 @@ const config: CapacitorConfig = {
   appName: 'ISET Classroom',
   webDir: 'dist',
   server: {
+    androidScheme: 'https',
     cleartext: false,
     allowNavigation: ['isetkl-classroom.gleeze.com', '*.gleeze.com']
   },

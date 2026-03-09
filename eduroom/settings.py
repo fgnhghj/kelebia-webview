@@ -159,15 +159,15 @@ if not DEBUG:
         origin = f'http://{host}'
         if host not in ('*', 'localhost') and origin not in CORS_ALLOWED_ORIGINS:
             CORS_ALLOWED_ORIGINS.append(origin)
-    # Capacitor Android WebView runs from http://localhost (no port)
-    # Capacitor iOS WebView runs from capacitor://localhost
-    for cap_origin in ['http://localhost', 'capacitor://localhost']:
+    # Capacitor Android WebView runs from https://localhost (androidScheme: 'https')
+    # Also allow http://localhost fallback and capacitor://localhost for iOS
+    for cap_origin in ['https://localhost', 'http://localhost', 'capacitor://localhost']:
         if cap_origin not in CORS_ALLOWED_ORIGINS:
             CORS_ALLOWED_ORIGINS.append(cap_origin)
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF trusted origins (required when DEBUG=False)
-CSRF_TRUSTED_ORIGINS = ['https://isetkl-classroom.gleeze.com', 'http://localhost:5173', 'http://localhost', 'capacitor://localhost']
+CSRF_TRUSTED_ORIGINS = ['https://isetkl-classroom.gleeze.com', 'http://localhost:5173', 'https://localhost', 'http://localhost', 'capacitor://localhost']
 if not DEBUG:
     if _site and _site not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(_site)
