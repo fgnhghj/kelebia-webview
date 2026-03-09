@@ -15,7 +15,7 @@ echo "  Kelebia Classroom Deploy"
 echo "=============================="
 
 # --- 1. System packages ---
-echo "[1/9] Installing system packages..."
+echo "[1/10] Installing system packages..."
 sudo apt update -qq
 sudo apt install -y -qq python3 python3-pip python3-venv python3-dev \
     postgresql postgresql-contrib nginx libpq-dev build-essential curl
@@ -46,12 +46,11 @@ sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='eduroom'" | 
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE eduroom TO eduroom_user;"
 
 # --- 3. Project directory ---
-echo "[3/9] Setting up project directory..."
-sudo mkdir -p $PROJECT_DIR
+echo "[3/10] Setting up project directory..."
 sudo chown -R ubuntu:ubuntu $PROJECT_DIR
 
 # --- 4. Virtual environment ---
-echo "[4/9] Setting up Python virtual environment..."
+echo "[4/10] Setting up Python virtual environment..."
 python3 -m venv $VENV_DIR || true
 $VENV_DIR/bin/pip install --upgrade pip -q
 $VENV_DIR/bin/pip install -r $PROJECT_DIR/requirements.txt -q

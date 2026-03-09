@@ -23,6 +23,18 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           command_timeout: 30m
           script: |
-            cd /home/ubuntu/eduroom || { git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom && cd /home/ubuntu/eduroom; }
-            git pull origin master
+            # If directory exists but is NOT a git repo, back up .env and re-clone
+            if [ -d /home/ubuntu/eduroom ] && [ ! -d /home/ubuntu/eduroom/.git ]; then
+              echo "Directory exists but is not a git repo — re-cloning..."
+              # Preserve .env if it exists
+              [ -f /home/ubuntu/eduroom/.env ] && cp /home/ubuntu/eduroom/.env /tmp/eduroom_env_backup
+              sudo rm -rf /home/ubuntu/eduroom
+              git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom
+              [ -f /tmp/eduroom_env_backup ] && cp /tmp/eduroom_env_backup /home/ubuntu/eduroom/.env
+            elif [ ! -d /home/ubuntu/eduroom ]; then
+              git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom
+            fi
+            cd /home/ubuntu/eduroom
+            git fetch origin master
+            git reset --hard origin/master
             bash deploy.sh
