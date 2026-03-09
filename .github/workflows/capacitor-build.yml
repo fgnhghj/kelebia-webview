@@ -160,6 +160,20 @@ jobs:
           sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
           sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
 
+      - name: Fix Kotlin version conflicts
+        run: |
+          cat >> android/app/build.gradle <<'GRADLE'
+
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.9.24'
+              }
+          }
+          GRADLE
+
       - name: Sync Capacitor
         run: npx cap sync android
 
@@ -274,6 +288,23 @@ jobs:
               cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher_foreground.png
             fi
           done
+
+      - name: Re-apply Kotlin fix after sync
+        run: |
+          # Sync may overwrite build.gradle — re-add the resolution strategy
+          if ! grep -q 'resolutionStrategy' android/app/build.gradle; then
+            cat >> android/app/build.gradle <<'GRADLE'
+
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.9.24'
+              }
+          }
+          GRADLE
+          fi
 
       - name: Build APK
         working-directory: android-app-studio/android

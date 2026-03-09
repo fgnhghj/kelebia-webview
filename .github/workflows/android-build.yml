@@ -17,27 +17,22 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.4
+
       - name: Install Android SDK components
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"
-
-      - name: Create Gradle wrapper
-        working-directory: android-webview
-        run: |
-          unset ANDROID_SDK_ROOT
-          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
-          # Use gradle init to create the wrapper, then use it
-          gradle wrapper --gradle-version 8.4 --no-daemon
 
       - name: Build debug APK
         working-directory: android-webview
         run: |
           export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           echo "sdk.dir=$ANDROID_HOME" > local.properties
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
