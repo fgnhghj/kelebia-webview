@@ -33,3 +33,6 @@ Thumbs.db
 # Deployment artifacts
 *.tar.gz
 apk-output/
+
+a.pem
+*.pem

@@ -53,13 +53,13 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-                  <item name="android:statusBarColor">#2C2925</item>
-                  <item name="android:navigationBarColor">#2C2925</item>
+                  <item name="android:statusBarColor">#1a1714</item>
+                  <item name="android:navigationBarColor">#1a1714</item>
                   <item name="android:windowLightStatusBar">false</item>
                   <item name="android:windowFullscreen">false</item>
                   <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-                  <item name="android:windowBackground">#2C2925</item>
-                  <item name="android:colorPrimaryDark">#2C2925</item>
+                  <item name="android:windowBackground">#1a1714</item>
+                  <item name="android:colorPrimaryDark">#1a1714</item>
               </style>
               <style name="AppTheme.NoActionBar" parent="AppTheme">
                   <item name="android:windowActionBar">false</item>
@@ -67,7 +67,7 @@ jobs:
                   <item name="android:windowFullscreen">false</item>
               </style>
               <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-                  <item name="android:background">#2C2925</item>
+                  <item name="android:background">#1a1714</item>
                   <item name="android:windowFullscreen">false</item>
               </style>
           </resources>
@@ -95,7 +95,7 @@ jobs:
           import androidx.core.graphics.Insets;
 
           public class MainActivity extends BridgeActivity {
-              private static final int STATUS_BAR_COLOR = Color.parseColor("#2C2925");
+              private static final int STATUS_BAR_COLOR = Color.parseColor("#1a1714");
 
               private void forceStatusBarColor() {
                   Window window = getWindow();
@@ -185,13 +185,13 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-                  <item name="android:statusBarColor">#2C2925</item>
-                  <item name="android:navigationBarColor">#2C2925</item>
+                  <item name="android:statusBarColor">#1a1714</item>
+                  <item name="android:navigationBarColor">#1a1714</item>
                   <item name="android:windowLightStatusBar">false</item>
                   <item name="android:windowFullscreen">false</item>
                   <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-                  <item name="android:windowBackground">#2C2925</item>
-                  <item name="android:colorPrimaryDark">#2C2925</item>
+                  <item name="android:windowBackground">#1a1714</item>
+                  <item name="android:colorPrimaryDark">#1a1714</item>
               </style>
               <style name="AppTheme.NoActionBar" parent="AppTheme">
                   <item name="android:windowActionBar">false</item>
@@ -199,7 +199,7 @@ jobs:
                   <item name="android:windowFullscreen">false</item>
               </style>
               <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-                  <item name="android:background">#2C2925</item>
+                  <item name="android:background">#1a1714</item>
                   <item name="android:windowFullscreen">false</item>
               </style>
           </resources>
@@ -223,7 +223,7 @@ jobs:
           import androidx.core.view.ViewCompat;
           import androidx.core.graphics.Insets;
           public class MainActivity extends BridgeActivity {
-              private static final int STATUS_BAR_COLOR = Color.parseColor("#2C2925");
+              private static final int STATUS_BAR_COLOR = Color.parseColor("#1a1714");
               private void forceStatusBarColor() {
                   Window window = getWindow();
                   window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -280,32 +280,15 @@ jobs:
           sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
           sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
 
-      - name: Install launcher icons from project
+      - name: Copy app icon to Android resources
         run: |
-          # Use the actual app-icon.png from the project
-          ICON_SRC="public/app-icon.png"
-
-          # Install ImageMagick for resizing
-          sudo apt-get install -y -qq imagemagick
-
-          # Resize to each density bucket
-          for entry in "mdpi:48" "hdpi:72" "xhdpi:96" "xxhdpi:144" "xxxhdpi:192"; do
-            dir=$(echo $entry | cut -d: -f1)
-            size=$(echo $entry | cut -d: -f2)
-            mkdir -p android/app/src/main/res/mipmap-$dir
-            convert "$ICON_SRC" -resize ${size}x${size} \
-              android/app/src/main/res/mipmap-$dir/ic_launcher.png
-            cp android/app/src/main/res/mipmap-$dir/ic_launcher.png \
-              android/app/src/main/res/mipmap-$dir/ic_launcher_round.png
-            cp android/app/src/main/res/mipmap-$dir/ic_launcher.png \
-              android/app/src/main/res/mipmap-$dir/ic_launcher_foreground.png
+          for dir in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            if [ -f public/app-icon.png ]; then
+              cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher.png
+              cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher_round.png
+              cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher_foreground.png
+            fi
           done
-
-          # Remove Capacitor's default ic_launcher_background.xml to avoid duplicates
-          rm -f android/app/src/main/res/values/ic_launcher_background.xml
-
-          # Remove adaptive icon XMLs (use PNG directly — the icon already has its own bg)
-          rm -rf android/app/src/main/res/mipmap-anydpi-v26
 
       - name: Re-apply Kotlin fix after sync
         run: |

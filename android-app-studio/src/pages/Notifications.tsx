@@ -1,0 +1,173 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { notificationsAPI } from '../api/client';
+import {
+  Bell, BellOff, Check, CheckCheck, Trash2, Loader2,
+  FileText, ClipboardList, Megaphone, MessageSquare,
+  Award, Clock, Users, BookOpen,
+} from 'lucide-react';
+
+interface Notification {
+  id: number;
+  notification_type: string;
+  title: string;
+  message: string;
+  link: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+const typeIcons: Record<string, any> = {
+  content: FileText,
+  assignment: ClipboardList,
+  submission: ClipboardList,
+  grade: Award,
+  announcement: Megaphone,
+  comment: MessageSquare,
+  deadline: Clock,
+  room: Users,
+};
+
+const typeColors: Record<string, string> = {
+  content: 'var(--info)',
+  assignment: 'var(--accent)',
+  submission: 'var(--success)',
+  grade: 'var(--gold)',
+  announcement: 'var(--warning)',
+  comment: 'var(--info)',
+  deadline: 'var(--error)',
+  room: 'var(--accent)',
+};
+
+export default function Notifications() {
+  const { refreshNotifications } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const data = await notificationsAPI.list();
+      setNotifications(data);
+    } catch { /* silent */ }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const markRead = async (id: number) => {
+    try {
+      await notificationsAPI.read(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      refreshNotifications();
+    } catch { /* ignore */ }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await notificationsAPI.readAll();
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      refreshNotifications();
+    } catch { /* ignore */ }
+  };
+
+  const deleteNotification = async (id: number) => {
+    try {
+      await notificationsAPI.delete(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      refreshNotifications();
+    } catch { /* ignore */ }
+  };
+
+  const deleteAll = async () => {
+    if (!confirm('Delete all notifications?')) return;
+    try {
+      await notificationsAPI.deleteAll();
+      setNotifications([]);
+      refreshNotifications();
+    } catch { /* ignore */ }
+  };
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(mins / 60);
+    const days = Math.floor(hours / 24);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  return (
+    <div className="page-container">
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">Notifications</h1>
+          {unreadCount > 0 && (
+            <p className="page-subtitle">{unreadCount} unread</p>
+          )}
+        </div>
+        <div className="header-actions">
+          {unreadCount > 0 && (
+            <button className="icon-btn-ghost" onClick={markAllRead} title="Mark all read">
+              <CheckCheck size={20} />
+            </button>
+          )}
+          {notifications.length > 0 && (
+            <button className="icon-btn-ghost" onClick={deleteAll} title="Delete all">
+              <Trash2 size={20} />
+            </button>
+          )}
+        </div>
+      </header>
+
+      {loading ? (
+        <div className="loading-state">
+          <Loader2 size={24} className="animate-spin text-accent" />
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="empty-state">
+          <BellOff size={48} strokeWidth={1} className="text-tertiary" />
+          <h3>All caught up!</h3>
+          <p>You have no notifications</p>
+        </div>
+      ) : (
+        <div className="notification-list">
+          {notifications.map((notif) => {
+            const Icon = typeIcons[notif.notification_type] || Bell;
+            const color = typeColors[notif.notification_type] || 'var(--text-secondary)';
+
+            return (
+              <div
+                key={notif.id}
+                className={`notification-item ${!notif.is_read ? 'unread' : ''}`}
+              >
+                <div className="notification-icon" style={{ color, backgroundColor: color + '18' }}>
+                  <Icon size={18} />
+                </div>
+                <div className="notification-body" onClick={() => !notif.is_read && markRead(notif.id)}>
+                  <h4 className="notification-title">{notif.title}</h4>
+                  <p className="notification-message">{notif.message}</p>
+                  <span className="notification-time">{formatTime(notif.created_at)}</span>
+                </div>
+                <button
+                  className="notification-delete"
+                  onClick={() => deleteNotification(notif.id)}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

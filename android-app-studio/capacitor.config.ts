@@ -1,23 +1,23 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.isetclassroom',
-  appName: 'Kelebia Classroom',
+  appId: 'app.aymen.isetclassroom',
+  appName: 'ISET Classroom',
   webDir: 'dist',
   server: {
     cleartext: false,
     allowNavigation: ['isetkl-classroom.gleeze.com', '*.gleeze.com']
   },
   android: {
-    backgroundColor: '#2C2925',
+    backgroundColor: '#1A1714',
     allowMixedContent: true,
-    overrideUserAgent: 'KelebiaClassroom Android App',
+    overrideUserAgent: 'ISETClassroom Android App v2',
     webContentsDebuggingEnabled: false
   },
   plugins: {
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#2C2925',
+      backgroundColor: '#1A1714',
       overlaysWebView: false
     }
   }
