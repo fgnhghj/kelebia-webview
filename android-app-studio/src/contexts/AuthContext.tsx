@@ -73,8 +73,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           title,
           body,
           id,
-          smallIcon: 'ic_launcher',
+          smallIcon: 'ic_notification',
           largeIcon: 'ic_launcher',
+          iconColor: '#D4845A',
         }],
       });
     } catch (e) { console.warn('LocalNotif error', e); }

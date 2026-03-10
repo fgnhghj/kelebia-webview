@@ -292,6 +292,31 @@ jobs:
             fi
           done
 
+      - name: Create notification icon (monochrome vector drawable)
+        run: |
+          # Create drawable dir
+          mkdir -p android/app/src/main/res/drawable
+
+          # Create a proper monochrome notification icon (graduation cap / book icon)
+          cat > android/app/src/main/res/drawable/ic_notification.xml <<'XMLVECTOR'
+          <?xml version="1.0" encoding="utf-8"?>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24"
+              android:tint="#FFFFFF">
+              <path
+                  android:fillColor="@android:color/white"
+                  android:pathData="M12,3L1,9l4,2.18v6L12,21l7,-3.82v-6l2,-1.09V17h2V9L12,3zM18.82,9L12,12.72 5.18,9 12,5.28 18.82,9zM17,15.99l-5,2.73 -5,-2.73v-3.72L12,15l5,-2.73v3.72z"/>
+          </vector>
+          XMLVECTOR
+
+          # Also copy app icon as a drawable for largeIcon fallback
+          if [ -f public/app-icon.png ]; then
+            cp public/app-icon.png android/app/src/main/res/drawable/ic_launcher.png
+          fi
+
       - name: Re-apply Kotlin fix after sync
         run: |
           # Sync may overwrite build.gradle — re-add the resolution strategy
