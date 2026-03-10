@@ -19,6 +19,7 @@ import Settings from "./pages/Settings";
 import JoinRoom from "./pages/JoinRoom";
 import CreateRoom from "./pages/CreateRoom";
 import Grades from "./pages/Grades";
+import FileViewer from "./pages/FileViewer";
 
 function LoadingScreen() {
   return (
@@ -95,6 +96,7 @@ const App = () => {
             <Route path="/room/create" element={<ProtectedRoute><CreateRoom /></ProtectedRoute>} />
             <Route path="/room/:id" element={<ProtectedRoute><RoomDetail /></ProtectedRoute>} />
             <Route path="/room/:id/assignment/:assignmentId" element={<ProtectedRoute><AssignmentDetail /></ProtectedRoute>} />
+            <Route path="/file-view" element={<ProtectedRoute><FileViewer /></ProtectedRoute>} />
 
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />

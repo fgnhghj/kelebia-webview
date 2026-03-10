@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
-  roomsAPI, sectionsAPI, contentAPI, assignmentsAPI, announcementsAPI, commentsAPI, getMediaUrl,
+  roomsAPI, sectionsAPI, contentAPI, assignmentsAPI, announcementsAPI, commentsAPI,
 } from '../api/client';
 import {
   ArrowLeft, Users, FileText, ClipboardList, Megaphone,
@@ -170,8 +170,10 @@ export default function RoomDetail() {
     } catch { /* ignore */ }
   };
 
-  const openFile = (url: string) => {
-    window.open(getMediaUrl(url), '_blank');
+  const openFile = (url: string, title?: string, ext?: string | null) => {
+    const params = new URLSearchParams({ url, title: title || 'File' });
+    if (ext) params.set('ext', ext);
+    navigate(`/file-view?${params.toString()}`);
   };
 
   const getTypeIcon = (type: string) => {
@@ -422,7 +424,7 @@ export default function RoomDetail() {
                             if (item.content_type === 'link' && item.link) {
                               window.open(item.link, '_blank');
                             } else if (item.file) {
-                              openFile(item.file);
+                              openFile(item.file, item.title, item.file_extension);
                             }
                           }}
                         >

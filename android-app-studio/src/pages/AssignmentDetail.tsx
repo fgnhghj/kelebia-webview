@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { assignmentsAPI, submissionsAPI, getMediaUrl } from '../api/client';
+import { assignmentsAPI, submissionsAPI } from '../api/client';
 import {
   ArrowLeft, Clock, FileText, Upload, Loader2, CheckCircle2,
   AlertTriangle, Paperclip, Send, X, Download, Star,
@@ -127,7 +127,11 @@ export default function AssignmentDetail() {
           </div>
         </div>
         {assignment.file && (
-          <button className="file-download-btn" onClick={() => window.open(getMediaUrl(assignment.file), '_blank')}>
+          <button className="file-download-btn" onClick={() => {
+            const ext = assignment.file?.split('.').pop()?.split('?')[0] || '';
+            const params = new URLSearchParams({ url: assignment.file!, title: assignment.title || 'Assignment File', ext });
+            navigate(`/file-view?${params.toString()}`);
+          }}>
             <Download size={16} />
             <span>Assignment File</span>
           </button>
@@ -240,7 +244,11 @@ export default function AssignmentDetail() {
                     </span>
                   </div>
                   {sub.files?.map((f: any) => (
-                    <button key={f.id} className="file-download-btn sm" onClick={() => window.open(getMediaUrl(f.file), '_blank')}>
+                    <button key={f.id} className="file-download-btn sm" onClick={() => {
+                      const ext = (f.filename || f.file || '').split('.').pop()?.split('?')[0] || '';
+                      const params = new URLSearchParams({ url: f.file, title: f.filename || 'File', ext });
+                      navigate(`/file-view?${params.toString()}`);
+                    }}>
                       <FileText size={14} />
                       <span>{f.filename || 'File'}</span>
                     </button>
