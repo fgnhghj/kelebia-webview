@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useLanguage } from "../contexts/LanguageContext";
+import { useLanguage, type Lang } from "../contexts/LanguageContext";
 import { assignmentsAPI, submissionsAPI } from "../api/client";
 import {
   ArrowLeft,
@@ -23,7 +23,7 @@ export default function AssignmentDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isTeacher, isStudent } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const aId = Number(assignmentId);
   const goBack = () =>
     navigate(`/room/${id}`, { state: { tab: "assignments" } });
@@ -96,9 +96,12 @@ export default function AssignmentDetail() {
     }
   };
 
+  const getLocale = (l: Lang) =>
+    l === "fr" ? "fr-FR" : l === "ar_tn" ? "ar-TN" : "en-US";
+
   const formatDeadline = (deadline: string | null) => {
     if (!deadline) return t("no_deadline");
-    return new Date(deadline).toLocaleDateString("en-US", {
+    return new Date(deadline).toLocaleDateString(getLocale(lang), {
       weekday: "short",
       month: "short",
       day: "numeric",
@@ -243,7 +246,7 @@ export default function AssignmentDetail() {
               <h4>{t("submitted")}</h4>
               <p className="text-secondary text-sm">
                 {new Date(mySubmission.submitted_at).toLocaleDateString(
-                  "en-US",
+                  getLocale(lang),
                   {
                     month: "short",
                     day: "numeric",
@@ -290,10 +293,13 @@ export default function AssignmentDetail() {
                       {sub.student.full_name}
                     </span>
                     <span className="submission-time">
-                      {new Date(sub.submitted_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(sub.submitted_at).toLocaleDateString(
+                        getLocale(lang),
+                        {
+                          month: "short",
+                          day: "numeric",
+                        },
+                      )}
                     </span>
                   </div>
                   {sub.files?.map((f: any) => (

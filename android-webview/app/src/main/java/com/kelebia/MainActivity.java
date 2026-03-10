@@ -1,6 +1,5 @@
 package com.kelebia;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +10,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +22,42 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ValueCallback<Uri[]> fileUploadCallback;
-    private static final int FILE_CHOOSER_REQUEST = 1;
+
+    /**
+     * Modern replacement for startActivityForResult.
+     * Handles both single-file and multi-file results from the file chooser.
+     */
+    private final ActivityResultLauncher<Intent> fileChooserLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (fileUploadCallback == null) return;
+
+                        Uri[] results = null;
+
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                            Intent data = result.getData();
+
+                            // Multiple files selected via clip data
+                            if (data.getClipData() != null) {
+                                int count = data.getClipData().getItemCount();
+                                results = new Uri[count];
+                                for (int i = 0; i < count; i++) {
+                                    results[i] = data.getClipData().getItemAt(i).getUri();
+                                }
+                            }
+                            // Single file selected via data URI
+                            else if (data.getData() != null) {
+                                results = new Uri[]{ data.getData() };
+                            }
+                        }
+
+                        // Must always call onReceiveValue (even with null) to avoid
+                        // permanently blocking future file chooser requests
+                        fileUploadCallback.onReceiveValue(results);
+                        fileUploadCallback = null;
+                    }
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         ws.setAllowFileAccess(true);
         ws.setMediaPlaybackRequiresUserGesture(false);
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
-        ws.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
         // Enable cookies (needed for JWT / session auth)
         CookieManager.getInstance().setAcceptCookie(true);
@@ -62,14 +99,47 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
                                              FileChooserParams params) {
+                // Cancel any pending callback to avoid blocking
                 if (fileUploadCallback != null) {
                     fileUploadCallback.onReceiveValue(null);
                 }
                 fileUploadCallback = callback;
-                Intent intent = params.createIntent();
+
+                // Build an intent that supports multiple file selection
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+
+                // Allow selecting multiple files at once (#19 fix)
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+
+                // Carry over accepted MIME types from the page's <input> accept attribute
+                if (params.getAcceptTypes() != null && params.getAcceptTypes().length > 0) {
+                    String[] acceptTypes = params.getAcceptTypes();
+                    // Filter out empty strings
+                    java.util.List<String> validTypes = new java.util.ArrayList<>();
+                    for (String type : acceptTypes) {
+                        if (type != null && !type.isEmpty()) {
+                            validTypes.add(type);
+                        }
+                    }
+                    if (validTypes.size() == 1) {
+                        intent.setType(validTypes.get(0));
+                    } else if (validTypes.size() > 1) {
+                        intent.setType("*/*");
+                        intent.putExtra(Intent.EXTRA_MIME_TYPES,
+                                validTypes.toArray(new String[0]));
+                    }
+                }
+
                 try {
-                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                    // Use the modern ActivityResultLauncher instead of
+                    // deprecated startActivityForResult (#21 fix)
+                    fileChooserLauncher.launch(
+                            Intent.createChooser(intent, "Choose files")
+                    );
                 } catch (Exception e) {
+                    fileUploadCallback.onReceiveValue(null);
                     fileUploadCallback = null;
                     return false;
                 }
@@ -80,30 +150,7 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl(APP_URL);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == FILE_CHOOSER_REQUEST && fileUploadCallback != null) {
-            Uri[] results = null;
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                if (data.getClipData() != null) {
-                    int count = data.getClipData().getItemCount();
-                    results = new Uri[count];
-                    for (int i = 0; i < count; i++) {
-                        results[i] = data.getClipData().getItemAt(i).getUri();
-                    }
-                } else {
-                    String dataString = data.getDataString();
-                    if (dataString != null) {
-                        results = new Uri[]{Uri.parse(dataString)};
-                    }
-                }
-            }
-            fileUploadCallback.onReceiveValue(results);
-            fileUploadCallback = null;
-        }
-    }
-
+    @SuppressWarnings("deprecation")
     @Override
     public void onBackPressed() {
         // Let WebView handle back navigation (SPA history)
