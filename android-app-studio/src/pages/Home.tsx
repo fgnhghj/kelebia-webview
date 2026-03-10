@@ -148,8 +148,17 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <div className="loading-state">
-            <Loader2 size={24} className="animate-spin text-accent" />
+          <div className="room-list">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="skeleton-card">
+                <div className="skeleton-card-accent" />
+                <div className="skeleton-card-body">
+                  <div className="skeleton skeleton-line w-60" />
+                  <div className="skeleton skeleton-line w-30 h-10" />
+                  <div className="skeleton skeleton-line w-80 h-10" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : rooms.length === 0 ? (
           <div className="empty-state">

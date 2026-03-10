@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { notificationsAPI } from '../api/client';
@@ -41,6 +42,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function Notifications() {
+  const navigate = useNavigate();
   const { refreshNotifications } = useAuth();
   const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -134,8 +136,17 @@ export default function Notifications() {
       </header>
 
       {loading ? (
-        <div className="loading-state">
-          <Loader2 size={24} className="animate-spin text-accent" />
+        <div className="notification-list">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="skeleton-notification">
+              <div className="skeleton skeleton-notification-icon" />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div className="skeleton skeleton-line w-60" />
+                <div className="skeleton skeleton-line w-80 h-10" />
+                <div className="skeleton skeleton-line w-30 h-10" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : notifications.length === 0 ? (
         <div className="empty-state">
@@ -157,7 +168,10 @@ export default function Notifications() {
                 <div className="notification-icon" style={{ color, backgroundColor: color + '18' }}>
                   <Icon size={18} />
                 </div>
-                <div className="notification-body" onClick={() => !notif.is_read && markRead(notif.id)}>
+                <div className="notification-body" onClick={() => {
+                  if (!notif.is_read) markRead(notif.id);
+                  if (notif.link) navigate(notif.link);
+                }}>
                   <h4 className="notification-title">{notif.title}</h4>
                   <p className="notification-message">{notif.message}</p>
                   <span className="notification-time">{formatTime(notif.created_at)}</span>

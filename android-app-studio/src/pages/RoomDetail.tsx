@@ -127,6 +127,27 @@ export default function RoomDetail() {
   const [commentText, setCommentText] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
+  const [expandedAnnouncements, setExpandedAnnouncements] = useState<Set<number>>(new Set());
+
+  const toggleExpanded = (id: number) => {
+    setExpandedAnnouncements(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(mins / 60);
+    const days = Math.floor(hours / 24);
+    if (mins < 1) return t('today');
+    if (mins < 60) return `${mins}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return new Date(dateStr).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
+  };
 
   const fetchAll = async (isBackground = false) => {
     try {
@@ -537,7 +558,12 @@ export default function RoomDetail() {
                     </span>
                   </div>
                   <h4 className="announcement-title">{ann.title}</h4>
-                  <p className="announcement-body">{ann.body}</p>
+                  <p className={`announcement-body ${expandedAnnouncements.has(ann.id) ? 'expanded' : ''}`}>{ann.body}</p>
+                  {ann.body.length > 120 && (
+                    <button className="read-more-btn" onClick={() => toggleExpanded(ann.id)}>
+                      {expandedAnnouncements.has(ann.id) ? t('show_less') || 'Show less' : t('read_more') || 'Read more'}
+                    </button>
+                  )}
 
                   {/* Comments toggle */}
                   <button
@@ -560,7 +586,10 @@ export default function RoomDetail() {
                           ) : (
                             (commentsMap[ann.id] || []).map((c) => (
                               <div key={c.id} className="comment-item">
-                                <span className="comment-author">{c.author.full_name}</span>
+                                <div className="comment-header">
+                                  <span className="comment-author">{c.author.full_name}</span>
+                                  <span className="comment-time">{timeAgo(c.created_at)}</span>
+                                </div>
                                 <p className="comment-body">{c.body}</p>
                               </div>
                             ))

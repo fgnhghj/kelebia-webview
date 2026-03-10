@@ -16,6 +16,7 @@ import {
   X,
   Download,
   Star,
+  Award,
 } from "lucide-react";
 
 export default function AssignmentDetail() {
@@ -333,41 +334,6 @@ export default function AssignmentDetail() {
                         {sub.grade.score}/{assignment.max_grade}
                       </span>
                     </div>
-                  ) : grading?.id === sub.id ? (
-                    <div className="grade-form">
-                      <input
-                        type="number"
-                        placeholder={t("max_score")}
-                        value={grading.score}
-                        onChange={(e) =>
-                          setGrading({ ...grading, score: e.target.value })
-                        }
-                        className="grade-input"
-                        max={assignment.max_grade}
-                        min={0}
-                      />
-                      <input
-                        type="text"
-                        placeholder={t("comments")}
-                        value={grading.feedback}
-                        onChange={(e) =>
-                          setGrading({ ...grading, feedback: e.target.value })
-                        }
-                        className="grade-input wide"
-                      />
-                      <button
-                        className="btn-primary btn-xs"
-                        onClick={handleGrade}
-                      >
-                        <CheckCircle2 size={16} />
-                      </button>
-                      <button
-                        className="btn-ghost btn-xs"
-                        onClick={() => setGrading(null)}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
                   ) : (
                     <button
                       className="btn-outline btn-xs"
@@ -375,6 +341,7 @@ export default function AssignmentDetail() {
                         setGrading({ id: sub.id, score: "", feedback: "" })
                       }
                     >
+                      <Award size={14} />
                       {t("graded")}
                     </button>
                   )}
@@ -385,6 +352,56 @@ export default function AssignmentDetail() {
               ))}
             </div>
           )}
+        </div>
+      )}
+      {/* Teacher: Grading Modal */}
+      {grading && assignment && (
+        <div className="modal-overlay" onClick={() => setGrading(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{t("graded")}</h3>
+              <button className="icon-btn-ghost" onClick={() => setGrading(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <p className="grade-modal-student">
+              {submissions.find((s) => s.id === grading.id)?.student?.full_name || ""}
+            </p>
+            <div className="grade-modal-form">
+              <div className="grade-modal-score-row">
+                <input
+                  type="number"
+                  className="grade-modal-score-input"
+                  placeholder="0"
+                  value={grading.score}
+                  onChange={(e) =>
+                    setGrading({ ...grading, score: e.target.value })
+                  }
+                  max={assignment.max_grade}
+                  min={0}
+                  autoFocus
+                />
+                <span className="grade-modal-max">/ {assignment.max_grade}</span>
+              </div>
+              <textarea
+                className="grade-modal-feedback"
+                placeholder={t("comments")}
+                value={grading.feedback}
+                onChange={(e) =>
+                  setGrading({ ...grading, feedback: e.target.value })
+                }
+                rows={3}
+              />
+              <button
+                className="btn-primary"
+                onClick={handleGrade}
+                disabled={!grading.score}
+              >
+                <CheckCircle2 size={18} />
+                <span>{t("save")}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

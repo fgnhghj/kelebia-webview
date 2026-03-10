@@ -18,6 +18,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Moon,
+  Sun,
   Info,
   Heart,
   Globe,
@@ -46,6 +47,18 @@ export default function Settings() {
   const [totpCode, setTotpCode] = useState("");
   const [twoFALoading, setTwoFALoading] = useState(false);
   const [secretCopied, setSecretCopied] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   useEffect(() => {
     if (user) {
@@ -376,6 +389,27 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      {/* Appearance */}
+      <div className="settings-section">
+        <h3>{t('appearance') || 'Appearance'}</h3>
+        <div className="settings-card">
+          <div className="theme-toggle-row">
+            {theme === 'dark' ? (
+              <Moon size={18} className="settings-icon" />
+            ) : (
+              <Sun size={18} className="settings-icon" />
+            )}
+            <div className="theme-toggle-info">
+              <label>{t('theme') || 'Theme'}</label>
+              <span>{theme === 'dark' ? (t('dark_mode') || 'Dark mode') : (t('light_mode') || 'Light mode')}</span>
+            </div>
+            <button className={`theme-switch ${theme === 'light' ? 'active' : ''}`} onClick={toggleTheme}>
+              <div className="theme-switch-knob" />
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Language */}
       <div className="settings-section">
