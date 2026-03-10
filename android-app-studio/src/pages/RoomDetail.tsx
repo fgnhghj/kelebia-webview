@@ -333,18 +333,20 @@ export default function RoomDetail() {
             </button>
             <div className="room-header-actions">
               {isTeacher ? (
-                <button className="room-code-btn" onClick={copyCode}>
-                  <span className="room-code-text">{room.invite_code}</span>
-                  {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
-                </button>
+                <>
+                  <button className="room-code-btn" onClick={copyCode}>
+                    <span className="room-code-text">{room.invite_code}</span>
+                    {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+                  </button>
+                  <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
+                    <Settings size={20} />
+                  </button>
+                </>
               ) : (
                 <button className="icon-btn-ghost leave-btn" onClick={handleLeave}>
                   <LogOut size={18} />
                 </button>
               )}
-              <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
-                <Settings size={20} />
-              </button>
             </div>
           </div>
           <h1 className="room-header-title">{room.name}</h1>
@@ -359,7 +361,7 @@ export default function RoomDetail() {
       </div>
 
       {/* Info Panel */}
-      {showInfo && (
+      {showInfo && isTeacher && (
         <div className="room-info-panel">
           <div className="invite-code-row">
             <span className="invite-label">{t('invite_code')}</span>
@@ -369,12 +371,6 @@ export default function RoomDetail() {
             </button>
           </div>
           {room.description && <p className="room-description">{room.description}</p>}
-          {!isTeacher && (
-            <button className="btn-danger-outline btn-sm" onClick={handleLeave}>
-              <LogOut size={16} />
-              {t('leave_room')}
-            </button>
-          )}
         </div>
       )}
 

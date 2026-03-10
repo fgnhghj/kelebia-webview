@@ -157,13 +157,15 @@ export default function FileViewer() {
       if (Capacitor.isNativePlatform()) {
         /* ─── Native: XHR with progress → Filesystem.writeFile ─── */
         const token = localStorage.getItem('access_token');
+        // Media files are served directly by Nginx without auth,
+        // so only add Authorization for /api/ URLs to avoid CORS preflight issues.
+        const isApiUrl = fileUrl.includes('/api/');
 
-        // Use XHR for progress tracking
-        const data = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const attemptDownload = (useAuth: boolean) => new Promise<ArrayBuffer>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('GET', fileUrl, true);
           xhr.responseType = 'arraybuffer';
-          if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          if (useAuth && token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
           xhr.onprogress = (evt) => {
             if (evt.lengthComputable) {
@@ -183,8 +185,19 @@ export default function FileViewer() {
             }
           };
           xhr.onerror = () => reject(new Error('Network error'));
+          xhr.ontimeout = () => reject(new Error('Timeout'));
+          xhr.timeout = 60000; // 60s timeout
           xhr.send();
         });
+
+        // Try without auth first (media), fallback with auth if it fails
+        let data: ArrayBuffer;
+        try {
+          data = await attemptDownload(isApiUrl);
+        } catch {
+          // Retry with opposite auth strategy
+          data = await attemptDownload(!isApiUrl);
+        }
 
         setDlProgress(100);
 
