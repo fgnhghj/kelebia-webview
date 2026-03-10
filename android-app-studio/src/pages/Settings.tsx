@@ -6,7 +6,7 @@ import { authAPI } from '../api/client';
 import {
   User, Mail, Building2, FileText, Shield, ShieldCheck,
   ShieldOff, LogOut, ChevronRight, Camera, Loader2,
-  AlertCircle, CheckCircle2, Moon, Info, Heart, Globe,
+  AlertCircle, CheckCircle2, Moon, Info, Heart, Globe, Copy,
 } from 'lucide-react';
 
 export default function Settings() {
@@ -26,6 +26,7 @@ export default function Settings() {
   const [qrData, setQrData] = useState<{ qr_code: string; secret: string } | null>(null);
   const [totpCode, setTotpCode] = useState('');
   const [twoFALoading, setTwoFALoading] = useState(false);
+  const [secretCopied, setSecretCopied] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -47,10 +48,10 @@ export default function Settings() {
       await authAPI.updateProfile(formData);
       await refreshUser();
       setEditing(false);
-      setMessage('Profile updated!');
+      setMessage(t('profile_updated'));
       setTimeout(() => setMessage(''), 3000);
     } catch {
-      setMessage('Failed to update profile.');
+      setMessage(t('profile_update_failed'));
     }
     setSaving(false);
   };
@@ -117,7 +118,7 @@ export default function Settings() {
   return (
     <div className="page-container">
       <header className="page-header">
-        <h1 className="page-title">Settings</h1>
+        <h1 className="page-title">{t('settings')}</h1>
       </header>
 
       {/* Profile Card */}
@@ -136,7 +137,7 @@ export default function Settings() {
           </label>
         </div>
         <h2 className="profile-name">{user.full_name}</h2>
-        <span className="profile-role">{user.role === 'teacher' ? 'Teacher' : 'Student'}</span>
+        <span className="profile-role">{user.role === 'teacher' ? t('teacher_view') : 'Student'}</span>
         <span className="profile-email">{user.email}</span>
       </div>
 
@@ -151,20 +152,20 @@ export default function Settings() {
       {/* Profile Details */}
       <div className="settings-section">
         <div className="settings-section-header">
-          <h3>Profile</h3>
+          <h3>{t('profile')}</h3>
           <button
             className="btn-text"
             onClick={() => editing ? handleSave() : setEditing(true)}
             disabled={saving}
           >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : editing ? 'Save' : 'Edit'}
+            {saving ? <Loader2 size={16} className="animate-spin" /> : editing ? t('save') : t('edit')}
           </button>
         </div>
         <div className="settings-card">
           <div className="settings-item">
             <User size={18} className="settings-icon" />
             <div className="settings-item-content">
-              <label>First Name</label>
+              <label>{t('first_name')}</label>
               {editing ? (
                 <input
                   type="text"
@@ -180,7 +181,7 @@ export default function Settings() {
           <div className="settings-item">
             <User size={18} className="settings-icon" />
             <div className="settings-item-content">
-              <label>Last Name</label>
+              <label>{t('last_name')}</label>
               {editing ? (
                 <input
                   type="text"
@@ -196,7 +197,7 @@ export default function Settings() {
           <div className="settings-item">
             <Building2 size={18} className="settings-icon" />
             <div className="settings-item-content">
-              <label>Institution</label>
+              <label>{t('institution')}</label>
               {editing ? (
                 <input
                   type="text"
@@ -213,7 +214,7 @@ export default function Settings() {
           <div className="settings-item">
             <FileText size={18} className="settings-icon" />
             <div className="settings-item-content">
-              <label>Bio</label>
+              <label>{t('bio')}</label>
               {editing ? (
                 <textarea
                   value={form.bio}
@@ -232,7 +233,7 @@ export default function Settings() {
 
       {/* Security */}
       <div className="settings-section">
-        <h3>Security</h3>
+        <h3>{t('security')}</h3>
         <div className="settings-card">
           <div className="settings-item clickable" onClick={user.is_2fa_enabled ? handleDisable2FA : handleEnable2FA}>
             {user.is_2fa_enabled ? (
@@ -241,8 +242,8 @@ export default function Settings() {
               <Shield size={18} className="settings-icon" />
             )}
             <div className="settings-item-content">
-              <label>Two-Factor Authentication</label>
-              <span>{user.is_2fa_enabled ? 'Enabled' : 'Disabled'}</span>
+              <label>{t('two_fa')}</label>
+              <span>{user.is_2fa_enabled ? t('enabled') : t('disabled')}</span>
             </div>
             <ChevronRight size={18} className="text-tertiary" />
           </div>
@@ -253,12 +254,23 @@ export default function Settings() {
       {show2FASetup && qrData && (
         <div className="modal-overlay" onClick={() => setShow2FASetup(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3>Set Up 2FA</h3>
-            <p className="modal-desc">Scan this QR code with your authenticator app</p>
+            <h3>{t('setup_2fa')}</h3>
+            <p className="modal-desc">{t('scan_qr')}</p>
             <img src={qrData.qr_code} alt="QR Code" className="qr-code-img" />
-            <p className="modal-secret">Secret: <code>{qrData.secret}</code></p>
+            <button
+              className="secret-copy-btn"
+              onClick={() => {
+                navigator.clipboard.writeText(qrData.secret);
+                setSecretCopied(true);
+                setTimeout(() => setSecretCopied(false), 2000);
+              }}
+            >
+              <code>{qrData.secret}</code>
+              {secretCopied ? <CheckCircle2 size={16} className="text-success" /> : <Copy size={16} />}
+              <span>{secretCopied ? t('copied') : t('copy_secret')}</span>
+            </button>
             <div className="input-group">
-              <label>Verification Code</label>
+              <label>{t('verification_code')}</label>
               <div className="input-wrapper">
                 <input
                   type="text"
@@ -272,7 +284,7 @@ export default function Settings() {
               </div>
             </div>
             <button className="btn-primary" onClick={handleConfirm2FA} disabled={twoFALoading || totpCode.length !== 6}>
-              {twoFALoading ? <Loader2 size={18} className="animate-spin" /> : 'Verify & Enable'}
+              {twoFALoading ? <Loader2 size={18} className="animate-spin" /> : t('verify_enable')}
             </button>
           </div>
         </div>
@@ -298,7 +310,7 @@ export default function Settings() {
 
       {/* About */}
       <div className="settings-section">
-        <h3>About</h3>
+        <h3>{t('about')}</h3>
         <div className="settings-card">
           <div className="settings-item">
             <Info size={18} className="settings-icon" />
@@ -320,7 +332,7 @@ export default function Settings() {
       {/* Logout */}
       <button className="logout-btn" onClick={handleLogout}>
         <LogOut size={18} />
-        <span>Sign Out</span>
+        <span>{t('logout')}</span>
       </button>
 
       <div className="settings-footer">

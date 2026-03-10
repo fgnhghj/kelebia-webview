@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { roomsAPI } from '../api/client';
 import {
   Plus, Users, BookOpen, Clock, ChevronRight, RefreshCw,
@@ -22,6 +23,7 @@ interface Room {
 export default function Home() {
   const { user, isTeacher } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,9 +46,9 @@ export default function Home() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return t('good_morning');
+    if (hour < 18) return t('good_afternoon');
+    return t('good_evening');
   };
 
   const getInitials = (name: string) => {
@@ -88,34 +90,34 @@ export default function Home() {
             <div className="qa-icon accent">
               <Plus size={20} />
             </div>
-            <span>Create Room</span>
+            <span>{t('create_room')}</span>
           </button>
         ) : (
           <button className="quick-action-card" onClick={() => navigate('/explore')}>
             <div className="qa-icon accent">
               <LogIn size={20} />
             </div>
-            <span>Join Room</span>
+            <span>{t('join_room')}</span>
           </button>
         )}
         <button className="quick-action-card" onClick={() => navigate('/grades')}>
           <div className="qa-icon gold">
             <Sparkles size={20} />
           </div>
-          <span>My Grades</span>
+          <span>{t('my_grades')}</span>
         </button>
         <button className="quick-action-card" onClick={() => fetchRooms(true)}>
           <div className={`qa-icon info ${refreshing ? 'spinning' : ''}`}>
             <RefreshCw size={20} />
           </div>
-          <span>Refresh</span>
+          <span>{t('refresh')}</span>
         </button>
       </div>
 
       {/* Rooms Section */}
       <section className="section">
         <div className="section-header">
-          <h2>Your Rooms</h2>
+          <h2>{t('your_rooms')}</h2>
           <span className="section-count">{rooms.length}</span>
         </div>
 
@@ -126,13 +128,13 @@ export default function Home() {
         ) : rooms.length === 0 ? (
           <div className="empty-state">
             <BookOpen size={48} strokeWidth={1} className="text-tertiary" />
-            <h3>No rooms yet</h3>
-            <p>{isTeacher ? 'Create your first classroom' : 'Join a room with an invite code'}</p>
+            <h3>{t('no_rooms')}</h3>
+            <p>{isTeacher ? t('create_first') : t('join_with_code')}</p>
             <button
               className="btn-primary btn-sm"
               onClick={() => navigate(isTeacher ? '/room/create' : '/explore')}
             >
-              {isTeacher ? 'Create Room' : 'Join Room'}
+              {isTeacher ? t('create_room') : t('join_room')}
             </button>
           </div>
         ) : (
@@ -158,7 +160,7 @@ export default function Home() {
                   <div className="room-card-meta">
                     <div className="room-card-meta-item">
                       <Users size={14} />
-                      <span>{room.student_count} students</span>
+                      <span>{room.student_count} {t('students')}</span>
                     </div>
                     <div className="room-card-meta-item">
                       <Clock size={14} />

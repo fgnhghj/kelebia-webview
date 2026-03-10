@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
-  roomsAPI, sectionsAPI, contentAPI, assignmentsAPI, announcementsAPI, commentsAPI,
+  roomsAPI, sectionsAPI, contentAPI, assignmentsAPI, announcementsAPI, commentsAPI, getMediaUrl,
 } from '../api/client';
 import {
   ArrowLeft, Users, FileText, ClipboardList, Megaphone,
@@ -167,7 +167,7 @@ export default function RoomDetail() {
   };
 
   const openFile = (url: string) => {
-    window.open(url, '_blank');
+    window.open(getMediaUrl(url), '_blank');
   };
 
   const getTypeIcon = (type: string) => {

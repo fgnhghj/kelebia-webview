@@ -1,31 +1,33 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Search, BarChart3, Bell, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage, type TranslationKey } from '../contexts/LanguageContext';
 
-const studentTabs = [
-  { path: '/home', icon: Home, label: 'Home' },
-  { path: '/explore', icon: Search, label: 'Explore' },
-  { path: '/grades', icon: BarChart3, label: 'Grades' },
-  { path: '/notifications', icon: Bell, label: 'Alerts' },
-  { path: '/settings', icon: User, label: 'Profile' },
+const studentTabs: { path: string; icon: any; labelKey: TranslationKey }[] = [
+  { path: '/home', icon: Home, labelKey: 'home' },
+  { path: '/explore', icon: Search, labelKey: 'explore' },
+  { path: '/grades', icon: BarChart3, labelKey: 'grades' },
+  { path: '/notifications', icon: Bell, labelKey: 'notifications' },
+  { path: '/settings', icon: User, labelKey: 'profile' },
 ];
 
-const teacherTabs = [
-  { path: '/home', icon: Home, label: 'Home' },
-  { path: '/explore', icon: Search, label: 'Explore' },
-  { path: '/notifications', icon: Bell, label: 'Alerts' },
-  { path: '/settings', icon: User, label: 'Profile' },
+const teacherTabs: { path: string; icon: any; labelKey: TranslationKey }[] = [
+  { path: '/home', icon: Home, labelKey: 'home' },
+  { path: '/explore', icon: Search, labelKey: 'explore' },
+  { path: '/notifications', icon: Bell, labelKey: 'notifications' },
+  { path: '/settings', icon: User, labelKey: 'profile' },
 ];
 
 export default function BottomNav() {
   const location = useLocation();
   const { unreadCount, isTeacher } = useAuth();
+  const { t } = useLanguage();
   const tabs = isTeacher ? teacherTabs : studentTabs;
 
   return (
     <nav className="bottom-nav">
       <div className="bottom-nav-inner">
-        {tabs.map(({ path, icon: Icon, label }) => {
+        {tabs.map(({ path, icon: Icon, labelKey }) => {
           const isActive = location.pathname === path;
           const showBadge = path === '/notifications' && unreadCount > 0;
 
@@ -39,7 +41,7 @@ export default function BottomNav() {
                   </span>
                 )}
               </div>
-              <span className="nav-tab-label">{label}</span>
+              <span className="nav-tab-label">{t(labelKey)}</span>
             </NavLink>
           );
         })}

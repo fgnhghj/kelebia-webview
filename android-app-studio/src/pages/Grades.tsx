@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { gradesAPI } from '../api/client';
 import {
   BarChart3, Loader2, TrendingUp, Award, BookOpen,
@@ -24,6 +25,7 @@ interface RoomGrade {
 
 export default function Grades() {
   const { isStudent, isTeacher } = useAuth();
+  const { t } = useLanguage();
   const [roomGrades, setRoomGrades] = useState<RoomGrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedRoom, setExpandedRoom] = useState<number | null>(null);
@@ -58,8 +60,8 @@ export default function Grades() {
     <div className="page-container">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Grades</h1>
-          <p className="page-subtitle">Your academic performance</p>
+          <h1 className="page-title">{t('grades')}</h1>
+          <p className="page-subtitle">{t('your_performance')}</p>
         </div>
       </header>
 
@@ -70,14 +72,14 @@ export default function Grades() {
       ) : isTeacher ? (
         <div className="empty-state">
           <BarChart3 size={48} strokeWidth={1} className="text-tertiary" />
-          <h3>Teacher View</h3>
-          <p>Grade overview is available for students. View grades in each room's assignments.</p>
+          <h3>{t('teacher_view')}</h3>
+          <p>{t('teacher_grades_desc')}</p>
         </div>
       ) : roomGrades.length === 0 ? (
         <div className="empty-state">
           <Award size={48} strokeWidth={1} className="text-tertiary" />
-          <h3>No grades yet</h3>
-          <p>Your grades will appear here once assignments are graded</p>
+          <h3>{t('no_grades')}</h3>
+          <p>{t('no_grades_desc')}</p>
         </div>
       ) : (
         <>
@@ -88,19 +90,19 @@ export default function Grades() {
               <div className="grade-stat-value" style={{ color: getGradeColor(overallAvg) }}>
                 {overallAvg}%
               </div>
-              <span className="grade-stat-label">Overall Average</span>
+              <span className="grade-stat-label">{t('overall_average')}</span>
             </div>
             <div className="grade-stat-card">
               <BookOpen size={20} className="text-accent" />
               <div className="grade-stat-value">{roomGrades.length}</div>
-              <span className="grade-stat-label">Rooms</span>
+              <span className="grade-stat-label">{t('rooms')}</span>
             </div>
             <div className="grade-stat-card">
               <Award size={20} className="text-gold" />
               <div className="grade-stat-value">
                 {roomGrades.reduce((s, r) => s + r.grades.length, 0)}
               </div>
-              <span className="grade-stat-label">Graded</span>
+              <span className="grade-stat-label">{t('graded_count')}</span>
             </div>
           </div>
 
@@ -145,7 +147,7 @@ export default function Grades() {
                       </div>
                     ))}
                     <div className="grade-detail-total">
-                      <span>Total</span>
+                      <span>{t('total')}</span>
                       <span>{room.total_score}/{room.total_max}</span>
                     </div>
                   </div>

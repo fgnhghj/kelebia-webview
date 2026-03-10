@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { notificationsAPI } from '../api/client';
 import {
   Bell, BellOff, Check, CheckCheck, Trash2, Loader2,
@@ -41,6 +42,7 @@ const typeColors: Record<string, string> = {
 
 export default function Notifications() {
   const { refreshNotifications } = useAuth();
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -109,9 +111,9 @@ export default function Notifications() {
     <div className="page-container">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Notifications</h1>
+          <h1 className="page-title">{t('notifications')}</h1>
           {unreadCount > 0 && (
-            <p className="page-subtitle">{unreadCount} unread</p>
+            <p className="page-subtitle">{unreadCount} {t('unread')}</p>
           )}
         </div>
         <div className="header-actions">
@@ -135,8 +137,8 @@ export default function Notifications() {
       ) : notifications.length === 0 ? (
         <div className="empty-state">
           <BellOff size={48} strokeWidth={1} className="text-tertiary" />
-          <h3>All caught up!</h3>
-          <p>You have no notifications</p>
+          <h3>{t('all_caught_up')}</h3>
+          <p>{t('no_notif_desc')}</p>
         </div>
       ) : (
         <div className="notification-list">

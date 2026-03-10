@@ -5,6 +5,13 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://isetkl-classroom.gleeze.com';
 
+/** Resolve a media path like /media/... to an absolute URL */
+export function getMediaUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
 class ApiClient {
   private getAccessToken(): string | null {
     return localStorage.getItem('access_token');

@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { api, authAPI, notificationsAPI } from '../api/client';
 
 export interface User {
@@ -36,6 +38,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevUnreadRef = useRef(0);
+  const permissionRequested = useRef(false);
+
+  /* ─── Request notification permission on native ── */
+  const requestNotificationPermission = useCallback(async () => {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      const { display } = await LocalNotifications.checkPermissions();
+      if (display === 'granted') return;
+      // Ask every time the app finds the user hasn't granted
+      await LocalNotifications.requestPermissions();
+    } catch { /* ignore on web */ }
+  }, []);
+
+  /* ─── Fire a local notification when new unread arrives ── */
+  const fireLocalNotification = useCallback(async (count: number) => {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      const { display } = await LocalNotifications.checkPermissions();
+      if (display !== 'granted') {
+        if (!permissionRequested.current) {
+          permissionRequested.current = true;
+          await LocalNotifications.requestPermissions();
+        }
+        return;
+      }
+      await LocalNotifications.schedule({
+        notifications: [{
+          title: 'ISET Classroom',
+          body: `Vous avez ${count} nouvelle(s) notification(s)`,
+          id: Date.now(),
+          smallIcon: 'ic_launcher',
+          largeIcon: 'ic_launcher',
+        }],
+      });
+    } catch { /* ignore */ }
+  }, []);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -50,11 +89,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshNotifications = useCallback(async () => {
     try {
       const data = await notificationsAPI.unreadCount();
-      setUnreadCount(data.count);
+      const newCount = data.count ?? 0;
+
+      // If unread count increased → new notification arrived
+      if (newCount > prevUnreadRef.current && prevUnreadRef.current >= 0) {
+        const diff = newCount - prevUnreadRef.current;
+        fireLocalNotification(diff);
+      }
+      prevUnreadRef.current = newCount;
+      setUnreadCount(newCount);
     } catch {
       // Silently fail
     }
-  }, []);
+  }, [fireLocalNotification]);
 
   // Check auth on mount
   useEffect(() => {
@@ -63,8 +110,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const userData = await authAPI.me();
           setUser(userData);
+          // Request notification permission early
+          requestNotificationPermission();
           const notifData = await notificationsAPI.unreadCount();
-          setUnreadCount(notifData.count);
+          const count = notifData.count ?? 0;
+          prevUnreadRef.current = count; // seed so first poll doesn't fire
+          setUnreadCount(count);
         } catch {
           api.clearTokens();
         }
@@ -72,14 +123,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     };
     init();
-  }, []);
+  }, [requestNotificationPermission]);
 
-  // Poll notifications every 30s
+  // Poll notifications every 30s + re-request permission if not granted
   useEffect(() => {
     if (!user) return;
-    const interval = setInterval(refreshNotifications, 30000);
+    const poll = async () => {
+      // Re-ask permission every time if user hasn't granted
+      await requestNotificationPermission();
+      await refreshNotifications();
+    };
+    const interval = setInterval(poll, 30000);
     return () => clearInterval(interval);
-  }, [user, refreshNotifications]);
+  }, [user, refreshNotifications, requestNotificationPermission]);
 
   const login = async (email: string, password: string, totpCode?: string) => {
     const data = await authAPI.login({ email, password, totp_code: totpCode });
@@ -88,7 +144,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     api.setTokens(data.tokens.access, data.tokens.refresh);
     setUser(data.user);
-    refreshNotifications();
+    // Request notification permission on login
+    requestNotificationPermission();
+    // Seed the previous count so the first poll doesn't fire a notification
+    const notifData = await notificationsAPI.unreadCount();
+    prevUnreadRef.current = notifData.count ?? 0;
+    setUnreadCount(notifData.count ?? 0);
     return {};
   };
 
@@ -102,6 +163,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     api.clearTokens();
     setUser(null);
     setUnreadCount(0);
+    prevUnreadRef.current = 0;
+    permissionRequested.current = false;
   };
 
   return (

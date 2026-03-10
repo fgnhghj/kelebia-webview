@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { roomsAPI } from '../api/client';
 import {
   Search, LogIn, Loader2, AlertCircle, CheckCircle2,
@@ -8,6 +9,7 @@ import {
 
 export default function JoinRoom() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,8 +35,8 @@ export default function JoinRoom() {
     <div className="page-container">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Explore</h1>
-          <p className="page-subtitle">Join a room with an invite code</p>
+          <h1 className="page-title">{t('explore')}</h1>
+          <p className="page-subtitle">{t('join_with_code')}</p>
         </div>
       </header>
 
@@ -44,7 +46,7 @@ export default function JoinRoom() {
           <Search size={20} className="join-input-icon" />
           <input
             type="text"
-            placeholder="Enter invite code..."
+            placeholder={t('enter_code')}
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             className="join-input"
@@ -84,7 +86,7 @@ export default function JoinRoom() {
               {result.room?.subject && <span>{result.room.subject}</span>}
               <div className="join-room-meta">
                 <Users size={14} />
-                <span>{result.room?.student_count} students</span>
+                <span>{result.room?.student_count} {t('students')}</span>
               </div>
             </div>
           </div>
@@ -92,18 +94,18 @@ export default function JoinRoom() {
             className="btn-primary"
             onClick={() => navigate(`/room/${result.room?.id}`)}
           >
-            Open Room
+            {t('open_room')}
           </button>
         </div>
       )}
 
       {/* Tips */}
       <div className="join-tips">
-        <h3>How to join</h3>
+        <h3>{t('how_to_join')}</h3>
         <ul>
-          <li>Ask your teacher for the 8-character invite code</li>
-          <li>Enter the code above and press Join</li>
-          <li>You'll be added to the room instantly</li>
+          <li>{t('tip_1')}</li>
+          <li>{t('tip_2')}</li>
+          <li>{t('tip_3')}</li>
         </ul>
       </div>
     </div>

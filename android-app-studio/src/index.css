@@ -1257,6 +1257,31 @@
   font-size: 11px; background: var(--bg-elevated);
   padding: 2px 6px; border-radius: 4px;
 }
+.secret-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.secret-copy-btn:hover { border-color: var(--accent); }
+.secret-copy-btn code {
+  font-size: 12px;
+  color: var(--text-secondary);
+  word-break: break-all;
+  flex: 1;
+  text-align: left;
+}
+.secret-copy-btn span {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
 
 /* ══════════════════════════════════════════════════════
    JOIN / EXPLORE PAGE
@@ -1267,7 +1292,10 @@
   background: var(--bg-surface);
   border: 1.5px solid var(--border);
   border-radius: 16px;
-  padding: 4px 4px 4px 16px;
+  padding: 4px;
+  padding-left: 16px;
+  gap: 4px;
+  overflow: hidden;
   transition: border-color 0.2s;
 }
 .join-input-wrapper:focus-within { border-color: var(--accent); }
