@@ -11,13 +11,14 @@ const LEFT_TABS: Tab[] = [
 ];
 const LEFT_TABS_TEACHER: Tab[] = [
   { path: '/home', icon: Home, labelKey: 'home' },
-  { path: '/notifications', icon: Bell, labelKey: 'notifications' },
+  { path: '/grades', icon: BarChart3, labelKey: 'grades' },
 ];
 const RIGHT_TABS: Tab[] = [
   { path: '/notifications', icon: Bell, labelKey: 'notifications' },
   { path: '/settings', icon: User, labelKey: 'profile' },
 ];
 const RIGHT_TABS_TEACHER: Tab[] = [
+  { path: '/notifications', icon: Bell, labelKey: 'notifications' },
   { path: '/settings', icon: User, labelKey: 'profile' },
 ];
 
@@ -40,7 +41,7 @@ export default function BottomNav() {
     return (
       <NavLink key={path} to={path} className={`nav-tab ${isActive ? 'active' : ''}`}>
         <div className="nav-tab-icon">
-          <Icon size={22} strokeWidth={isActive ? 2.2 : 1.6} />
+          <Icon size={20} strokeWidth={isActive ? 2.2 : 1.6} />
           {showBadge && (
             <span className="nav-badge">
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -58,11 +59,11 @@ export default function BottomNav() {
         {leftTabs.map(renderTab)}
 
         {/* Center FAB — raised "+" button */}
-        <button className="nav-fab" onClick={handleFab}>
-          <div className="nav-fab-circle">
-            <Plus size={28} strokeWidth={2.4} />
-          </div>
-        </button>
+        <div className="nav-fab-spacer">
+          <button className="nav-fab" onClick={handleFab} aria-label={isTeacher ? 'Create Room' : 'Join Room'}>
+            <Plus size={26} strokeWidth={2.5} />
+          </button>
+        </div>
 
         {rightTabs.map(renderTab)}
       </div>

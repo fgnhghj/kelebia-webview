@@ -382,50 +382,54 @@
 /* Bottom Nav — floating pill with raised center FAB */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
-  padding: 0 12px calc(var(--safe-bottom) + 8px) 12px;
+  padding: 0 16px calc(var(--safe-bottom) + 10px) 16px;
   z-index: 100;
   pointer-events: none;
 }
 .bottom-nav-inner {
-  display: flex; align-items: flex-end; justify-content: space-around;
+  display: flex; align-items: center; justify-content: center;
   height: var(--nav-height);
-  background: rgba(37, 34, 32, 0.92);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border-radius: 24px;
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(255,255,255,0.04);
-  padding: 0 4px 0;
+  background: rgba(30, 27, 25, 0.95);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 0.5px rgba(255,255,255,0.03);
+  padding: 0 8px;
   pointer-events: auto;
-  position: relative;
 }
 .nav-tab {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 3px;
-  padding: 10px 14px;
-  border-radius: 16px;
+  gap: 4px;
+  padding: 8px 0;
   color: var(--text-tertiary);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  min-width: 54px;
   flex: 1;
+  min-width: 0;
+  text-decoration: none;
 }
 .nav-tab.active {
   color: var(--accent);
-  background: var(--accent-muted);
 }
 .nav-tab-icon {
   position: relative;
   display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 28px;
+  border-radius: 14px;
+  transition: background 0.25s;
+}
+.nav-tab.active .nav-tab-icon {
+  background: var(--accent-muted);
 }
 .nav-tab-label {
-  font-size: 10px; font-weight: 500;
+  font-size: 10px; font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1;
 }
 .nav-badge {
-  position: absolute; top: -4px; right: -8px;
+  position: absolute; top: -2px; right: -6px;
   min-width: 16px; height: 16px;
   display: flex; align-items: center; justify-content: center;
   background: var(--error);
@@ -436,36 +440,35 @@
 }
 
 /* ─── Center FAB ── */
-.nav-fab {
+.nav-fab-spacer {
   position: relative;
   display: flex; align-items: center; justify-content: center;
-  padding: 0;
-  background: none; border: none;
-  cursor: pointer;
-  /* Push it up above the nav bar */
-  margin-top: -24px;
-  margin-bottom: 6px;
+  width: 64px;
   flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
 }
-.nav-fab-circle {
-  width: 56px; height: 56px;
+.nav-fab {
+  position: absolute;
+  bottom: 6px;
+  width: 54px; height: 54px;
   border-radius: 50%;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, #c4623f 100%);
+  border: 3px solid rgba(30, 27, 25, 0.95);
   display: flex; align-items: center; justify-content: center;
   color: #fff;
+  cursor: pointer;
   box-shadow:
-    0 4px 16px rgba(217, 119, 87, 0.4),
-    0 2px 6px rgba(0,0,0,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.15);
+    0 6px 20px rgba(217, 119, 87, 0.45),
+    0 2px 8px rgba(0,0,0,0.3);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
 }
-.nav-fab:active .nav-fab-circle {
-  transform: scale(0.9);
+.nav-fab:active {
+  transform: scale(0.88);
   box-shadow:
-    0 2px 8px rgba(217, 119, 87, 0.3),
-    0 1px 3px rgba(0,0,0,0.2);
+    0 3px 10px rgba(217, 119, 87, 0.3),
+    0 1px 4px rgba(0,0,0,0.2);
 }
 
 /* ══════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getMediaUrl } from '../api/client';
 import {
@@ -40,9 +40,20 @@ function getCategoryIcon(cat: string) {
   }
 }
 
+/** Fetch file as blob with JWT auth header */
+async function fetchWithAuth(url: string): Promise<Blob> {
+  const token = localStorage.getItem('access_token');
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const resp = await fetch(url, { headers });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return resp.blob();
+}
+
 export default function FileViewer() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const blobUrlRef = useRef<string | null>(null);
 
   const rawUrl = params.get('url') || '';
   const title = params.get('title') || 'File';
@@ -53,51 +64,92 @@ export default function FileViewer() {
 
   const [loading, setLoading] = useState(true);
   const [textContent, setTextContent] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [htmlMode, setHtmlMode] = useState<'preview' | 'code' | null>(null);
   const [error, setError] = useState('');
 
-  // Google Docs Viewer for PDFs and Office files
+  // Google Docs Viewer for Office files (these are usually public or we rely on URL)
   const googleViewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(fileUrl)}`;
 
-  // Fetch text content for text/html files
+  // Cleanup blob URLs on unmount
   useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    setError('');
+    setTextContent(null);
+    setBlobUrl(null);
+
     if (category === 'text' || category === 'html') {
-      setLoading(true);
-      fetch(fileUrl)
-        .then(r => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.text();
-        })
+      // Fetch text content
+      fetchWithAuth(fileUrl)
+        .then(blob => blob.text())
         .then(txt => {
           setTextContent(txt);
           if (category === 'html') setHtmlMode('preview');
           setLoading(false);
         })
         .catch(e => {
-          setError(`Failed to load file: ${e.message}`);
+          setError(`Failed to load: ${e.message}`);
           setLoading(false);
         });
+    } else if (category === 'pdf') {
+      // Fetch PDF as blob → create object URL → render in iframe
+      fetchWithAuth(fileUrl)
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          blobUrlRef.current = url;
+          setBlobUrl(url);
+          setLoading(false);
+        })
+        .catch(e => {
+          setError(`Failed to load PDF: ${e.message}`);
+          setLoading(false);
+        });
+    } else if (category === 'image') {
+      // Images: fetch as blob for auth support
+      fetchWithAuth(fileUrl)
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          blobUrlRef.current = url;
+          setBlobUrl(url);
+          setLoading(false);
+        })
+        .catch(e => {
+          setError(`Failed to load image: ${e.message}`);
+          setLoading(false);
+        });
+    } else if (category === 'office') {
+      // Office files: try Google Docs viewer (assumes public URL)
+      // Loading dismissed by iframe onLoad or timeout
+      const timer = setTimeout(() => setLoading(false), 12000);
+      return () => clearTimeout(timer);
     } else {
-      // For iframe-based viewers, loading is handled by iframe onLoad
-      if (category !== 'image') {
-        // Give iframe a chance, timeout after 15s
-        const timer = setTimeout(() => setLoading(false), 15000);
-        return () => clearTimeout(timer);
-      }
       setLoading(false);
     }
   }, [fileUrl, category]);
 
-  const handleDownload = () => {
-    // Use an anchor trick to force download
-    const a = document.createElement('a');
-    a.href = fileUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.setAttribute('download', title);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownload = async () => {
+    try {
+      const blob = blobUrl
+        ? await (await fetch(blobUrl)).blob()
+        : await fetchWithAuth(fileUrl);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.setAttribute('download', title);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      // Fallback: open in new tab
+      window.open(fileUrl, '_blank');
+    }
   };
 
   const goBack = () => {
@@ -160,15 +212,22 @@ export default function FileViewer() {
           </div>
         )}
 
-        {/* PDF — Google Docs Viewer */}
-        {category === 'pdf' && !error && (
-          <iframe
-            src={googleViewerUrl}
+        {/* PDF — rendered from authenticated blob URL */}
+        {category === 'pdf' && !error && blobUrl && (
+          <object
+            data={blobUrl}
+            type="application/pdf"
             className="file-viewer-iframe"
             title={title}
-            onLoad={() => setLoading(false)}
-            onError={() => { setError('Failed to load PDF'); setLoading(false); }}
-          />
+          >
+            {/* Fallback if <object> doesn't render PDF (some Android WebViews) */}
+            <iframe
+              src={`https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(blobUrl)}`}
+              className="file-viewer-iframe"
+              title={title}
+              onLoad={() => setLoading(false)}
+            />
+          </object>
         )}
 
         {/* Office — Google Docs Viewer */}
@@ -182,11 +241,11 @@ export default function FileViewer() {
           />
         )}
 
-        {/* Image */}
-        {category === 'image' && !error && (
+        {/* Image — rendered from authenticated blob URL */}
+        {category === 'image' && !error && blobUrl && (
           <div className="file-viewer-image-wrap">
             <img
-              src={fileUrl}
+              src={blobUrl}
               alt={title}
               className="file-viewer-image"
               onError={() => setError('Failed to load image')}
