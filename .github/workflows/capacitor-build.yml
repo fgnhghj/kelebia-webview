@@ -52,6 +52,7 @@ jobs:
       - name: Patch Android theme to non-fullscreen BEFORE sync
         run: |
           STYLES_FILE="android/app/src/main/res/values/styles.xml"
+          mkdir -p "$(dirname "$STYLES_FILE")"
           cat > "$STYLES_FILE" <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
@@ -79,7 +80,7 @@ jobs:
       - name: Patch MainActivity to force status bar visible
         run: |
           MAIN_ACTIVITY="android/app/src/main/java/app/aymen/isetclassroom/MainActivity.java"
-          mkdir -p "$(dirname $MAIN_ACTIVITY)"
+          mkdir -p "$(dirname "$MAIN_ACTIVITY")"
           cat > "$MAIN_ACTIVITY" <<'JAVA'
           package app.aymen.isetclassroom;
 
@@ -161,6 +162,8 @@ jobs:
       - name: Remove immersive/fullscreen from AndroidManifest
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
+          echo "--- Manifest before patching ---"
+          cat "$MANIFEST" || true
           sed -i 's/android:windowFullscreen="true"/android:windowFullscreen="false"/g' "$MANIFEST"
           sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
           sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
@@ -195,6 +198,7 @@ jobs:
       - name: Re-apply patches after sync
         run: |
           STYLES_FILE="android/app/src/main/res/values/styles.xml"
+          mkdir -p "$(dirname "$STYLES_FILE")"
           cat > "$STYLES_FILE" <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
@@ -220,7 +224,7 @@ jobs:
           XML
 
           MAIN_ACTIVITY="android/app/src/main/java/app/aymen/isetclassroom/MainActivity.java"
-          mkdir -p "$(dirname $MAIN_ACTIVITY)"
+          mkdir -p "$(dirname "$MAIN_ACTIVITY")"
           cat > "$MAIN_ACTIVITY" <<'JAVA'
           package app.aymen.isetclassroom;
           import com.getcapacitor.BridgeActivity;
@@ -306,6 +310,7 @@ jobs:
       - name: Copy app icon to Android resources
         run: |
           for dir in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            mkdir -p "android/app/src/main/res/$dir"
             if [ -f public/app-icon.png ]; then
               cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher.png
               cp public/app-icon.png android/app/src/main/res/$dir/ic_launcher_round.png
@@ -315,7 +320,6 @@ jobs:
 
       - name: Create notification icon (monochrome vector drawable)
         run: |
-          # Create drawable dir
           mkdir -p android/app/src/main/res/drawable
 
           # Create a proper monochrome notification icon (graduation cap / book icon)
