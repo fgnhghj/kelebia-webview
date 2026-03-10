@@ -5,7 +5,7 @@ import { useTranslation } from '../LanguageContext';
 import { gradesAPI } from '../api';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { FiAward, FiBookOpen, FiTrendingUp } from 'react-icons/fi';
+import { FiAward, FiBookOpen, FiTrendingUp, FiCheckCircle } from 'react-icons/fi';
 
 export default function Grades() {
     const { t } = useTranslation();
@@ -26,6 +26,9 @@ export default function Grades() {
     const totalScore = rooms.reduce((s, r) => s + r.total_score, 0);
     const totalMax = rooms.reduce((s, r) => s + r.total_max, 0);
     const overallAvg = totalMax > 0 ? ((totalScore / totalMax) * 100).toFixed(1) : 0;
+    const totalAssignments = rooms.reduce((s, r) => s + (r.total_assignments || 0), 0);
+    const totalSubmitted = rooms.reduce((s, r) => s + (r.submitted_count || 0), 0);
+    const overallCompletion = totalAssignments > 0 ? ((totalSubmitted / totalAssignments) * 100).toFixed(0) : 0;
 
     return (
         <div className="app-layout">
@@ -63,6 +66,12 @@ export default function Grades() {
                                     <FiTrendingUp size={18} /> {overallAvg}%
                                 </div>
                                 <div className="stat-label">{t('grades.overallAverage')}</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <FiCheckCircle size={18} /> {overallCompletion}%
+                                </div>
+                                <div className="stat-label">Completion ({totalSubmitted}/{totalAssignments})</div>
                             </div>
                         </div>
 
@@ -140,6 +149,24 @@ export default function Grades() {
                                 <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end', fontSize: 13, color: 'var(--text-muted)' }}>
                                     {t('grades.roomTotal')}: <strong style={{ marginLeft: 4, color: 'var(--text-primary)' }}>{room.total_score}/{room.total_max}</strong>
                                 </div>
+
+                                {/* Completion progress bar */}
+                                {(room.total_assignments || 0) > 0 && (
+                                    <div style={{ marginTop: 10 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
+                                            <span>Completion</span>
+                                            <span>{room.submitted_count}/{room.total_assignments} submitted ({room.completion_pct || 0}%)</span>
+                                        </div>
+                                        <div style={{ height: 6, borderRadius: 3, background: 'var(--bg-secondary)', overflow: 'hidden' }}>
+                                            <div style={{
+                                                height: '100%', borderRadius: 3,
+                                                width: `${room.completion_pct || 0}%`,
+                                                background: (room.completion_pct || 0) >= 70 ? 'var(--success, #16a34a)' : (room.completion_pct || 0) >= 50 ? 'var(--warning, #d97706)' : 'var(--brand, #6366f1)',
+                                                transition: 'width 0.5s ease',
+                                            }} />
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         ))}
                     </>

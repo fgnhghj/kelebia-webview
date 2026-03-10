@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { notificationsAPI } from '../api/client';
+import PullToRefresh from '../components/PullToRefresh';
 import {
   Bell, BellOff, Check, CheckCheck, Trash2, Loader2,
   FileText, ClipboardList, Megaphone, MessageSquare,
@@ -112,7 +113,12 @@ export default function Notifications() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
+  const handlePullRefresh = async () => {
+    await fetchNotifications();
+  };
+
   return (
+    <PullToRefresh onRefresh={handlePullRefresh}>
     <div className="page-container">
       <header className="page-header">
         <div>
@@ -188,5 +194,6 @@ export default function Notifications() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

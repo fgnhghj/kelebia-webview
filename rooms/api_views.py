@@ -53,18 +53,26 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        search = self.request.query_params.get('search', '').strip()
+        show_archived = self.request.query_params.get('archived', '').lower() == 'true'
         base = Room.objects.annotate(
             student_count=Count(
                 'memberships', filter=Q(memberships__status='approved')
             ),
         ).select_related('teacher')
         if user.is_teacher:
-            return base.filter(teacher=user, is_active=True)
+            qs = base.filter(teacher=user, is_active=True)
         else:
             room_ids = RoomMembership.objects.filter(
                 student=user, status='approved'
             ).values_list('room_id', flat=True)
-            return base.filter(id__in=room_ids, is_active=True)
+            qs = base.filter(id__in=room_ids, is_active=True)
+        # Filter by archived status
+        qs = qs.filter(is_archived=show_archived)
+        # Search filter
+        if search:
+            qs = qs.filter(Q(name__icontains=search) | Q(subject__icontains=search) | Q(description__icontains=search))
+        return qs
 
     def perform_create(self, serializer):
         room = serializer.save(teacher=self.request.user)
@@ -151,6 +159,26 @@ class RoomViewSet(viewsets.ModelViewSet):
         Notification.objects.filter(link=room_link).delete()
         instance.is_active = False
         instance.save(update_fields=['is_active'])
+
+    @action(detail=True, methods=['post'])
+    def archive(self, request, pk=None):
+        """Archive a room (teacher only)."""
+        room = self.get_object()
+        if room.teacher != request.user:
+            return Response({'error': 'Only the room teacher can archive this room.'}, status=403)
+        room.is_archived = True
+        room.save(update_fields=['is_archived'])
+        return Response({'status': 'archived'})
+
+    @action(detail=True, methods=['post'])
+    def unarchive(self, request, pk=None):
+        """Unarchive a room (teacher only)."""
+        room = self.get_object()
+        if room.teacher != request.user:
+            return Response({'error': 'Only the room teacher can unarchive this room.'}, status=403)
+        room.is_archived = False
+        room.save(update_fields=['is_archived'])
+        return Response({'status': 'unarchived'})
 
     @action(detail=True, methods=['post'])
     def leave(self, request, pk=None):

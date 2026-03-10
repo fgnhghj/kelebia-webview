@@ -140,7 +140,13 @@ export const authAPI = {
 
 /* ─── Rooms ─────────────────────────────────────────── */
 export const roomsAPI = {
-  list: () => api.getList('/rooms/'),
+  list: (params?: { search?: string; archived?: boolean }) => {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.archived) query.set('archived', 'true');
+    const qs = query.toString();
+    return api.getList(`/rooms/${qs ? `?${qs}` : ''}`);
+  },
   get: (id: number) => api.get(`/rooms/${id}/`),
   create: (data: FormData) => api.post('/rooms/', data),
   update: (id: number, data: FormData) => api.patch(`/rooms/${id}/`, data),
@@ -149,6 +155,8 @@ export const roomsAPI = {
   leave: (id: number) => api.post(`/rooms/${id}/leave/`),
   members: (id: number) => api.get(`/rooms/${id}/members/`),
   manageMember: (id: number, data: any) => api.post(`/rooms/${id}/manage_member/`, data),
+  archive: (id: number) => api.post(`/rooms/${id}/archive/`),
+  unarchive: (id: number) => api.post(`/rooms/${id}/unarchive/`),
 };
 
 /* ─── Sections ──────────────────────────────────────── */
@@ -165,6 +173,7 @@ export const contentAPI = {
   create: (data: FormData) => api.post('/content/', data),
   update: (id: number, data: FormData) => api.patch(`/content/${id}/`, data),
   delete: (id: number) => api.delete(`/content/${id}/`),
+  bulkDelete: (ids: number[]) => api.post('/content/bulk_delete/', { ids }),
 };
 
 /* ─── Assignments ───────────────────────────────────── */
@@ -174,6 +183,7 @@ export const assignmentsAPI = {
   create: (data: FormData) => api.post('/assignments/', data),
   update: (id: number, data: any) => api.patch(`/assignments/${id}/`, data),
   delete: (id: number) => api.delete(`/assignments/${id}/`),
+  bulkDelete: (ids: number[]) => api.post('/assignments/bulk_delete/', { ids }),
 };
 
 /* ─── Submissions ───────────────────────────────────── */
@@ -183,6 +193,9 @@ export const submissionsAPI = {
   delete: (id: number) => api.delete(`/submissions/${id}/`),
   grade: (id: number, data: { score: number; feedback?: string }) =>
     api.post(`/submissions/${id}/grade/`, data),
+  resubmit: (id: number) => api.delete(`/submissions/${id}/resubmit/`),
+  bulkGrade: (grades: { submission_id: number; score: number; feedback?: string }[]) =>
+    api.post('/submissions/bulk_grade/', { grades }),
 };
 
 /* ─── Announcements ─────────────────────────────────── */

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { gradesAPI } from '../api/client';
+import PullToRefresh from '../components/PullToRefresh';
 import {
-  BarChart3, Loader2, TrendingUp, Award, BookOpen,
+  BarChart3, Loader2, TrendingUp, Award, BookOpen, CheckCircle,
 } from 'lucide-react';
 
 interface RoomGrade {
@@ -13,6 +14,9 @@ interface RoomGrade {
   average: number;
   total_score: number;
   total_max: number;
+  total_assignments: number;
+  submitted_count: number;
+  completion_pct: number;
   grades: {
     assignment_id: number;
     assignment_title: string;
@@ -30,20 +34,25 @@ export default function Grades() {
   const [loading, setLoading] = useState(true);
   const [expandedRoom, setExpandedRoom] = useState<number | null>(null);
 
-  useEffect(() => {
+  const fetchGrades = useCallback(async () => {
     if (!isStudent) {
       setLoading(false);
       return;
     }
-    const fetchGrades = async () => {
-      try {
-        const data = await gradesAPI.overview();
-        setRoomGrades(Array.isArray(data) ? data : (data?.results ?? []));
-      } catch { /* silent */ }
-      setLoading(false);
-    };
-    fetchGrades();
+    try {
+      const data = await gradesAPI.overview();
+      setRoomGrades(Array.isArray(data) ? data : (data?.results ?? []));
+    } catch { /* silent */ }
+    setLoading(false);
   }, [isStudent]);
+
+  useEffect(() => {
+    fetchGrades();
+  }, [fetchGrades]);
+
+  const handlePullRefresh = async () => {
+    await fetchGrades();
+  };
 
   const getGradeColor = (avg: number) => {
     if (avg >= 80) return 'var(--success)';
@@ -56,7 +65,12 @@ export default function Grades() {
     ? Math.round(roomGrades.reduce((s, r) => s + r.average, 0) / roomGrades.length * 10) / 10
     : 0;
 
+  const totalAssignments = roomGrades.reduce((s, r) => s + (r.total_assignments || 0), 0);
+  const totalSubmitted = roomGrades.reduce((s, r) => s + (r.submitted_count || 0), 0);
+  const overallCompletion = totalAssignments > 0 ? Math.round((totalSubmitted / totalAssignments) * 100) : 0;
+
   return (
+    <PullToRefresh onRefresh={handlePullRefresh}>
     <div className="page-container">
       <header className="page-header">
         <div>
@@ -93,9 +107,16 @@ export default function Grades() {
               <span className="grade-stat-label">{t('overall_average')}</span>
             </div>
             <div className="grade-stat-card">
+              <CheckCircle size={20} style={{ color: getGradeColor(overallCompletion) }} />
+              <div className="grade-stat-value" style={{ color: getGradeColor(overallCompletion) }}>
+                {overallCompletion}%
+              </div>
+              <span className="grade-stat-label">{t('completion')}</span>
+            </div>
+            <div className="grade-stat-card">
               <BookOpen size={20} className="text-accent" />
-              <div className="grade-stat-value">{roomGrades.length}</div>
-              <span className="grade-stat-label">{t('rooms')}</span>
+              <div className="grade-stat-value">{totalSubmitted}/{totalAssignments}</div>
+              <span className="grade-stat-label">{t('assignments_completed')}</span>
             </div>
             <div className="grade-stat-card">
               <Award size={20} className="text-gold" />
@@ -135,6 +156,22 @@ export default function Grades() {
                   />
                 </div>
 
+                {/* Completion Bar */}
+                {(room.total_assignments || 0) > 0 && (
+                  <div className="room-completion-row">
+                    <span className="room-completion-label">{t('completion')}: {room.submitted_count}/{room.total_assignments}</span>
+                    <div className="grade-progress-bg" style={{ height: 4 }}>
+                      <div
+                        className="grade-progress-fill"
+                        style={{
+                          width: `${room.completion_pct || 0}%`,
+                          backgroundColor: 'var(--info)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Expanded Details */}
                 {expandedRoom === room.room_id && (
                   <div className="grade-details">
@@ -158,5 +195,6 @@ export default function Grades() {
         </>
       )}
     </div>
+    </PullToRefresh>
   );
 }

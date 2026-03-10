@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { roomsAPI, getMediaUrl } from "../api/client";
+import PullToRefresh from "../components/PullToRefresh";
 import {
   Plus,
   Users,
@@ -13,6 +14,9 @@ import {
   Loader2,
   Sparkles,
   LogIn,
+  Search,
+  Archive,
+  X,
 } from "lucide-react";
 
 interface Room {
@@ -32,27 +36,49 @@ export default function Home() {
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [archivedRooms, setArchivedRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
 
   const fetchRooms = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      const data = await roomsAPI.list();
+      const data = await roomsAPI.list({ search: searchQuery || undefined });
       setRooms(data);
     } catch {
       // silent fail
     }
     setLoading(false);
     setRefreshing(false);
+  }, [searchQuery]);
+
+  const fetchArchivedRooms = useCallback(async () => {
+    try {
+      const data = await roomsAPI.list({ archived: true });
+      setArchivedRooms(data);
+    } catch { /* silent */ }
   }, []);
 
   useEffect(() => {
     fetchRooms();
+    fetchArchivedRooms();
     // Auto-refresh rooms every 8s
     const interval = setInterval(() => fetchRooms(), 8000);
     return () => clearInterval(interval);
-  }, [fetchRooms]);
+  }, [fetchRooms, fetchArchivedRooms]);
+
+  // Re-fetch when search query changes (debounced)
+  useEffect(() => {
+    const timeout = setTimeout(() => fetchRooms(), 300);
+    return () => clearTimeout(timeout);
+  }, [searchQuery, fetchRooms]);
+
+  const handlePullRefresh = async () => {
+    await fetchRooms(true);
+    await fetchArchivedRooms();
+  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -84,6 +110,7 @@ export default function Home() {
   };
 
   return (
+    <PullToRefresh onRefresh={handlePullRefresh}>
     <div className="page-container">
       {/* Header */}
       <header className="page-header">
@@ -138,6 +165,24 @@ export default function Home() {
           </div>
           <span>{t("refresh")}</span>
         </button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="search-bar-container">
+        <div className="search-bar">
+          <Search size={18} className="text-tertiary" />
+          <input
+            type="text"
+            placeholder={t("search_rooms")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button className="search-clear" onClick={() => setSearchQuery("")}>
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Rooms Section */}
@@ -215,6 +260,45 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Archived Rooms Section */}
+      {archivedRooms.length > 0 && (
+        <section className="section">
+          <div className="section-header">
+            <button className="section-toggle" onClick={() => setShowArchived(!showArchived)}>
+              <Archive size={16} className="text-tertiary" />
+              <h2>{t("archived_rooms")}</h2>
+              <span className="section-count">{archivedRooms.length}</span>
+            </button>
+          </div>
+          {showArchived && (
+            <div className="room-list">
+              {archivedRooms.map((room) => (
+                <button
+                  key={room.id}
+                  className="room-card archived"
+                  onClick={() => navigate(`/room/${room.id}`)}
+                >
+                  <div
+                    className="room-card-accent"
+                    style={{ backgroundColor: room.color_theme, opacity: 0.5 }}
+                  />
+                  <div className="room-card-body">
+                    <div className="room-card-top">
+                      <h3 className="room-card-name">{room.name}</h3>
+                      <Archive size={16} className="text-tertiary" />
+                    </div>
+                    {room.subject && (
+                      <span className="room-card-subject">{room.subject}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
+    </PullToRefresh>
   );
 }

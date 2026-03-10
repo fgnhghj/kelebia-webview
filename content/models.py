@@ -81,6 +81,7 @@ class Assignment(models.Model):
     deadline = models.DateTimeField(null=True, blank=True)
     max_grade = models.DecimalField(max_digits=5, decimal_places=2, default=20.00)
     allow_late = models.BooleanField(default=True)
+    allow_resubmission = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

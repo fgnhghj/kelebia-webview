@@ -17,6 +17,7 @@ import {
   Download,
   Star,
   Award,
+  RotateCcw,
 } from "lucide-react";
 
 export default function AssignmentDetail() {
@@ -92,6 +93,21 @@ export default function AssignmentDetail() {
       const sData = await submissionsAPI.list(aId);
       setSubmissions(sData);
       setGrading(null);
+    } catch {
+      alert(t("error"));
+    }
+  };
+
+  const handleResubmit = async () => {
+    if (!mySubmission || !confirm(t("resubmit_confirm"))) return;
+    try {
+      await submissionsAPI.resubmit(mySubmission.id);
+      const [aData, sData] = await Promise.all([
+        assignmentsAPI.get(aId),
+        submissionsAPI.list(aId),
+      ]);
+      setAssignment(aData);
+      setSubmissions(sData);
     } catch {
       alert(t("error"));
     }
@@ -273,6 +289,12 @@ export default function AssignmentDetail() {
               <AlertTriangle size={14} />
               <span>{t("past_due")}</span>
             </div>
+          )}
+          {assignment.allow_resubmission && mySubmission.status !== 'graded' && (
+            <button className="btn-secondary btn-sm" onClick={handleResubmit} style={{ marginTop: 8 }}>
+              <RotateCcw size={16} />
+              <span>{t("resubmit")}</span>
+            </button>
           )}
         </div>
       )}

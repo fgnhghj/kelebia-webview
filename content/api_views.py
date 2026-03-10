@@ -66,6 +66,19 @@ class ContentViewSet(viewsets.ModelViewSet):
             room__memberships__status='approved'
         ).select_related('room', 'section')
 
+    @action(detail=False, methods=['post'])
+    def bulk_delete(self, request):
+        """Delete multiple content items at once (teacher only).
+        Expects: { ids: [1, 2, 3] }
+        """
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({'error': 'No IDs provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        qs = Content.objects.filter(pk__in=ids, room__teacher=request.user)
+        count = qs.count()
+        qs.delete()
+        return Response({'deleted': count})
+
     def perform_create(self, serializer):
         content = serializer.save()
         room = content.room
@@ -195,12 +208,25 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             ])
         return response
 
+    @action(detail=False, methods=['post'])
+    def bulk_delete(self, request):
+        """Delete multiple assignments at once (teacher only).
+        Expects: { ids: [1, 2, 3] }
+        """
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({'error': 'No IDs provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        qs = Assignment.objects.filter(pk__in=ids, room__teacher=request.user)
+        count = qs.count()
+        qs.delete()
+        return Response({'deleted': count})
+
 
 class SubmissionViewSet(viewsets.ModelViewSet):
     serializer_class = SubmissionSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-    http_method_names = ['get', 'post', 'head', 'options']  # no PUT/PATCH/DELETE for submissions
+    http_method_names = ['get', 'post', 'delete', 'head', 'options']  # allow DELETE for resubmission
 
     def get_queryset(self):
         user = self.request.user
@@ -296,12 +322,68 @@ class SubmissionViewSet(viewsets.ModelViewSet):
         )
         return Response(GradeSerializer(grade).data)
 
+    @action(detail=True, methods=['delete'])
+    def resubmit(self, request, pk=None):
+        """Delete existing submission so student can resubmit (requires allow_resubmission)."""
+        submission = self.get_object()
+        # Only the student who submitted can resubmit
+        if submission.student != request.user:
+            return Response({'detail': 'You can only resubmit your own work.'}, status=status.HTTP_403_FORBIDDEN)
+        if not submission.assignment.allow_resubmission:
+            return Response({'detail': 'Resubmission is not allowed for this assignment.'}, status=status.HTTP_403_FORBIDDEN)
+        # Cannot resubmit after grading
+        if submission.status == 'graded':
+            return Response({'detail': 'Cannot resubmit after grading.'}, status=status.HTTP_403_FORBIDDEN)
+        submission.files.all().delete()
+        submission.delete()
+        return Response({'status': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def bulk_grade(self, request):
+        """Grade multiple submissions at once (teacher only).
+        Expects: { grades: [{ submission_id, score, feedback? }, ...] }
+        """
+        grades_data = request.data.get('grades', [])
+        if not grades_data:
+            return Response({'error': 'No grades provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        results = []
+        for item in grades_data:
+            sub_id = item.get('submission_id')
+            score = item.get('score')
+            feedback = item.get('feedback', '')
+            try:
+                sub = Submission.objects.select_related('assignment__room').get(pk=sub_id)
+            except Submission.DoesNotExist:
+                results.append({'submission_id': sub_id, 'status': 'not_found'})
+                continue
+            if sub.assignment.room.teacher != request.user:
+                results.append({'submission_id': sub_id, 'status': 'forbidden'})
+                continue
+            grade_obj, _ = Grade.objects.update_or_create(
+                submission=sub,
+                defaults={'score': score, 'feedback': feedback, 'graded_by': request.user}
+            )
+            sub.status = 'graded'
+            sub.save(update_fields=['status'])
+            Notification.objects.create(
+                user=sub.student,
+                notification_type='grade',
+                title='Note publiée',
+                message=f'Vous avez reçu {score}/{sub.assignment.max_grade} pour "{sub.assignment.title}"',
+                link=f'/rooms/{sub.assignment.room.pk}/',
+            )
+            results.append({'submission_id': sub_id, 'status': 'graded', 'score': float(score)})
+
+        return Response({'results': results})
+
 
 @api_view(['GET'])
 @perm_classes([IsAuthenticated])
 def student_grades_overview(request):
     """Return all graded submissions for the current student, grouped by room.
     Teachers receive an empty list (the Grades page is student-oriented).
+    Also includes progress stats: total assignments, submitted count, completion %.
     """
     user = request.user
     # H6: Return empty list for teachers instead of 403 so the Grades page doesn't crash
@@ -315,14 +397,35 @@ def student_grades_overview(request):
         .order_by('assignment__room__name', '-grade__graded_at')
     )
 
+    # Get all rooms the student is enrolled in
+    enrolled_rooms = RoomMembership.objects.filter(
+        student=user, status='approved'
+    ).values_list('room_id', flat=True)
+
+    # Compute per-room assignment totals + submission counts
+    from django.db.models import Count, Q as Qfilter
+    room_stats = {}
+    for room_id in enrolled_rooms:
+        total_assignments = Assignment.objects.filter(room_id=room_id).count()
+        submitted = Submission.objects.filter(student=user, assignment__room_id=room_id).count()
+        room_stats[room_id] = {
+            'total_assignments': total_assignments,
+            'submitted_count': submitted,
+            'completion_pct': round((submitted / total_assignments) * 100, 1) if total_assignments > 0 else 0,
+        }
+
     rooms_map = {}
     for sub in submissions:
         room = sub.assignment.room
         if room.id not in rooms_map:
+            stats = room_stats.get(room.id, {'total_assignments': 0, 'submitted_count': 0, 'completion_pct': 0})
             rooms_map[room.id] = {
                 'room_id': room.id,
                 'room_name': room.name,
                 'room_color': room.color_theme,
+                'total_assignments': stats['total_assignments'],
+                'submitted_count': stats['submitted_count'],
+                'completion_pct': stats['completion_pct'],
                 'grades': [],
             }
         rooms_map[room.id]['grades'].append({

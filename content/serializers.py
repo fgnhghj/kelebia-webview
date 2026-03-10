@@ -72,7 +72,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assignment
         fields = ['id', 'room', 'section', 'title', 'description', 'file',
-                  'deadline', 'max_grade', 'allow_late', 'submissions_count',
+                  'deadline', 'max_grade', 'allow_late', 'allow_resubmission', 'submissions_count',
                   'graded_count', 'unsubmitted_count', 'is_past_deadline', 'my_submission',
                   'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']

@@ -71,7 +71,13 @@ export const authAPI = {
 
 // Rooms
 export const roomsAPI = {
-  list: () => api.get("/rooms/"),
+  list: (params) => {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.archived) query.set('archived', 'true');
+    const qs = query.toString();
+    return api.get(`/rooms/${qs ? `?${qs}` : ''}`);
+  },
   get: (id) => api.get(`/rooms/${id}/`),
   create: (data) =>
     api.post("/rooms/", data, {
@@ -86,6 +92,8 @@ export const roomsAPI = {
   leave: (id) => api.post(`/rooms/${id}/leave/`),
   members: (id) => api.get(`/rooms/${id}/members/`),
   manageMember: (id, data) => api.post(`/rooms/${id}/manage_member/`, data),
+  archive: (id) => api.post(`/rooms/${id}/archive/`),
+  unarchive: (id) => api.post(`/rooms/${id}/unarchive/`),
 };
 
 // Sections
@@ -108,6 +116,7 @@ export const contentAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   delete: (id) => api.delete(`/content/${id}/`),
+  bulkDelete: (ids) => api.post("/content/bulk_delete/", { ids }),
 };
 
 // Assignments
@@ -120,6 +129,7 @@ export const assignmentsAPI = {
     }),
   update: (id, data) => api.patch(`/assignments/${id}/`, data),
   delete: (id) => api.delete(`/assignments/${id}/`),
+  bulkDelete: (ids) => api.post("/assignments/bulk_delete/", { ids }),
 };
 
 // Submissions
@@ -131,6 +141,8 @@ export const submissionsAPI = {
     }),
   delete: (id) => api.delete(`/submissions/${id}/`),
   grade: (id, data) => api.post(`/submissions/${id}/grade/`, data),
+  resubmit: (id) => api.delete(`/submissions/${id}/resubmit/`),
+  bulkGrade: (grades) => api.post("/submissions/bulk_grade/", { grades }),
 };
 
 // Announcements

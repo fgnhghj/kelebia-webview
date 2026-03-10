@@ -5,11 +5,14 @@ import { useLanguage } from '../contexts/LanguageContext';
 import {
   roomsAPI, sectionsAPI, contentAPI, assignmentsAPI, announcementsAPI, commentsAPI,
 } from '../api/client';
+import PullToRefresh from '../components/PullToRefresh';
+import ReactMarkdown from 'react-markdown';
 import {
   ArrowLeft, Users, FileText, ClipboardList, Megaphone,
   ChevronRight, ChevronDown, ChevronUp, Clock, Pin, Download,
   ExternalLink, Loader2, Settings, Copy, Check,
   Plus, LogOut, Send, MessageSquare, X, BookOpen, Link2, Paperclip, Edit3,
+  Archive, Image, Film, Music, FileSpreadsheet, FileCode, File,
 } from 'lucide-react';
 
 interface Section {
@@ -199,12 +202,36 @@ export default function RoomDetail() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'lecture': return '📖';
-      case 'tp': return '🔬';
-      case 'exam': return '📝';
-      case 'link': return '🔗';
-      default: return '📄';
+      case 'lecture': return <BookOpen size={18} className="text-accent" />;
+      case 'tp': return <FileCode size={18} style={{ color: 'var(--success)' }} />;
+      case 'exam': return <ClipboardList size={18} style={{ color: 'var(--warning)' }} />;
+      case 'link': return <Link2 size={18} style={{ color: 'var(--info)' }} />;
+      default: return <File size={18} className="text-tertiary" />;
     }
+  };
+
+  const getFileIcon = (ext: string | null) => {
+    if (!ext) return null;
+    const e = ext.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(e))
+      return <Image size={14} style={{ color: 'var(--success)' }} />;
+    if (['mp4', 'avi', 'mov', 'mkv', 'webm'].includes(e))
+      return <Film size={14} style={{ color: 'var(--accent)' }} />;
+    if (['mp3', 'wav', 'ogg', 'flac', 'aac'].includes(e))
+      return <Music size={14} style={{ color: 'var(--gold)' }} />;
+    if (['pdf'].includes(e))
+      return <FileText size={14} style={{ color: 'var(--error)' }} />;
+    if (['xls', 'xlsx', 'csv'].includes(e))
+      return <FileSpreadsheet size={14} style={{ color: 'var(--success)' }} />;
+    if (['doc', 'docx', 'odt', 'rtf', 'txt'].includes(e))
+      return <FileText size={14} style={{ color: 'var(--info)' }} />;
+    if (['ppt', 'pptx', 'odp'].includes(e))
+      return <FileText size={14} style={{ color: 'var(--warning)' }} />;
+    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(e))
+      return <Archive size={14} className="text-tertiary" />;
+    if (['py', 'js', 'ts', 'java', 'c', 'cpp', 'html', 'css', 'json', 'xml'].includes(e))
+      return <FileCode size={14} style={{ color: 'var(--accent)' }} />;
+    return null;
   };
 
   const formatDeadline = (deadline: string | null) => {
@@ -336,6 +363,22 @@ export default function RoomDetail() {
 
   if (!room) return null;
 
+  const handlePullRefresh = async () => {
+    await fetchAll();
+  };
+
+  const handleArchive = async () => {
+    try {
+      if (room.is_archived) {
+        await roomsAPI.unarchive(roomId);
+        setRoom({ ...room, is_archived: false });
+      } else {
+        await roomsAPI.archive(roomId);
+        setRoom({ ...room, is_archived: true });
+      }
+    } catch { /* ignore */ }
+  };
+
   const tabs: { key: Tab; label: string; icon: any; count?: number }[] = [
     { key: 'content', label: t('content'), icon: FileText },
     { key: 'assignments', label: t('tasks'), icon: ClipboardList, count: assignments.length },
@@ -343,6 +386,7 @@ export default function RoomDetail() {
   ];
 
   return (
+    <PullToRefresh onRefresh={handlePullRefresh}>
     <div className="page-container no-padding">
       {/* Room Header */}
       <div className="room-header" style={{ backgroundColor: room.color_theme }}>
@@ -358,6 +402,9 @@ export default function RoomDetail() {
                   <button className="room-code-btn" onClick={copyCode}>
                     <span className="room-code-text">{room.invite_code}</span>
                     {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+                  </button>
+                  <button className="icon-btn-ghost" onClick={handleArchive} title={room.is_archived ? t('unarchive') : t('archive')}>
+                    <Archive size={18} style={room.is_archived ? { color: 'var(--gold)' } : {}} />
                   </button>
                   <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
                     <Settings size={20} />
@@ -455,10 +502,11 @@ export default function RoomDetail() {
                             }
                           }}
                         >
-                          <span className="content-type-emoji">{getTypeIcon(item.content_type)}</span>
+                          <span className="content-type-icon">{getTypeIcon(item.content_type)}</span>
                           <div className="content-item-info">
                             <span className="content-item-title">{item.title}</span>
                             <span className="content-item-meta">
+                              {getFileIcon(item.file_extension)}
                               {item.file_extension?.toUpperCase()}
                               {item.file_size_display && ` · ${item.file_size_display}`}
                             </span>
@@ -558,7 +606,9 @@ export default function RoomDetail() {
                     </span>
                   </div>
                   <h4 className="announcement-title">{ann.title}</h4>
-                  <p className={`announcement-body ${expandedAnnouncements.has(ann.id) ? 'expanded' : ''}`}>{ann.body}</p>
+                  <div className={`announcement-body ${expandedAnnouncements.has(ann.id) ? 'expanded' : ''}`}>
+                    <ReactMarkdown>{ann.body}</ReactMarkdown>
+                  </div>
                   {ann.body.length > 120 && (
                     <button className="read-more-btn" onClick={() => toggleExpanded(ann.id)}>
                       {expandedAnnouncements.has(ann.id) ? t('show_less') || 'Show less' : t('read_more') || 'Read more'}
@@ -827,5 +877,6 @@ export default function RoomDetail() {
         </Modal>
       )}
     </div>
+    </PullToRefresh>
   );
 }

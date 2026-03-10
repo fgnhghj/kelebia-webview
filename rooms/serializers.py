@@ -11,7 +11,7 @@ class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['id', 'name', 'description', 'subject', 'invite_code',
-                  'color_theme', 'cover_image', 'is_active', 'teacher',
+                  'color_theme', 'cover_image', 'is_active', 'is_archived', 'teacher',
                   'student_count', 'is_member', 'created_at', 'updated_at']
         read_only_fields = ['id', 'invite_code', 'teacher', 'created_at', 'updated_at']
 
@@ -40,7 +40,7 @@ class RoomStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['id', 'name', 'description', 'subject',
-                  'color_theme', 'cover_image', 'is_active', 'teacher',
+                  'color_theme', 'cover_image', 'is_active', 'is_archived', 'teacher',
                   'student_count', 'is_member', 'created_at', 'updated_at']
         read_only_fields = ['id', 'teacher', 'created_at', 'updated_at']
 

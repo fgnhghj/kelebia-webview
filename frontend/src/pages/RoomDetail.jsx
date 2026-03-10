@@ -12,8 +12,10 @@ import {
     FiFolderPlus, FiFolder, FiDownload, FiExternalLink, FiPlus,
     FiCheckCircle, FiAward, FiMapPin, FiMessageCircle,
     FiCheck, FiX, FiTrash2, FiBookOpen, FiEye, FiRefreshCw,
-    FiSave, FiImage, FiMaximize2, FiMinimize2, FiArrowDown, FiArrowUp, FiLogOut
+    FiSave, FiImage, FiMaximize2, FiMinimize2, FiArrowDown, FiArrowUp, FiLogOut,
+    FiArchive
 } from 'react-icons/fi';
+import ReactMarkdown from 'react-markdown';
 
 const TYPE_ICONS = {
     lecture: <FiFileText />,
@@ -741,6 +743,32 @@ export default function RoomDetail() {
                                 >
                                     <FiMaximize2 size={14} />
                                 </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            if (room.is_archived) {
+                                                await roomsAPI.unarchive(room.id);
+                                                toast.success('Room unarchived');
+                                            } else {
+                                                await roomsAPI.archive(room.id);
+                                                toast.success('Room archived');
+                                            }
+                                            loadAll();
+                                        } catch { toast.error('Failed'); }
+                                    }}
+                                    title={room.is_archived ? 'Unarchive' : 'Archive'}
+                                    style={{
+                                        background: room.is_archived ? 'rgba(255,200,0,0.2)' : 'rgba(255,255,255,0.1)', color: 'white',
+                                        border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px',
+                                        padding: '6px 10px', fontSize: 13, fontWeight: 500,
+                                        display: 'flex', alignItems: 'center', gap: 6,
+                                        cursor: 'pointer', transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+                                    onMouseOut={e => { e.currentTarget.style.background = room.is_archived ? 'rgba(255,200,0,0.2)' : 'rgba(255,255,255,0.1)'; }}
+                                >
+                                    <FiArchive size={14} />
+                                </button>
                             </div>
                         </div>
                     )}
@@ -1306,7 +1334,7 @@ export default function RoomDetail() {
                                             )}
                                         </div>
                                         <h4 style={{ fontWeight: 700, marginBottom: 4 }}>{a.title}</h4>
-                                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{a.body}</p>
+                                        <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}><ReactMarkdown>{a.body}</ReactMarkdown></div>
                                         <button
                                             onClick={() => handleToggleComments(a.id)}
                                             style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 12, display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
