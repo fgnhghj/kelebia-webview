@@ -86,9 +86,17 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == FILE_CHOOSER_REQUEST && fileUploadCallback != null) {
             Uri[] results = null;
             if (resultCode == Activity.RESULT_OK && data != null) {
-                String dataString = data.getDataString();
-                if (dataString != null) {
-                    results = new Uri[]{Uri.parse(dataString)};
+                if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    results = new Uri[count];
+                    for (int i = 0; i < count; i++) {
+                        results[i] = data.getClipData().getItemAt(i).getUri();
+                    }
+                } else {
+                    String dataString = data.getDataString();
+                    if (dataString != null) {
+                        results = new Uri[]{Uri.parse(dataString)};
+                    }
                 }
             }
             fileUploadCallback.onReceiveValue(results);

@@ -6,6 +6,9 @@ from django.db.models import Count, Q, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from .models import Room, RoomMembership
 from .serializers import RoomSerializer, RoomStudentSerializer, RoomCreateSerializer, RoomMembershipSerializer
+import logging
+
+logger = logging.getLogger(__name__)
 from content.models import Section
 from notifications.models import Notification
 
@@ -64,14 +67,17 @@ class RoomViewSet(viewsets.ModelViewSet):
             Notification.objects.create(
                 user=room.teacher,
                 notification_type='room',
-                title='New Student Joined',
-                message=f'{request.user.get_full_name() or request.user.username} joined {room.name}',
+                title='Nouvel étudiant',
+                message=f'{request.user.get_full_name() or request.user.username} a rejoint {room.name}',
                 link=f'/rooms/{room.pk}/',
             )
+
+        # Use student serializer so invite_code is never exposed to students
+        SerializerClass = RoomSerializer if request.user.is_teacher else RoomStudentSerializer
         return Response({
-            'room': RoomSerializer(room, context={'request': request}).data,
+            'room': SerializerClass(room, context={'request': request}).data,
             'joined': created,
-            'message': 'Joined successfully!' if created else 'Already a member.'
+            'message': 'Rejoint avec succès !' if created else 'Déjà membre.'
         })
 
     @action(detail=True, methods=['get'])
@@ -97,7 +103,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             member_ids = [request.data.get('member_id')]
 
         action_type = request.data.get('action')  # 'approve' or 'remove'
-        
+
         if not member_ids:
             return Response({'error': 'No members specified.'}, status=400)
 

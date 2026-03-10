@@ -179,17 +179,18 @@ if not DEBUG:
 FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 
-# Brevo email — HTTP API (300 emails/day) + SMTP relay
-# Sign up at https://brevo.com, get API key, verify sender email
-BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
-BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', '')
+# Mailjet email — SMTP relay (200 emails/day free, 6000/month)
+# Docs: https://dev.mailjet.com/smtp-relay/
+MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY', 'dd7fad69d981609bb25185304479e812')
+MAILJET_SECRET_KEY = os.environ.get('MAILJET_SECRET_KEY', '1ff471d2c5f60def4c770ac95b339f02')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'kelebia.classroom@gmail.com')
 SITE_URL = os.environ.get('SITE_URL', 'https://isetkl-classroom.gleeze.com')
 
-# Brevo SMTP (for Django's send_mail / password reset emails)
+# Mailjet SMTP (for Django's send_mail / password reset emails)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp-relay.brevo.com')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'in-v3.mailjet.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = f'Kelebia Classroom <{BREVO_SENDER_EMAIL or "noreply@kelebia.com"}>'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', MAILJET_API_KEY)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', MAILJET_SECRET_KEY)
+DEFAULT_FROM_EMAIL = f'ISET Classroom <{SENDER_EMAIL}>'

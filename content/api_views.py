@@ -1,6 +1,8 @@
 import csv
 import logging
 import threading
+
+logger = logging.getLogger(__name__)
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -68,21 +70,37 @@ class ContentViewSet(viewsets.ModelViewSet):
         content = serializer.save()
         room = content.room
 
+        # Collect members once — used for both TP assignment notifs and content notifs
+        members = list(RoomMembership.objects.filter(room=room, status='approved').select_related('student'))
+
         # Auto-create assignment when TP content is uploaded
         if content.content_type == 'tp':
             deadline = timezone.now() + timedelta(weeks=1)
-            Assignment.objects.create(
+            auto_assignment = Assignment.objects.create(
                 room=room,
                 section=content.section,
                 title=f"TP: {content.title}",
                 description=f"Devoir auto-créé pour le TP \"{content.title}\"",
                 deadline=deadline,
                 max_grade=20,
+                allow_late=False,
             )
+            # Notify students about the auto-created assignment
+            assign_notifications = [
+                Notification(
+                    user=m.student,
+                    notification_type='assignment',
+                    title='Nouveau devoir',
+                    message=f'Nouveau devoir "{auto_assignment.title}" dans {room.name}',
+                    link=f'/rooms/{room.pk}/',
+                )
+                for m in members
+            ]
+            if assign_notifications:
+                Notification.objects.bulk_create(assign_notifications)
 
-        # Notify students by email + in-app
-        members = RoomMembership.objects.filter(room=room, status='approved')
-        notifications = [
+        # Notify students about the new content
+        content_notifications = [
             Notification(
                 user=m.student,
                 notification_type='content',
@@ -92,7 +110,8 @@ class ContentViewSet(viewsets.ModelViewSet):
             )
             for m in members
         ]
-        Notification.objects.bulk_create(notifications)
+        if content_notifications:
+            Notification.objects.bulk_create(content_notifications)
         try:
             threading.Thread(
                 target=notify_room_members,
@@ -101,7 +120,7 @@ class ContentViewSet(viewsets.ModelViewSet):
                 daemon=True,
             ).start()
         except Exception as e:
-            logger.warning(f'Failed to start email notification thread: {e}')  # H4: Log instead of silently ignore
+            logger.warning(f'Failed to start email notification thread: {e}')
 
 
 class AssignmentViewSet(viewsets.ModelViewSet):
@@ -125,7 +144,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         assignment = serializer.save()
         room = assignment.room
-        members = RoomMembership.objects.filter(room=room, status='approved')
+        members = RoomMembership.objects.filter(room=room, status='approved').select_related('student')
         notifications = [
             Notification(
                 user=m.student,
@@ -136,7 +155,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             )
             for m in members
         ]
-        Notification.objects.bulk_create(notifications)
+        if notifications:
+            Notification.objects.bulk_create(notifications)
         try:
             threading.Thread(
                 target=notify_room_members,
@@ -145,7 +165,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
                 daemon=True,
             ).start()
         except Exception as e:
-            logger.warning(f'Failed to start email notification thread: {e}')  # H4: Log instead of silently ignore
+            logger.warning(f'Failed to start email notification thread: {e}')
 
     @action(detail=True, methods=['get'])
     def export_grades(self, request, pk=None):
@@ -244,7 +264,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
                 daemon=True,
             ).start()
         except Exception as e:
-            logger.warning(f'Failed to start email notification thread: {e}')  # H4: Log instead of silently ignore
+            logger.warning(f'Failed to start email notification thread: {e}')
 
     @action(detail=True, methods=['post'])
     def grade(self, request, pk=None):

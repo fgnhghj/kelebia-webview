@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { Capacitor } from '@capacitor/core';
-import { LocalNotifications } from '@capacitor/local-notifications';
-import { api, authAPI, notificationsAPI } from '../api/client';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { Capacitor } from "@capacitor/core";
+import { LocalNotifications } from "@capacitor/local-notifications";
+import { api, authAPI, notificationsAPI } from "../api/client";
 
 export interface User {
   id: number;
@@ -10,7 +17,7 @@ export interface User {
   first_name: string;
   last_name: string;
   full_name: string;
-  role: 'teacher' | 'student';
+  role: "teacher" | "student";
   avatar: string | null;
   bio: string;
   institution: string;
@@ -23,8 +30,18 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   unreadCount: number;
-  login: (email: string, password: string, totpCode?: string) => Promise<{ requires_2fa?: boolean }>;
-  signup: (data: { first_name: string; last_name: string; email: string; password: string; role: string }) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    totpCode?: string,
+  ) => Promise<{ requires_2fa?: boolean }>;
+  signup: (data: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+    role: string;
+  }) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
@@ -46,40 +63,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!Capacitor.isNativePlatform()) return;
     try {
       const { display } = await LocalNotifications.checkPermissions();
-      if (display === 'granted') return;
+      if (display === "granted") return;
       // Ask every time the app finds the user hasn't granted
       await LocalNotifications.requestPermissions();
-    } catch { /* ignore on web */ }
+    } catch {
+      /* ignore on web */
+    }
   }, []);
 
   /* ─── Fire a local notification when new unread arrives ── */
-  const fireLocalNotification = useCallback(async (title: string, body: string) => {
-    if (!Capacitor.isNativePlatform()) return;
-    try {
-      const { display } = await LocalNotifications.checkPermissions();
-      if (display !== 'granted') {
-        if (!permissionRequested.current) {
-          permissionRequested.current = true;
-          const res = await LocalNotifications.requestPermissions();
-          if (res.display !== 'granted') return;
-        } else {
-          return;
+  const fireLocalNotification = useCallback(
+    async (title: string, body: string) => {
+      if (!Capacitor.isNativePlatform()) return;
+      try {
+        const { display } = await LocalNotifications.checkPermissions();
+        if (display !== "granted") {
+          if (!permissionRequested.current) {
+            permissionRequested.current = true;
+            const res = await LocalNotifications.requestPermissions();
+            if (res.display !== "granted") return;
+          } else {
+            return;
+          }
         }
+        // Android notification id must be a 32-bit int
+        const id = Math.floor(Math.random() * 2147483646) + 1;
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title,
+              body,
+              id,
+              smallIcon: "ic_notification",
+              largeIcon: "ic_launcher",
+              iconColor: "#D4845A",
+            },
+          ],
+        });
+      } catch (e) {
+        console.warn("LocalNotif error", e);
       }
-      // Android notification id must be a 32-bit int
-      const id = Math.floor(Math.random() * 2147483646) + 1;
-      await LocalNotifications.schedule({
-        notifications: [{
-          title,
-          body,
-          id,
-          smallIcon: 'ic_notification',
-          largeIcon: 'ic_launcher',
-          iconColor: '#D4845A',
-        }],
-      });
-    } catch (e) { console.warn('LocalNotif error', e); }
-  }, []);
+    },
+    [],
+  );
 
   const refreshUser = useCallback(async () => {
     try {
@@ -101,14 +127,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fetch latest notification to get real title/message
         try {
           const list = await notificationsAPI.list();
-          const latest = Array.isArray(list) ? list.find((n: any) => !n.is_read) : null;
+          const latest = Array.isArray(list)
+            ? list.find((n: any) => !n.is_read)
+            : null;
           if (latest) {
-            fireLocalNotification(latest.title || 'ISET Classroom', latest.message || 'New notification');
+            fireLocalNotification(
+              latest.title || "ISET Classroom",
+              latest.message || "New notification",
+            );
           } else {
-            fireLocalNotification('ISET Classroom', `${newCount - prevUnreadRef.current} new notification(s)`);
+            fireLocalNotification(
+              "ISET Classroom",
+              `${newCount - prevUnreadRef.current} new notification(s)`,
+            );
           }
         } catch {
-          fireLocalNotification('ISET Classroom', `${newCount - prevUnreadRef.current} new notification(s)`);
+          fireLocalNotification(
+            "ISET Classroom",
+            `${newCount - prevUnreadRef.current} new notification(s)`,
+          );
         }
       }
       prevUnreadRef.current = newCount;
@@ -148,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await requestNotificationPermission();
       await refreshNotifications();
     };
-    const interval = setInterval(poll, 5000);
+    const interval = setInterval(poll, 30000);
     return () => clearInterval(interval);
   }, [user, refreshNotifications, requestNotificationPermission]);
 
@@ -168,13 +205,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {};
   };
 
-  const signup = async (signupData: { first_name: string; last_name: string; email: string; password: string; role: string }) => {
+  const signup = async (signupData: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+    role: string;
+  }) => {
     const data = await authAPI.signup(signupData);
     api.setTokens(data.tokens.access, data.tokens.refresh);
     setUser(data.user);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const refresh = localStorage.getItem("refresh_token");
+    if (refresh) {
+      try {
+        await api.post("/auth/token/blacklist/", { refresh });
+      } catch {
+        // Ignore network/server errors and still clear local session
+      }
+    }
     api.clearTokens();
     setUser(null);
     setUnreadCount(0);
@@ -193,8 +244,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         refreshUser,
         refreshNotifications,
-        isTeacher: user?.role === 'teacher',
-        isStudent: user?.role === 'student',
+        isTeacher: user?.role === "teacher",
+        isStudent: user?.role === "student",
       }}
     >
       {children}
@@ -204,6 +255,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }

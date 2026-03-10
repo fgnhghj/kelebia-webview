@@ -7,6 +7,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenBlacklistView
 
 from accounts.api_views import (
     api_signup, api_login, api_me, api_delete_avatar,
@@ -49,8 +50,9 @@ urlpatterns = [
     # Grades overview for students
     path('api/grades/overview/', student_grades_overview, name='student_grades_overview'),
 
-    # JWT token refresh
+    # JWT token refresh / blacklist
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
 ]
 
 # Serve media/static files — in production nginx handles this,

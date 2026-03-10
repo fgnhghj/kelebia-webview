@@ -38,8 +38,8 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             Notification(
                 user=m.student,
                 notification_type='announcement',
-                title='New Announcement',
-                message=f'{announcement.title} in {room.name}',
+                title='Nouvelle annonce',
+                message=f'"{announcement.title}" dans {room.name}',
                 link=f'/rooms/{room.pk}/',
             )
             for m in members
@@ -78,7 +78,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             Notification.objects.create(
                 user=announcement.author,
                 notification_type='comment',
-                title='New Comment',
-                message=f'{self.request.user.get_full_name()} commented on "{announcement.title}"',
+                title='Nouveau commentaire',
+                message=f'{self.request.user.get_full_name() or self.request.user.username} a commenté sur "{announcement.title}"',
                 link=f'/rooms/{announcement.room.pk}/',
             )
