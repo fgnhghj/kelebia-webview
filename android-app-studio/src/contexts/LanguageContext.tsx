@@ -122,6 +122,7 @@ const translations = {
     dark_mode: "Mode sombre",
     light_mode: "Mode clair",
   },
+  en: {
     good_morning: "Good morning",
     good_afternoon: "Good afternoon",
     good_evening: "Good evening",
