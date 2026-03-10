@@ -179,18 +179,15 @@ if not DEBUG:
 FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 
-# Resend email — SMTP relay (100 emails/day free, 3000/month)
-# Docs: https://resend.com/docs/send-with-smtp
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY', 're_PhSV2sF5_Ah6di8kdSRZjfMrQ4hxtgZCR')
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'aymnhamoudihm@gmail.com')
+# Gmail SMTP — 500 emails/day free via App Password
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'zaaallamni@gmail.com')
 SITE_URL = os.environ.get('SITE_URL', 'https://isetkl-classroom.gleeze.com')
 
-# Resend SMTP (for Django's send_mail / password reset emails)
+# Gmail SMTP (for Django's send_mail / password reset emails)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.resend.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '465'))
-EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True').lower() in ('true', '1', 'yes')
-EMAIL_USE_TLS = False
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'resend')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', RESEND_API_KEY)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', SENDER_EMAIL)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'mxdzobuacnbnimqq')
 DEFAULT_FROM_EMAIL = f'ISET Classroom <{SENDER_EMAIL}>'
