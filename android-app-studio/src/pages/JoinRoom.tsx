@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { roomsAPI } from '../api/client';
 import {
-  Search, LogIn, Loader2, AlertCircle, CheckCircle2,
-  Users, ArrowRight,
+  Search, Loader2, AlertCircle, CheckCircle2,
+  Users, ArrowRight, Compass, Hash, BookOpen, Zap,
 } from 'lucide-react';
 
 export default function JoinRoom() {
@@ -33,25 +33,30 @@ export default function JoinRoom() {
 
   return (
     <div className="page-container">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">{t('explore')}</h1>
-          <p className="page-subtitle">{t('join_with_code')}</p>
+      {/* Hero */}
+      <div className="explore-hero">
+        <div className="explore-hero-icon">
+          <Compass size={36} />
         </div>
-      </header>
+        <h1 className="explore-hero-title">{t('explore')}</h1>
+        <p className="explore-hero-desc">{t('join_with_code')}</p>
+      </div>
 
       {/* Search / Join Form */}
-      <form onSubmit={handleJoin} className="join-form">
+      <form onSubmit={handleJoin} className="explore-form-card">
+        <div className="explore-form-label">
+          <Hash size={16} />
+          <span>{t('enter_code')}</span>
+        </div>
         <div className="join-input-wrapper">
           <Search size={20} className="join-input-icon" />
           <input
             type="text"
-            placeholder={t('enter_code')}
+            placeholder="ABC123"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             className="join-input"
             maxLength={8}
-            autoFocus
           />
           <button
             type="submit"
@@ -99,14 +104,30 @@ export default function JoinRoom() {
         </div>
       )}
 
-      {/* Tips */}
-      <div className="join-tips">
-        <h3>{t('how_to_join')}</h3>
-        <ul>
-          <li>{t('tip_1')}</li>
-          <li>{t('tip_2')}</li>
-          <li>{t('tip_3')}</li>
-        </ul>
+      {/* Step Cards */}
+      <div className="explore-steps">
+        <h3 className="explore-steps-title">{t('how_to_join')}</h3>
+        <div className="explore-step-card">
+          <div className="explore-step-num">1</div>
+          <div className="explore-step-body">
+            <BookOpen size={18} className="explore-step-icon" />
+            <p>{t('tip_1')}</p>
+          </div>
+        </div>
+        <div className="explore-step-card">
+          <div className="explore-step-num">2</div>
+          <div className="explore-step-body">
+            <Hash size={18} className="explore-step-icon" />
+            <p>{t('tip_2')}</p>
+          </div>
+        </div>
+        <div className="explore-step-card">
+          <div className="explore-step-num">3</div>
+          <div className="explore-step-body">
+            <Zap size={18} className="explore-step-icon" />
+            <p>{t('tip_3')}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

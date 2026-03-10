@@ -56,6 +56,9 @@ export default function Notifications() {
 
   useEffect(() => {
     fetchNotifications();
+    // Auto-refresh notifications every 5s
+    const interval = setInterval(fetchNotifications, 5000);
+    return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   const markRead = async (id: number) => {

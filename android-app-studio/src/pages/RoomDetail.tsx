@@ -128,26 +128,30 @@ export default function RoomDetail() {
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
 
+  const fetchAll = async (isBackground = false) => {
+    try {
+      const [roomData, sectionData, assignmentData, announcementData] = await Promise.all([
+        roomsAPI.get(roomId),
+        sectionsAPI.list(roomId),
+        assignmentsAPI.list(roomId),
+        announcementsAPI.list(roomId),
+      ]);
+      setRoom(roomData);
+      setSections(sectionData);
+      setAssignments(assignmentData);
+      setAnnouncements(announcementData);
+      if (!isBackground && sectionData.length > 0) setSelectedSectionId(sectionData[0].id);
+    } catch {
+      if (!isBackground) navigate('/home', { replace: true });
+    }
+    if (!isBackground) setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [roomData, sectionData, assignmentData, announcementData] = await Promise.all([
-          roomsAPI.get(roomId),
-          sectionsAPI.list(roomId),
-          assignmentsAPI.list(roomId),
-          announcementsAPI.list(roomId),
-        ]);
-        setRoom(roomData);
-        setSections(sectionData);
-        setAssignments(assignmentData);
-        setAnnouncements(announcementData);
-        if (sectionData.length > 0) setSelectedSectionId(sectionData[0].id);
-      } catch {
-        navigate('/home', { replace: true });
-      }
-      setLoading(false);
-    };
     fetchAll();
+    // Auto-refresh room data every 8s
+    const interval = setInterval(() => fetchAll(true), 8000);
+    return () => clearInterval(interval);
   }, [roomId, navigate]);
 
   const copyCode = () => {

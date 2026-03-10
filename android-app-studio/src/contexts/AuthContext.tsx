@@ -53,27 +53,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   /* ─── Fire a local notification when new unread arrives ── */
-  const fireLocalNotification = useCallback(async (count: number) => {
+  const fireLocalNotification = useCallback(async (title: string, body: string) => {
     if (!Capacitor.isNativePlatform()) return;
     try {
       const { display } = await LocalNotifications.checkPermissions();
       if (display !== 'granted') {
         if (!permissionRequested.current) {
           permissionRequested.current = true;
-          await LocalNotifications.requestPermissions();
+          const res = await LocalNotifications.requestPermissions();
+          if (res.display !== 'granted') return;
+        } else {
+          return;
         }
-        return;
       }
+      // Android notification id must be a 32-bit int
+      const id = Math.floor(Math.random() * 2147483646) + 1;
       await LocalNotifications.schedule({
         notifications: [{
-          title: 'ISET Classroom',
-          body: `Vous avez ${count} nouvelle(s) notification(s)`,
-          id: Date.now(),
+          title,
+          body,
+          id,
           smallIcon: 'ic_launcher',
           largeIcon: 'ic_launcher',
         }],
       });
-    } catch { /* ignore */ }
+    } catch (e) { console.warn('LocalNotif error', e); }
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -93,8 +97,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // If unread count increased → new notification arrived
       if (newCount > prevUnreadRef.current && prevUnreadRef.current >= 0) {
-        const diff = newCount - prevUnreadRef.current;
-        fireLocalNotification(diff);
+        // Fetch latest notification to get real title/message
+        try {
+          const list = await notificationsAPI.list();
+          const latest = Array.isArray(list) ? list.find((n: any) => !n.is_read) : null;
+          if (latest) {
+            fireLocalNotification(latest.title || 'ISET Classroom', latest.message || 'New notification');
+          } else {
+            fireLocalNotification('ISET Classroom', `${newCount - prevUnreadRef.current} new notification(s)`);
+          }
+        } catch {
+          fireLocalNotification('ISET Classroom', `${newCount - prevUnreadRef.current} new notification(s)`);
+        }
       }
       prevUnreadRef.current = newCount;
       setUnreadCount(newCount);
@@ -133,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await requestNotificationPermission();
       await refreshNotifications();
     };
-    const interval = setInterval(poll, 30000);
+    const interval = setInterval(poll, 5000);
     return () => clearInterval(interval);
   }, [user, refreshNotifications, requestNotificationPermission]);
 

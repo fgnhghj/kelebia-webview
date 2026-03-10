@@ -42,6 +42,9 @@ export default function Home() {
 
   useEffect(() => {
     fetchRooms();
+    // Auto-refresh rooms every 8s
+    const interval = setInterval(() => fetchRooms(), 8000);
+    return () => clearInterval(interval);
   }, [fetchRooms]);
 
   const getGreeting = () => {
