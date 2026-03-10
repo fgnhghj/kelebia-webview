@@ -1679,6 +1679,37 @@
   display: flex; align-items: center; gap: 2px;
   flex-shrink: 0;
 }
+.file-viewer-actions .downloading { color: var(--accent); }
+.file-viewer-actions .dl-done { color: #4ade80; }
+
+/* Download progress bar */
+.dl-progress-bar-wrap {
+  position: relative;
+  height: 28px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.dl-progress-bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--accent) 0%, #c4623f 100%);
+  opacity: 0.25;
+  transition: width 0.3s ease;
+}
+.dl-progress-bar.done {
+  background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+  opacity: 0.2;
+}
+.dl-progress-text {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  height: 100%;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
 .file-viewer-body {
   flex: 1; position: relative;
   overflow: auto;

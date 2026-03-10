@@ -161,6 +161,12 @@ jobs:
           sed -i 's/android:windowFullscreen="true"/android:windowFullscreen="false"/g' "$MANIFEST"
           sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
           sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
+          # Add storage permissions for file downloads
+          sed -i '/<uses-permission android:name="android.permission.INTERNET"/a\
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />' "$MANIFEST"
+          # Add requestLegacyExternalStorage for API 29
+          sed -i 's/<application/<application android:requestLegacyExternalStorage="true"/' "$MANIFEST"
 
       - name: Fix Kotlin version conflicts
         run: |

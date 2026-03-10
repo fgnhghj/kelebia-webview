@@ -1,7 +1,9 @@
 """Email utilities for Kelebia Classroom.
 
 Uses Django's SMTP backend (configured via EMAIL_HOST settings).
+Professional branded email templates matching the site aesthetic.
 """
+import re
 import logging
 from django.conf import settings
 from django.core.mail import send_mail
@@ -10,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def _html_to_text(html):
-    """Strip basic HTML tags to produce a plain-text fallback."""
-    import re
+    """Strip HTML tags to produce a plain-text fallback."""
     text = re.sub(r'<[^>]+>', ' ', html)
     return ' '.join(text.split())
 
@@ -21,7 +22,7 @@ def _send_email(to_email, to_name, subject, html_body):
     try:
         send_mail(
             subject=subject,
-            message=_html_to_text(html_body),  # L7: proper plain-text fallback
+            message=_html_to_text(html_body),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to_email],
             html_message=html_body,
@@ -31,21 +32,126 @@ def _send_email(to_email, to_name, subject, html_body):
         logger.warning(f'Email failed for {to_email}: {e}')
 
 
-def _build_html(greeting, body_text, cta_url=None):
-    """Build a simple styled HTML email."""
-    cta = ''
+def _build_html(greeting, body_text, cta_url=None, cta_label=None):
+    """Build a professional branded HTML email matching the Kelebia site aesthetic."""
+    site_url = getattr(settings, 'SITE_URL', 'https://isetkl-classroom.gleeze.com')
+    year = __import__('datetime').datetime.now().year
+
+    cta_block = ''
     if cta_url:
-        cta = f'<p style="margin-top:20px"><a href="{cta_url}" style="background:#6366f1;color:white;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600">Ouvrir Kelebia Classroom</a></p>'
-    return f'''
-    <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px">
-        <h2 style="color:#6366f1;margin-bottom:4px">Kelebia Classroom</h2>
-        <hr style="border:none;border-top:2px solid #e5e7eb;margin:12px 0 20px">
-        <p style="font-size:15px"><strong>{greeting}</strong></p>
-        <p style="font-size:14px;color:#374151;line-height:1.6">{body_text}</p>
-        {cta}
-        <p style="font-size:12px;color:#9ca3af;margin-top:24px">— Kelebia Classroom</p>
-    </div>
-    '''
+        label = cta_label or 'Ouvrir Kelebia Classroom'
+        cta_block = f'''
+            <tr>
+              <td style="padding: 8px 40px 32px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                  <tr>
+                    <td style="background: #1a1a2e; border-radius: 8px;">
+                      <a href="{cta_url}" target="_blank"
+                         style="display: inline-block; padding: 14px 36px; color: #ffffff;
+                                font-size: 15px; font-weight: 600; text-decoration: none;
+                                font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+                                letter-spacing: 0.3px;">
+                        {label} &rarr;
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>'''
+
+    return f'''<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{greeting}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f3f1; -webkit-font-smoothing: antialiased;">
+  <!-- Outer wrapper -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="background-color: #f4f3f1; padding: 40px 16px;">
+    <tr>
+      <td align="center">
+        <!-- Card -->
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0"
+               style="max-width: 560px; width: 100%; background: #ffffff;
+                      border-radius: 12px; overflow: hidden;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);">
+
+          <!-- Header bar -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a2e 0%, #2d2b55 100%);
+                       padding: 28px 40px; text-align: center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="background: rgba(255,255,255,0.15); width: 36px; height: 36px;
+                             border-radius: 8px; text-align: center; vertical-align: middle;
+                             font-family: Georgia, 'Times New Roman', serif;
+                             font-size: 18px; font-weight: 600; color: #ffffff;
+                             letter-spacing: -0.5px;">
+                    K
+                  </td>
+                  <td style="padding-left: 12px;
+                             font-family: Georgia, 'Times New Roman', serif;
+                             font-size: 20px; font-weight: 500; color: #ffffff;
+                             letter-spacing: -0.3px;">
+                    Kelebia Classroom
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Body content -->
+          <tr>
+            <td style="padding: 36px 40px 8px;">
+              <p style="margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #1a1a2e;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
+                {greeting}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px 28px;">
+              <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #4a4a5a;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
+                {body_text}
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA button -->
+          {cta_block}
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <div style="border-top: 1px solid #eeeee8; margin: 0;"></div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px 28px; text-align: center;">
+              <p style="margin: 0 0 8px; font-size: 12px; color: #9a9a9a;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
+                Vous recevez cet email car vous avez un compte sur
+                <a href="{site_url}" style="color: #6a6a8a; text-decoration: underline;">Kelebia Classroom</a>.
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #b5b5b5;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
+                &copy; {year} Kelebia Classroom &mdash; ISEK
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Card -->
+      </td>
+    </tr>
+  </table>
+</body>
+</html>'''
 
 
 def send_notification_email(user, subject, message):
@@ -56,7 +162,30 @@ def send_notification_email(user, subject, message):
         message,
         cta_url=site_url,
     )
-    _send_email(user.email, user.get_full_name(), f'Kelebia — {subject}', html)
+    _send_email(user.email, user.get_full_name(), f'Kelebia Classroom — {subject}', html)
+
+
+def send_verification_email(user, code):
+    """Send a verification code email (password reset etc.)."""
+    site_url = getattr(settings, 'SITE_URL', 'https://isetkl-classroom.gleeze.com')
+    body = f'''Voici votre code de vérification\u00a0:
+    <div style="margin: 20px 0; text-align: center;">
+      <span style="display: inline-block; background: #f4f3f1; border: 1px solid #e5e5e0;
+                   border-radius: 10px; padding: 16px 32px;
+                   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+                   font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #1a1a2e;">
+        {code}
+      </span>
+    </div>
+    <span style="color: #9a9a9a; font-size: 13px;">Ce code expire dans 10 minutes. Ne le partagez avec personne.</span>'''
+
+    html = _build_html(
+        f'Bonjour {user.first_name or user.username},',
+        body,
+        cta_url=site_url,
+        cta_label='Aller à Kelebia Classroom',
+    )
+    _send_email(user.email, user.get_full_name(), 'Kelebia Classroom — Code de vérification', html)
 
 
 def notify_room_members(room, subject, message, exclude_user=None):

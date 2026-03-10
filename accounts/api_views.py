@@ -161,17 +161,13 @@ def api_disable_2fa(request):
 def api_forgot_password(request):
     """Send a password reset code to the user's email."""
     from .models import User
-    from accounts.emails import send_notification_email
+    from accounts.emails import send_verification_email
     email = request.data.get('email', '').strip().lower()
     # Always return success to avoid email enumeration
     try:
         user = User.objects.get(email=email)
         code = user.generate_verification_code()
-        send_notification_email(
-            user,
-            'Réinitialisation du mot de passe',
-            f'Votre code de réinitialisation est : <strong>{code}</strong><br>Ce code expire dans 10 minutes.',
-        )
+        send_verification_email(user, code)
     except User.DoesNotExist:
         pass
     return Response({'detail': 'Si un compte existe avec cet email, un code a été envoyé.'})
