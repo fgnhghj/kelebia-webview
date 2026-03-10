@@ -182,7 +182,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 # Resend email — SMTP relay (100 emails/day free, 3000/month)
 # Docs: https://resend.com/docs/send-with-smtp
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', 're_PhSV2sF5_Ah6di8kdSRZjfMrQ4hxtgZCR')
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'aymnhamoudihm@gmail.com')
 SITE_URL = os.environ.get('SITE_URL', 'https://isetkl-classroom.gleeze.com')
 
 # Resend SMTP (for Django's send_mail / password reset emails)
