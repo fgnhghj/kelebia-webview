@@ -77,6 +77,17 @@ async function showNotification(id: number, title: string, body: string) {
   } catch { /* ignore */ }
 }
 
+/** Ensure filesystem permissions are granted */
+async function ensureFilesystemPermissions() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const perms = await Filesystem.checkPermissions();
+    if (perms.publicStorage !== 'granted') {
+      await Filesystem.requestPermissions();
+    }
+  } catch { /* ignore - newer Android doesn't need this */ }
+}
+
 export default function FileViewer() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -140,9 +151,11 @@ export default function FileViewer() {
     try {
       // Show "starting" notification
       await showNotification(nId, '⬇️ Downloading…', `Starting download: ${title}`);
+      // Ensure storage permissions
+      await ensureFilesystemPermissions();
 
       if (Capacitor.isNativePlatform()) {
-        /* ─── Native: Use Filesystem.downloadFile or XHR → Filesystem.writeFile ─── */
+        /* ─── Native: XHR with progress → Filesystem.writeFile ─── */
         const token = localStorage.getItem('access_token');
 
         // Use XHR for progress tracking
@@ -156,8 +169,7 @@ export default function FileViewer() {
             if (evt.lengthComputable) {
               const pct = Math.round((evt.loaded / evt.total) * 100);
               setDlProgress(pct);
-              // Update notification every 20%
-              if (pct % 20 === 0 || pct === 100) {
+              if (pct % 25 === 0 || pct >= 99) {
                 showNotification(nId, '⬇️ Downloading…', `${title} — ${pct}%`);
               }
             }
@@ -176,10 +188,16 @@ export default function FileViewer() {
 
         setDlProgress(100);
 
-        // Convert to base64 and write to Downloads
+        // Convert to base64
         const base64Data = bufferToBase64(data);
 
-        // Try to write to Downloads directory
+        // Try multiple directories — different Android versions behave differently
+        let saved = false;
+        const dirs = [
+          { dir: Directory.Documents, label: 'Documents' },
+          { dir: Directory.Cache, label: 'Cache' },
+        ];
+        // Try ExternalStorage/Download first (works on older Android)
         try {
           await Filesystem.writeFile({
             path: `Download/${fileName}`,
@@ -187,18 +205,28 @@ export default function FileViewer() {
             directory: Directory.ExternalStorage,
             recursive: true,
           });
-        } catch {
-          // Fallback: write to app's documents
-          await Filesystem.writeFile({
-            path: fileName,
-            data: base64Data,
-            directory: Directory.Documents,
-            recursive: true,
-          });
+          saved = true;
+        } catch { /* continue */ }
+
+        if (!saved) {
+          for (const { dir } of dirs) {
+            try {
+              await Filesystem.writeFile({
+                path: fileName,
+                data: base64Data,
+                directory: dir,
+                recursive: true,
+              });
+              saved = true;
+              break;
+            } catch { /* try next */ }
+          }
         }
 
+        if (!saved) throw new Error('Could not save file');
+
         // Success notification
-        await showNotification(nId, '✅ Download Complete', `${title} saved to Downloads`);
+        await showNotification(nId, '✅ Download Complete', `${title} saved`);
         setDlDone(true);
       } else {
         /* ─── Web fallback: anchor download ─── */

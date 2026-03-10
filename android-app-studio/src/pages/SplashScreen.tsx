@@ -22,19 +22,55 @@ export default function SplashScreen() {
       } else {
         navigate('/login', { replace: true });
       }
-    }, 2400);
+    }, 2800);
     return () => clearTimeout(timeout);
   }, [loading, user, navigate]);
 
   return (
     <div className="splash-screen">
       <div className="splash-content">
-        {/* Logo Icon */}
+        {/* Animated K Logo — line-draw effect */}
         <div className={`splash-icon ${animStage >= 1 ? 'visible' : ''}`}>
-          <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
-            <rect width="72" height="72" rx="18" fill="#D97757" fillOpacity="0.12" />
+          <svg
+            width="88"
+            height="88"
+            viewBox="0 0 88 88"
+            fill="none"
+            className={`splash-k-svg ${animStage >= 1 ? 'draw' : ''}`}
+          >
+            {/* K vertical bar */}
             <path
-              d="M16 18H26V54H16ZM26 26L56 18V27L26 36ZM26 36L56 45V54L26 46Z"
+              className="k-line k-line-1"
+              d="M22 14 L22 74"
+              stroke="#D97757"
+              strokeWidth="8"
+              strokeLinecap="round"
+              fill="none"
+            />
+            {/* K upper arm */}
+            <path
+              className="k-line k-line-2"
+              d="M26 44 L62 14"
+              stroke="#D97757"
+              strokeWidth="7"
+              strokeLinecap="round"
+              fill="none"
+            />
+            {/* K lower arm */}
+            <path
+              className="k-line k-line-3"
+              d="M26 44 L62 74"
+              stroke="#D97757"
+              strokeWidth="7"
+              strokeLinecap="round"
+              fill="none"
+            />
+            {/* Decorative dot */}
+            <circle
+              className="k-dot"
+              cx="66"
+              cy="14"
+              r="4"
               fill="#D97757"
             />
           </svg>
@@ -50,7 +86,7 @@ export default function SplashScreen() {
           Learn Anywhere
         </p>
 
-        {/* Progress */}
+        {/* Progress bar */}
         <div className={`splash-progress ${animStage >= 3 ? 'visible' : ''}`}>
           <div className={`splash-progress-bar ${animStage >= 3 ? 'animate' : ''}`} />
         </div>

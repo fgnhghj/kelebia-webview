@@ -26,9 +26,11 @@ function LoadingScreen() {
     <div className="splash-screen">
       <div className="splash-content">
         <div className="splash-icon visible">
-          <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
-            <rect width="72" height="72" rx="18" fill="#D97757" fillOpacity="0.12" />
-            <path d="M16 18H26V54H16ZM26 26L56 18V27L26 36ZM26 36L56 45V54L26 46Z" fill="#D97757" />
+          <svg width="88" height="88" viewBox="0 0 88 88" fill="none" className="splash-k-svg draw">
+            <path className="k-line k-line-1" d="M22 14 L22 74" stroke="#D97757" strokeWidth="8" strokeLinecap="round" fill="none" />
+            <path className="k-line k-line-2" d="M26 44 L62 14" stroke="#D97757" strokeWidth="7" strokeLinecap="round" fill="none" />
+            <path className="k-line k-line-3" d="M26 44 L62 74" stroke="#D97757" strokeWidth="7" strokeLinecap="round" fill="none" />
+            <circle className="k-dot" cx="66" cy="14" r="4" fill="#D97757" />
           </svg>
         </div>
       </div>
