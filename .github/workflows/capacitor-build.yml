@@ -47,7 +47,9 @@ jobs:
         run: npm run build
 
       - name: Add Android platform
-        run: npx cap add android || true
+        run: |
+          rm -rf android
+          npx cap add android
 
       - name: Patch Android theme to non-fullscreen BEFORE sync
         run: |
