@@ -183,7 +183,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 # Docs: https://dev.mailjet.com/smtp-relay/
 MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY', 'dd7fad69d981609bb25185304479e812')
 MAILJET_SECRET_KEY = os.environ.get('MAILJET_SECRET_KEY', '1ff471d2c5f60def4c770ac95b339f02')
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'kelebia.classroom@gmail.com')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'pistoohd@gmail.com')
 SITE_URL = os.environ.get('SITE_URL', 'https://isetkl-classroom.gleeze.com')
 
 # Mailjet SMTP (for Django's send_mail / password reset emails)
