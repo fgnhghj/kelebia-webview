@@ -159,24 +159,36 @@ jobs:
           }
           JAVA
 
+      - name: Debug Android project structure
+        run: |
+          echo "--- ls android/ ---"
+          ls -R android/app/src/main/ 2>/dev/null || echo "android/app/src/main/ not found"
+          echo "--- checking AndroidManifest ---"
+          find android/ -name "AndroidManifest.xml" 2>/dev/null || echo "No AndroidManifest.xml found"
+
       - name: Remove immersive/fullscreen from AndroidManifest
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if [ ! -f "$MANIFEST" ]; then
+            echo "ERROR: $MANIFEST not found. Listing android/ tree:"
+            find android/ -type f 2>/dev/null | head -40
+            exit 1
+          fi
           echo "--- Manifest before patching ---"
-          cat "$MANIFEST" || true
+          cat "$MANIFEST"
           sed -i 's/android:windowFullscreen="true"/android:windowFullscreen="false"/g' "$MANIFEST"
           sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
           sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
           # Add storage permissions (legacy for <=32, granular for 13+)
-          sed -i '/<uses-permission android:name="android.permission.INTERNET"/a\
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />\
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\
-              <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\
-              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\
-              <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />\
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' "$MANIFEST"
+          if ! grep -q 'READ_MEDIA_IMAGES' "$MANIFEST"; then
+            sed -i '/<uses-permission android:name="android.permission.INTERNET"/a\    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' "$MANIFEST"
+          fi
           # Add requestLegacyExternalStorage for API 29
-          sed -i 's/<application/<application android:requestLegacyExternalStorage="true"/' "$MANIFEST"
+          if ! grep -q 'requestLegacyExternalStorage' "$MANIFEST"; then
+            sed -i 's/<application/<application android:requestLegacyExternalStorage="true"/' "$MANIFEST"
+          fi
+          echo "--- Manifest after patching ---"
+          cat "$MANIFEST"
 
       - name: Fix Kotlin version conflicts
         run: |
@@ -295,16 +307,19 @@ jobs:
           JAVA
 
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i 's/android:windowFullscreen="true"/android:windowFullscreen="false"/g' "$MANIFEST"
-          sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
-          sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
-          # Re-add Android 13+ permissions if missing after sync
-          if ! grep -q 'READ_MEDIA_IMAGES' "$MANIFEST"; then
-            sed -i '/<uses-permission android:name="android.permission.INTERNET"/a\
-                <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\
-                <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\
-                <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />\
-                <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' "$MANIFEST"
+          if [ -f "$MANIFEST" ]; then
+            sed -i 's/android:windowFullscreen="true"/android:windowFullscreen="false"/g' "$MANIFEST"
+            sed -i 's/android:immersive="true"/android:immersive="false"/g' "$MANIFEST"
+            sed -i 's/android:theme="@style\/AppTheme.NoActionBarLaunch"/android:theme="@style\/AppTheme"/g' "$MANIFEST"
+            # Re-add Android 13+ permissions if missing after sync
+            if ! grep -q 'READ_MEDIA_IMAGES' "$MANIFEST"; then
+              sed -i '/<uses-permission android:name="android.permission.INTERNET"/a\    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' "$MANIFEST"
+            fi
+            if ! grep -q 'requestLegacyExternalStorage' "$MANIFEST"; then
+              sed -i 's/<application/<application android:requestLegacyExternalStorage="true"/' "$MANIFEST"
+            fi
+          else
+            echo "WARNING: $MANIFEST not found after sync, skipping re-patch"
           fi
 
       - name: Copy app icon to Android resources
