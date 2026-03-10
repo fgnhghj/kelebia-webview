@@ -200,6 +200,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
     serializer_class = SubmissionSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    http_method_names = ['get', 'post', 'head', 'options']  # no PUT/PATCH/DELETE for submissions
 
     def get_queryset(self):
         user = self.request.user

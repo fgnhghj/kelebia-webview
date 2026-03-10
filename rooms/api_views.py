@@ -24,6 +24,33 @@ class RoomViewSet(viewsets.ModelViewSet):
             return RoomStudentSerializer
         return RoomSerializer
 
+    def create(self, request, *args, **kwargs):
+        """Only teachers can create rooms."""
+        if not request.user.is_teacher:
+            return Response({'error': 'Only teachers can create rooms.'}, status=403)
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Only the room's teacher can update it."""
+        room = self.get_object()
+        if room.teacher != request.user:
+            return Response({'error': 'Only the room teacher can edit this room.'}, status=403)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """Only the room's teacher can update it."""
+        room = self.get_object()
+        if room.teacher != request.user:
+            return Response({'error': 'Only the room teacher can edit this room.'}, status=403)
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Only the room's teacher can delete it."""
+        room = self.get_object()
+        if room.teacher != request.user:
+            return Response({'error': 'Only the room teacher can delete this room.'}, status=403)
+        return super().destroy(request, *args, **kwargs)
+
     def get_queryset(self):
         user = self.request.user
         base = Room.objects.annotate(

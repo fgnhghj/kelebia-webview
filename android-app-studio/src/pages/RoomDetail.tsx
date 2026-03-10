@@ -332,6 +332,16 @@ export default function RoomDetail() {
               <ArrowLeft size={22} />
             </button>
             <div className="room-header-actions">
+              {isTeacher ? (
+                <button className="room-code-btn" onClick={copyCode}>
+                  <span className="room-code-text">{room.invite_code}</span>
+                  {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+                </button>
+              ) : (
+                <button className="icon-btn-ghost leave-btn" onClick={handleLeave}>
+                  <LogOut size={18} />
+                </button>
+              )}
               <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
                 <Settings size={20} />
               </button>

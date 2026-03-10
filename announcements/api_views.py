@@ -50,6 +50,14 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'delete', 'head', 'options']  # no PUT/PATCH
+
+    def destroy(self, request, *args, **kwargs):
+        """Only the comment author can delete it."""
+        comment = self.get_object()
+        if comment.author != request.user:
+            return Response({'error': 'You can only delete your own comments.'}, status=403)
+        return super().destroy(request, *args, **kwargs)
 
     def get_queryset(self):
         announcement_id = self.request.query_params.get('announcement')

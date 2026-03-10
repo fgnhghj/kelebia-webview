@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import pyotp
-import random
+import secrets
 
 
 class User(AbstractUser):
@@ -29,7 +29,7 @@ class User(AbstractUser):
 
     def generate_verification_code(self):
         from django.utils import timezone
-        self.verification_code = f"{random.randint(100000, 999999)}"
+        self.verification_code = f"{secrets.randbelow(900000) + 100000}"
         self.code_created_at = timezone.now()
         self.save(update_fields=['verification_code', 'code_created_at'])
         return self.verification_code

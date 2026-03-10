@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from '../LanguageContext';
 import Sidebar from '../components/Sidebar';
@@ -12,7 +12,7 @@ import {
     FiFolderPlus, FiFolder, FiDownload, FiExternalLink, FiPlus,
     FiCheckCircle, FiAward, FiMapPin, FiMessageCircle,
     FiCheck, FiX, FiTrash2, FiBookOpen, FiEye, FiRefreshCw,
-    FiSave, FiImage, FiMaximize2, FiMinimize2, FiArrowDown, FiArrowUp
+    FiSave, FiImage, FiMaximize2, FiMinimize2, FiArrowDown, FiArrowUp, FiLogOut
 } from 'react-icons/fi';
 
 const TYPE_ICONS = {
@@ -625,6 +625,17 @@ export default function RoomDetail() {
         setShowRoomSettings(true);
     };
 
+    const navigate = useNavigate();
+
+    const handleLeaveRoom = async () => {
+        if (!window.confirm(t('room.leaveConfirm') || 'Are you sure you want to leave this room?')) return;
+        try {
+            await roomsAPI.leave(id);
+            toast.success(t('room.leftRoom') || 'You have left the room');
+            navigate('/dashboard');
+        } catch { toast.error(t('room.actionFailed')); }
+    };
+
     const handleSaveRoom = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -669,9 +680,16 @@ export default function RoomDetail() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 0, letterSpacing: '-0.5px' }}>{room.name}</h1>
-                        {isTeacher && (
+                        {isTeacher ? (
                             <button onClick={openRoomSettings} title={t('room.roomSettings')} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', transition: 'all 0.2s' }}>
                                 <FiEdit3 size={16} />
+                            </button>
+                        ) : (
+                            <button onClick={handleLeaveRoom} title={t('room.leaveRoom') || 'Leave Room'} style={{ background: 'rgba(220,53,69,0.25)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: '8px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', color: '#ff6b6b', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
+                                onMouseOver={e => { e.currentTarget.style.background = 'rgba(220,53,69,0.4)'; }}
+                                onMouseOut={e => { e.currentTarget.style.background = 'rgba(220,53,69,0.25)'; }}
+                            >
+                                <FiLogOut size={14} /> {t('room.leave') || 'Leave'}
                             </button>
                         )}
                     </div>

@@ -1603,8 +1603,35 @@
 }
 .room-header-actions {
     display: flex;
-    gap: 4px;
+    gap: 6px;
+    align-items: center;
     color: #fff;
+}
+.room-code-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #fff;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s;
+}
+.room-code-btn:active {
+    background: rgba(255,255,255,0.25);
+}
+.room-code-text {
+    white-space: nowrap;
+}
+.leave-btn {
+    color: #ff6b6b !important;
 }
 .room-header-title {
     font-family: "EB Garamond", Georgia, serif;

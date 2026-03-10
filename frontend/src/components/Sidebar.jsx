@@ -90,7 +90,11 @@ export default function Sidebar() {
                 <div className="sidebar-footer">
                     <Link to="/profile" className="user-card" style={{ textDecoration: 'none' }}>
                         <div className="avatar">
-                            {(user?.first_name?.[0] || 'U').toUpperCase()}
+                            {user?.avatar ? (
+                                <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                                (user?.first_name?.[0] || 'U').toUpperCase()
+                            )}
                         </div>
                         <div className="user-info">
                             <div className="name">{user?.full_name || user?.username}</div>

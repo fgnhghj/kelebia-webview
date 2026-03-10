@@ -1,12 +1,14 @@
 """Email utilities for Kelebia Classroom.
 
-Uses Django's SMTP backend (configured via EMAIL_HOST settings).
-Professional branded email templates matching the site aesthetic.
+Uses direct smtplib SMTP (Gmail app-password) with branded HTML templates.
+Credentials are loaded from Django settings (EMAIL_HOST / EMAIL_HOST_USER / EMAIL_HOST_PASSWORD).
 """
 import re
+import smtplib
 import logging
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from django.conf import settings
-from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -18,16 +20,40 @@ def _html_to_text(html):
 
 
 def _send_email(to_email, to_name, subject, html_body):
-    """Send a single email via Django SMTP backend."""
+    """Send a single email via direct smtplib (Gmail app-password).
+
+    Reads credentials from Django settings:
+        EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,
+        DEFAULT_FROM_EMAIL.
+    """
+    host = getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com')
+    port = int(getattr(settings, 'EMAIL_PORT', 587))
+    user = settings.EMAIL_HOST_USER
+    password = settings.EMAIL_HOST_PASSWORD
+    from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', user)
+
+    import uuid
+    from email.utils import formatdate
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = from_addr
+    msg['To'] = to_email
+    msg['Date'] = formatdate(localtime=True)
+    msg['Message-ID'] = f'<{uuid.uuid4().hex}@kelebia-classroom.com>'
+    msg['Reply-To'] = from_addr
+    msg['X-Mailer'] = 'Kelebia Classroom'
+    msg['List-Unsubscribe'] = f'<mailto:{user}?subject=unsubscribe>'
+    msg.attach(MIMEText(_html_to_text(html_body), 'plain', 'utf-8'))
+    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
     try:
-        send_mail(
-            subject=subject,
-            message=_html_to_text(html_body),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[to_email],
-            html_message=html_body,
-            fail_silently=False,
-        )
+        with smtplib.SMTP(host, port) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(user, password)
+            server.sendmail(user, [to_email], msg.as_string())
+        logger.info(f'Email sent to {to_email} — {subject}')
     except Exception as e:
         logger.warning(f'Email failed for {to_email}: {e}')
 

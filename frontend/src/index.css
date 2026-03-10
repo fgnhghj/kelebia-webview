@@ -962,6 +962,35 @@ textarea.form-input {
   color: var(--text-secondary);
 }
 
+/* Password strength colors */
+.strength-weak { background: #ef4444; color: #ef4444; }
+.strength-fair { background: #f59e0b; color: #f59e0b; }
+.strength-good { background: #3b82f6; color: #3b82f6; }
+.strength-strong { background: #22c55e; color: #22c55e; }
+
+/* Form validation errors */
+.form-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+.form-input.error {
+  border-color: #ef4444;
+}
+
+/* Drag-over state for file drops */
+.file-drop.dragover {
+  border-color: var(--brand);
+  background: var(--bg-secondary);
+}
+
+/* Selected member row */
+.member-item.selected {
+  background: var(--bg-secondary);
+  border-color: var(--brand);
+}
+
 .file-drop {
   border: 1px dashed var(--border);
   border-radius: var(--radius-md);
