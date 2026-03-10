@@ -184,4 +184,10 @@ export const exportAPI = {
     }),
 };
 
+// Admin — App Version Config
+export const adminAPI = {
+  getVersionConfig: () => api.get("/app/version-config/"),
+  updateVersionConfig: (data) => api.put("/app/version-config/", data),
+};
+
 export default api;

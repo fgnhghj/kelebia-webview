@@ -1,10 +1,11 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UserProfileSerializer
+from .models import AppVersionConfig
 import secrets
 import pyotp
 import qrcode
@@ -229,3 +230,70 @@ def api_reset_password(request):
         return Response({'detail': 'Mot de passe réinitialisé avec succès !'})
     except User.DoesNotExist:
         return Response({'detail': 'Code invalide.'}, status=400)
+
+
+def _compare_versions(app_ver: str, min_ver: str) -> bool:
+    """Return True if app_ver < min_ver (needs update)."""
+    try:
+        app_parts = [int(x) for x in app_ver.split('.')]
+        min_parts = [int(x) for x in min_ver.split('.')]
+        # Pad to same length
+        while len(app_parts) < len(min_parts):
+            app_parts.append(0)
+        while len(min_parts) < len(app_parts):
+            min_parts.append(0)
+        return app_parts < min_parts
+    except (ValueError, AttributeError):
+        return False
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_version_check(request):
+    """Public endpoint — check if the app version is outdated.
+
+    Query param: ?v=1.0.0
+    Returns: { needs_update, message, update_url }
+    """
+    config = AppVersionConfig.load()
+    app_version = request.query_params.get('v', '0.0.0')
+    needs_update = config.is_locked and _compare_versions(app_version, config.min_version)
+    return Response({
+        'needs_update': needs_update,
+        'min_version': config.min_version,
+        'message': config.lock_message if needs_update else '',
+        'update_url': config.update_url if needs_update else '',
+    })
+
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAdminUser])
+def api_version_config(request):
+    """Admin-only endpoint to get/update version lock configuration."""
+    config = AppVersionConfig.load()
+    if request.method == 'GET':
+        return Response({
+            'min_version': config.min_version,
+            'is_locked': config.is_locked,
+            'lock_message': config.lock_message,
+            'update_url': config.update_url,
+            'updated_at': config.updated_at,
+        })
+    # PUT
+    data = request.data
+    if 'min_version' in data:
+        config.min_version = data['min_version']
+    if 'is_locked' in data:
+        config.is_locked = data['is_locked']
+    if 'lock_message' in data:
+        config.lock_message = data['lock_message']
+    if 'update_url' in data:
+        config.update_url = data['update_url']
+    config.save()
+    return Response({
+        'min_version': config.min_version,
+        'is_locked': config.is_locked,
+        'lock_message': config.lock_message,
+        'update_url': config.update_url,
+        'updated_at': config.updated_at,
+    })

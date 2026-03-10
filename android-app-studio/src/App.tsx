@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp } from "@capacitor/app";
@@ -6,6 +6,7 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import UpdateBlocker from "./components/UpdateBlocker";
 import AppLayout from "./components/AppLayout";
 import SplashScreen from "./pages/SplashScreen";
 import Login from "./pages/Login";
@@ -20,6 +21,7 @@ import JoinRoom from "./pages/JoinRoom";
 import CreateRoom from "./pages/CreateRoom";
 import Grades from "./pages/Grades";
 import FileViewer from "./pages/FileViewer";
+import { versionAPI, APP_VERSION } from "./api/client";
 
 function LoadingScreen() {
   return (
@@ -53,6 +55,26 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => {
+  const [updateInfo, setUpdateInfo] = useState<{
+    needs_update: boolean;
+    message: string;
+    update_url: string;
+    min_version: string;
+  } | null>(null);
+
+  useEffect(() => {
+    // Check app version on launch
+    versionAPI.check(APP_VERSION)
+      .then((data) => {
+        if (data.needs_update) {
+          setUpdateInfo(data);
+        }
+      })
+      .catch(() => {
+        // Silently ignore — don't block the app if the server is unreachable
+      });
+  }, []);
+
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       StatusBar.show();
@@ -70,6 +92,19 @@ const App = () => {
       return () => { handler.then(h => h.remove()); };
     }
   }, []);
+
+  // Show blocking update screen if version is locked
+  if (updateInfo?.needs_update) {
+    return (
+      <LanguageProvider>
+        <UpdateBlocker
+          message={updateInfo.message}
+          updateUrl={updateInfo.update_url}
+          minVersion={updateInfo.min_version}
+        />
+      </LanguageProvider>
+    );
+  }
 
   return (
     <BrowserRouter>

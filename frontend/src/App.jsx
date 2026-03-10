@@ -9,6 +9,7 @@ import RoomDetail from './pages/RoomDetail';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
 import Grades from './pages/Grades';
+import AdminPanel from './pages/AdminPanel';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
 import './index.css';
@@ -54,6 +55,7 @@ function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/grades" element={<ProtectedRoute><Grades /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

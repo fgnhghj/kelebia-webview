@@ -437,6 +437,25 @@ const translations = {
     "notFound.desc":
       "La page que vous cherchez n'existe pas ou a été déplacée.",
     "notFound.goHome": "Retour au tableau de bord",
+
+    // Admin panel
+    "sidebar.admin": "Administration",
+    "admin.title": "Panneau d'administration",
+    "admin.subtitle": "Gérer la version de l'application et forcer les mises à jour",
+    "admin.versionLock": "Verrouillage de version",
+    "admin.versionLockDesc": "Lorsqu'il est activé, les utilisateurs avec une version plus ancienne seront obligés de mettre à jour.",
+    "admin.locked": "Verrouillé — mise à jour forcée",
+    "admin.unlocked": "Déverrouillé — pas de mise à jour forcée",
+    "admin.minVersion": "Version minimale",
+    "admin.minVersionDesc": "Les versions de l'application inférieures à celle-ci verront l'écran de mise à jour.",
+    "admin.lockMessage": "Message de verrouillage",
+    "admin.lockMessageDesc": "Ce message sera affiché aux utilisateurs lorsque l'application est verrouillée.",
+    "admin.updateUrl": "URL de mise à jour",
+    "admin.updateUrlDesc": "Lien vers le fichier APK ou la page de téléchargement.",
+    "admin.lastUpdated": "Dernière mise à jour",
+    "admin.save": "Enregistrer",
+    "admin.saving": "Enregistrement...",
+    "admin.saved": "Configuration enregistrée !",
   },
   en: {
     // Sidebar
@@ -862,6 +881,25 @@ const translations = {
     "notFound.desc":
       "The page you're looking for doesn't exist or has been moved.",
     "notFound.goHome": "Back to Dashboard",
+
+    // Admin panel
+    "sidebar.admin": "Admin Panel",
+    "admin.title": "Admin Panel",
+    "admin.subtitle": "Manage app version and force updates",
+    "admin.versionLock": "Version Lock",
+    "admin.versionLockDesc": "When enabled, users with an older app version will be forced to update.",
+    "admin.locked": "Locked — forced update active",
+    "admin.unlocked": "Unlocked — no forced update",
+    "admin.minVersion": "Minimum Version",
+    "admin.minVersionDesc": "App versions below this will see the update screen.",
+    "admin.lockMessage": "Lock Message",
+    "admin.lockMessageDesc": "This message will be displayed to users when the app is locked.",
+    "admin.updateUrl": "Update URL",
+    "admin.updateUrlDesc": "Link to the APK file or download page.",
+    "admin.lastUpdated": "Last updated",
+    "admin.save": "Save",
+    "admin.saving": "Saving...",
+    "admin.saved": "Configuration saved!",
   },
 
   ar_tn: {
@@ -1223,6 +1261,25 @@ const translations = {
     "notFound.title": "الصفحة ما لقيتهاش",
     "notFound.desc": "هذه الصفحة ما موجودتش أو تنقلت.",
     "notFound.goHome": "ارجع للرئيسية",
+
+    // Admin panel
+    "sidebar.admin": "لوحة الإدارة",
+    "admin.title": "لوحة الإدارة",
+    "admin.subtitle": "إدارة نسخة التطبيق وإجبار التحديث",
+    "admin.versionLock": "قفل النسخة",
+    "admin.versionLockDesc": "كي يتفعّل، المستخدمين بنسخة قديمة يتجبروا يحدّثوا.",
+    "admin.locked": "مقفول — تحديث إجباري",
+    "admin.unlocked": "مفتوح — ما فماش تحديث إجباري",
+    "admin.minVersion": "الحد الأدنى للنسخة",
+    "admin.minVersionDesc": "نسخ التطبيق تحت هذي تشوف شاشة التحديث.",
+    "admin.lockMessage": "رسالة القفل",
+    "admin.lockMessageDesc": "هذي الرسالة تظهر للمستخدمين كي التطبيق مقفول.",
+    "admin.updateUrl": "رابط التحديث",
+    "admin.updateUrlDesc": "رابط لملف APK أو صفحة التحميل.",
+    "admin.lastUpdated": "آخر تحديث",
+    "admin.save": "سجّل",
+    "admin.saving": "يسجّل...",
+    "admin.saved": "تم حفظ الإعدادات!",
   },
 };
 

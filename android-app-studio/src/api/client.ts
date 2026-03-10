@@ -5,6 +5,9 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://isetkl-classroom.gleeze.com';
 
+/** Current app version — update this on each release */
+export const APP_VERSION = '1.0.0';
+
 /** Resolve a media path like /media/... to an absolute URL */
 export function getMediaUrl(path: string | null | undefined): string {
   if (!path) return '';
@@ -226,4 +229,24 @@ export const notificationsAPI = {
 /* ─── Grades ────────────────────────────────────────── */
 export const gradesAPI = {
   overview: () => api.get('/grades/overview/'),
+};
+
+/* ─── App Version ───────────────────────────────────── */
+export const versionAPI = {
+  check: (v: string) => api.request<{
+    needs_update: boolean;
+    min_version: string;
+    message: string;
+    update_url: string;
+  }>(`/app/version-check/?v=${encodeURIComponent(v)}`, { method: 'GET' }),
+  getConfig: () => api.get('/app/version-config/'),
+  updateConfig: (data: {
+    min_version?: string;
+    is_locked?: boolean;
+    lock_message?: string;
+    update_url?: string;
+  }) => api.request('/app/version-config/', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
 };

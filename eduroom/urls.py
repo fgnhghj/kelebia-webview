@@ -14,6 +14,7 @@ from accounts.api_views import (
     api_verify_email, api_resend_verification,
     api_enable_2fa, api_confirm_2fa, api_disable_2fa,
     api_forgot_password, api_reset_password,
+    api_version_check, api_version_config,
 )
 from rooms.api_views import RoomViewSet
 from content.api_views import SectionViewSet, ContentViewSet, AssignmentViewSet, SubmissionViewSet, student_grades_overview
@@ -46,6 +47,10 @@ urlpatterns = [
     path('api/auth/2fa/disable/', api_disable_2fa, name='api_disable_2fa'),
     path('api/auth/forgot-password/', api_forgot_password, name='api_forgot_password'),
     path('api/auth/reset-password/', api_reset_password, name='api_reset_password'),
+
+    # App version management
+    path('api/app/version-check/', api_version_check, name='api_version_check'),
+    path('api/app/version-config/', api_version_config, name='api_version_config'),
 
     # Grades overview for students
     path('api/grades/overview/', student_grades_overview, name='student_grades_overview'),
