@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage, LANG_OPTIONS } from '../contexts/LanguageContext';
-import { authAPI } from '../api/client';
+import { authAPI, getMediaUrl } from '../api/client';
 import {
   User, Mail, Building2, FileText, Shield, ShieldCheck,
   ShieldOff, LogOut, ChevronRight, Camera, Loader2,
-  AlertCircle, CheckCircle2, Moon, Info, Heart, Globe, Copy,
+  AlertCircle, CheckCircle2, Moon, Info, Heart, Globe, Copy, Trash2,
 } from 'lucide-react';
 
 export default function Settings() {
@@ -110,6 +110,16 @@ export default function Settings() {
     }
   };
 
+  const handleDeleteAvatar = async () => {
+    if (!confirm('Remove profile picture?')) return;
+    try {
+      await authAPI.deleteAvatar();
+      await refreshUser();
+    } catch {
+      alert('Failed to remove avatar.');
+    }
+  };
+
   const getInitials = (name: string) =>
     name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
@@ -126,7 +136,7 @@ export default function Settings() {
         <div className="profile-avatar-wrapper">
           <div className="profile-avatar">
             {user.avatar ? (
-              <img src={user.avatar} alt="" />
+              <img src={getMediaUrl(user.avatar)} alt="" />
             ) : (
               <span>{getInitials(user.full_name)}</span>
             )}
@@ -135,6 +145,11 @@ export default function Settings() {
             <Camera size={14} />
             <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
           </label>
+          {user.avatar && (
+            <button className="avatar-delete-btn" onClick={handleDeleteAvatar} type="button">
+              <Trash2 size={13} />
+            </button>
+          )}
         </div>
         <h2 className="profile-name">{user.full_name}</h2>
         <span className="profile-role">{user.role === 'teacher' ? t('teacher_view') : 'Student'}</span>

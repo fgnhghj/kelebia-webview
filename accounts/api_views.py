@@ -97,12 +97,25 @@ def api_login(request):
 @permission_classes([IsAuthenticated])
 def api_me(request):
     """Get or update the current user's profile."""
+    ctx = {'request': request}
     if request.method == 'GET':
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context=ctx).data)
     serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
     serializer.is_valid(raise_exception=True)
     serializer.save()
-    return Response(UserSerializer(request.user).data)
+    return Response(UserSerializer(request.user, context=ctx).data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def api_delete_avatar(request):
+    """Delete the current user's avatar and return to initials."""
+    user = request.user
+    if user.avatar:
+        user.avatar.delete(save=False)
+    user.avatar = None
+    user.save(update_fields=['avatar'])
+    return Response(UserSerializer(user, context={'request': request}).data)
 
 
 @api_view(['POST'])

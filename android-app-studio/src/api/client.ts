@@ -129,6 +129,7 @@ export const authAPI = {
     api.post('/auth/login/', data),
   me: () => api.get('/auth/me/'),
   updateProfile: (data: FormData) => api.patch('/auth/me/', data),
+  deleteAvatar: () => api.delete('/auth/me/avatar/'),
   enable2FA: () => api.post('/auth/2fa/enable/'),
   confirm2FA: (code: string) => api.post('/auth/2fa/confirm/', { code }),
   disable2FA: () => api.post('/auth/2fa/disable/'),

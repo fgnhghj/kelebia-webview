@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { roomsAPI } from '../api/client';
+import { roomsAPI, getMediaUrl } from '../api/client';
 import {
   Plus, Users, BookOpen, Clock, ChevronRight, RefreshCw,
   Loader2, Sparkles, LogIn,
@@ -79,7 +79,7 @@ export default function Home() {
         </div>
         <button className="header-avatar" onClick={() => navigate('/settings')}>
           {user?.avatar ? (
-            <img src={user.avatar} alt="" />
+            <img src={getMediaUrl(user.avatar)} alt="" />
           ) : (
             <span>{getInitials(user?.full_name || 'U')}</span>
           )}
