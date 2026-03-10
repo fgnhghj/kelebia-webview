@@ -32,7 +32,10 @@ jobs:
           java-version: "21"
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          echo "Using pre-installed Android SDK at $ANDROID_HOME"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "platforms;android-34" "build-tools;35.0.0" "build-tools;34.0.0" > /dev/null 2>&1
 
       - name: Install dependencies
         run: npm install
