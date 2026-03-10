@@ -55,10 +55,10 @@ export default function Landing() {
                     transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     style={{ display: 'flex', gap: 16, justifyContent: 'center' }}
                 >
-                    <Link to="/signup" className="btn btn-primary btn-lg">
+                    <Link to="/signup?role=teacher" className="btn btn-primary btn-lg">
                         {t('landing.startTeaching')} <FiArrowRight />
                     </Link>
-                    <Link to="/signup" className="btn btn-secondary btn-lg">
+                    <Link to="/signup?role=student" className="btn btn-secondary btn-lg">
                         <FiBookOpen /> {t('landing.joinStudent')}
                     </Link>
                 </motion.div>

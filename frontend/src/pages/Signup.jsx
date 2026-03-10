@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from '../LanguageContext';
 import toast from 'react-hot-toast';
@@ -23,8 +23,10 @@ export default function Signup() {
     const { signup } = useAuth();
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const initialRole = searchParams.get('role') === 'teacher' ? 'teacher' : 'student';
     const [form, setForm] = useState({
-        first_name: '', last_name: '', email: '', password: '', confirmPassword: '', role: 'student'
+        first_name: '', last_name: '', email: '', password: '', confirmPassword: '', role: initialRole
     });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
