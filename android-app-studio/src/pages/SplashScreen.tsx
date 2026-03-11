@@ -37,28 +37,8 @@ export default function SplashScreen() {
 
   return (
     <div className="splash-screen">
-      <div className="splash-bg">
-        <div className="splash-orb splash-orb-1" />
-        <div className="splash-orb splash-orb-2" />
-        <div className="splash-orb splash-orb-3" />
-        <div className="splash-grid" />
-      </div>
-
-      <div className="splash-particles" aria-hidden="true">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <span
-            key={i}
-            className={`splash-particle splash-particle-${(i % 5) + 1}`}
-          />
-        ))}
-      </div>
-
       <div className="splash-content">
         <div className={`splash-emblem ${animStage >= 1 ? "visible" : ""}`}>
-          <div className="splash-emblem-ring splash-emblem-ring-outer" />
-          <div className="splash-emblem-ring splash-emblem-ring-inner" />
-          <div className="splash-emblem-glow" />
-
           <div className="splash-icon-card">
             <div className={`splash-icon ${animStage >= 1 ? "visible" : ""}`}>
               <svg
