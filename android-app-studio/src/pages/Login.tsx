@@ -47,7 +47,6 @@ export default function Login() {
               <path d="M26 18 L26 70" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" />
               <path d="M26 44 L58 18" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" />
               <path d="M34 38 L58 70" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" />
-              <circle cx="62" cy="18" r="6" fill="var(--accent)" />
             </svg>
           </div>
           <h1 className="auth-title">Welcome back</h1>

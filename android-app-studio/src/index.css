@@ -1410,14 +1410,15 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    background: rgba(20, 18, 16, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
 }
 
 .room-header-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom,
-            rgba(0, 0, 0, 0.1),
-            rgba(0, 0, 0, 0.5));
+    pointer-events: none;
 }
 
 .room-header-content {
@@ -4454,20 +4455,14 @@ body {
 
 .floating-nav {
     display: flex;
-    justify-content: space-around;
-    /* Distribute evenly */
+    justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 480px;
-    /* Match body max-width */
-    padding: 12px 24px;
-    /* Extra heavy glass for the nav */
-    background: rgba(20, 18, 16, 0.65);
+    padding: 10px 16px;
+    background: rgba(20, 18, 16, 0.9);
     backdrop-filter: blur(32px);
     -webkit-backdrop-filter: blur(32px);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    /* Only top border needed now */
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4);
 }
 
 .nav-item {
@@ -4475,53 +4470,35 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 64px;
-    height: 100%;
+    flex: 1;
+    max-width: 80px;
+    padding: 8px 0;
     gap: 4px;
     color: var(--text-tertiary);
-    position: relative;
-    transition: color 0.3s ease;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     text-decoration: none;
     z-index: 2;
+    background: transparent;
 }
 
 .nav-item:active {
     transform: scale(0.94);
 }
 
-.nav-item i {
-    width: 22px;
-    height: 22px;
-    transition: color 0.3s ease;
-}
-
-.nav-item span {
-    font-size: 11px;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-/* Active Nav Item State */
 .nav-item.active {
     color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-.nav-bubble {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 64px;
-    height: 52px;
-    margin-top: -26px;
-    /* center vertically */
-    background: rgba(255, 255, 255, 0.12);
-    /* sleek frosted pill */
-    border-radius: 16px;
-    z-index: 1;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-    /* premium fluid easing */
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    pointer-events: none;
+.nav-icon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
 }
 
 .nav-badge {

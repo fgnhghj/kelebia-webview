@@ -387,496 +387,499 @@ export default function RoomDetail() {
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh}>
-    <div className="page-container no-padding">
-      {/* Room Header */}
-      <div className="room-header" style={{ backgroundColor: room.color_theme }}>
-        <div className="room-header-overlay" />
-        <div className="room-header-content">
-          <div className="room-header-nav">
-            <button className="icon-btn-ghost" onClick={() => navigate('/home')}>
-              <ArrowLeft size={22} />
-            </button>
-            <div className="room-header-actions">
-              {isTeacher ? (
-                <>
-                  <button className="room-code-btn" onClick={copyCode}>
-                    <span className="room-code-text">{room.invite_code}</span>
-                    {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
-                  </button>
-                  <button className="icon-btn-ghost" onClick={handleArchive} title={room.is_archived ? t('unarchive') : t('archive')}>
-                    <Archive size={18} style={room.is_archived ? { color: 'var(--gold)' } : {}} />
-                  </button>
-                  <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
-                    <Settings size={20} />
-                  </button>
-                </>
-              ) : (
-                <button className="icon-btn-ghost leave-btn" onClick={handleLeave}>
-                  <LogOut size={18} />
-                </button>
-              )}
-            </div>
-          </div>
-          <h1 className="room-header-title">{room.name}</h1>
-          {room.subject && <p className="room-header-subject">{room.subject}</p>}
-          <div className="room-header-stats">
-            <div className="room-stat">
-              <Users size={14} />
-              <span>{room.student_count} {t('students')}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Info Panel */}
-      {showInfo && isTeacher && (
-        <div className="room-info-panel">
-          <div className="invite-code-row">
-            <span className="invite-label">{t('invite_code')}</span>
-            <button className="invite-code-btn" onClick={copyCode}>
-              <span className="invite-code">{room.invite_code}</span>
-              {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
-            </button>
-          </div>
-          {room.description && <p className="room-description">{room.description}</p>}
-        </div>
-      )}
-
-      {/* Tab Bar */}
-      <div className="tab-bar">
-        {tabs.map(({ key, label, icon: Icon, count }) => (
-          <button
-            key={key}
-            className={`tab-item ${tab === key ? 'active' : ''}`}
-            onClick={() => setTab(key)}
-          >
-            <Icon size={16} />
-            <span>{label}</span>
-            {count !== undefined && count > 0 && (
-              <span className="tab-badge">{count}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      <div className="room-content">
-
-        {/* ── CONTENT TAB ── */}
-        {tab === 'content' && (
-          <div className="content-sections">
-            {isTeacher && (
-              <div className="teacher-actions-row">
-                <button className="fab-inline" onClick={() => setShowAddSection(true)}>
-                  <BookOpen size={15} /> {t('add_section')}
-                </button>
-                {sections.length > 0 && (
-                  <button className="fab-inline" onClick={() => setShowAddContent(true)}>
-                    <Plus size={15} /> {t('add_content')}
+      <div className="page-container no-padding">
+        {/* Room Header */}
+        <div className="room-header" style={{ borderBottom: `1px solid ${room.color_theme}40` }}>
+          <div
+            className="room-header-overlay"
+            style={{ background: `linear-gradient(to bottom, ${room.color_theme}33, transparent)` }}
+          />
+          <div className="room-header-content">
+            <div className="room-header-nav">
+              <button className="icon-btn-ghost" onClick={() => navigate('/home')}>
+                <ArrowLeft size={22} />
+              </button>
+              <div className="room-header-actions">
+                {isTeacher ? (
+                  <>
+                    <button className="room-code-btn" onClick={copyCode}>
+                      <span className="room-code-text">{room.invite_code}</span>
+                      {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+                    </button>
+                    <button className="icon-btn-ghost" onClick={handleArchive} title={room.is_archived ? t('unarchive') : t('archive')}>
+                      <Archive size={18} style={room.is_archived ? { color: 'var(--gold)' } : {}} />
+                    </button>
+                    <button className="icon-btn-ghost" onClick={() => setShowInfo(!showInfo)}>
+                      <Settings size={20} />
+                    </button>
+                  </>
+                ) : (
+                  <button className="icon-btn-ghost leave-btn" onClick={handleLeave}>
+                    <LogOut size={18} />
                   </button>
                 )}
               </div>
-            )}
-            {sections.length === 0 ? (
-              <div className="empty-state-sm">
-                <FileText size={32} strokeWidth={1} className="text-tertiary" />
-                <p>{t('no_content')}</p>
+            </div>
+            <h1 className="room-header-title">{room.name}</h1>
+            {room.subject && <p className="room-header-subject">{room.subject}</p>}
+            <div className="room-header-stats">
+              <div className="room-stat">
+                <Users size={14} />
+                <span>{room.student_count} {t('students')}</span>
               </div>
-            ) : (
-              sections.map((section) => (
-                <div key={section.id} className="content-section">
-                  <h3 className="section-title">{section.title}</h3>
-                  {section.contents.length === 0 ? (
-                    <p className="empty-hint">{isTeacher ? t('add_content') : t('no_content')}</p>
-                  ) : (
-                    <div className="content-items">
-                      {section.contents.map((item) => (
-                        <button
-                          key={item.id}
-                          className="content-item"
-                          onClick={() => {
-                            if (item.content_type === 'link' && item.link) {
-                              window.open(item.link, '_blank');
-                            } else if (item.file) {
-                              openFile(item.file, item.title, item.file_extension);
-                            }
-                          }}
-                        >
-                          <span className="content-type-icon">{getTypeIcon(item.content_type)}</span>
-                          <div className="content-item-info">
-                            <span className="content-item-title">{item.title}</span>
-                            <span className="content-item-meta">
-                              {getFileIcon(item.file_extension)}
-                              {item.file_extension?.toUpperCase()}
-                              {item.file_size_display && ` · ${item.file_size_display}`}
-                            </span>
-                          </div>
-                          {item.is_pinned && <Pin size={14} className="text-gold" />}
-                          {item.content_type === 'link' ? (
-                            <ExternalLink size={16} className="text-tertiary" />
-                          ) : (
-                            <Download size={16} className="text-tertiary" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
+            </div>
+          </div>
+        </div>
+
+        {/* Info Panel */}
+        {showInfo && isTeacher && (
+          <div className="room-info-panel">
+            <div className="invite-code-row">
+              <span className="invite-label">{t('invite_code')}</span>
+              <button className="invite-code-btn" onClick={copyCode}>
+                <span className="invite-code">{room.invite_code}</span>
+                {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
+              </button>
+            </div>
+            {room.description && <p className="room-description">{room.description}</p>}
           </div>
         )}
 
-        {/* ── ASSIGNMENTS TAB ── */}
-        {tab === 'assignments' && (
-          <div className="assignments-list">
-            {isTeacher && (
-              <div className="teacher-actions-row">
-                <button className="fab-inline" onClick={() => setShowAddAssignment(true)}>
-                  <Plus size={15} /> {t('add_assignment')}
-                </button>
-              </div>
-            )}
-            {assignments.length === 0 ? (
-              <div className="empty-state-sm">
-                <ClipboardList size={32} strokeWidth={1} className="text-tertiary" />
-                <p>{t('no_assignments')}</p>
-              </div>
-            ) : (
-              assignments.map((assignment) => (
-                <button
-                  key={assignment.id}
-                  className="assignment-card"
-                  onClick={() => navigate(`/room/${roomId}/assignment/${assignment.id}`, { state: { tab: 'assignments' } })}
-                >
-                  <div className="assignment-card-top">
-                    <h4 className="assignment-title">{assignment.title}</h4>
-                    <ChevronRight size={18} className="text-tertiary" />
-                  </div>
-                  <div className="assignment-meta">
-                    <div className={`deadline-badge ${assignment.is_past_deadline ? 'overdue' : ''}`}>
-                      <Clock size={13} />
-                      <span>{formatDeadline(assignment.deadline)}</span>
-                    </div>
-                    <span className="assignment-grade">/{assignment.max_grade}</span>
-                  </div>
-                  {!isTeacher && assignment.my_submission && (
-                    <div className={`submission-status ${assignment.my_submission.status}`}>
-                      {assignment.my_submission.status === 'graded'
-                        ? `✓ ${assignment.my_submission.grade?.score}/${assignment.max_grade}`
-                        : `✓ ${t('submitted')}`}
-                    </div>
-                  )}
-                  {isTeacher && (
-                    <div className="assignment-stats">
-                      <span>{assignment.submissions_count} {t('submitted')}</span>
-                      <span>·</span>
-                      <span>{assignment.graded_count} {t('graded')}</span>
-                    </div>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
-        )}
+        {/* Tab Bar */}
+        <div className="tab-bar">
+          {tabs.map(({ key, label, icon: Icon, count }) => (
+            <button
+              key={key}
+              className={`tab-item ${tab === key ? 'active' : ''}`}
+              onClick={() => setTab(key)}
+            >
+              <Icon size={16} />
+              <span>{label}</span>
+              {count !== undefined && count > 0 && (
+                <span className="tab-badge">{count}</span>
+              )}
+            </button>
+          ))}
+        </div>
 
-        {/* ── ANNOUNCEMENTS TAB ── */}
-        {tab === 'announcements' && (
-          <div className="announcements-list">
-            {isTeacher && (
-              <div className="teacher-actions-row">
-                <button className="fab-inline" onClick={() => setShowAddAnnouncement(true)}>
-                  <Edit3 size={15} /> {t('add_announcement')}
-                </button>
-              </div>
-            )}
-            {announcements.length === 0 ? (
-              <div className="empty-state-sm">
-                <Megaphone size={32} strokeWidth={1} className="text-tertiary" />
-                <p>{t('no_announcements')}</p>
-              </div>
-            ) : (
-              announcements.map((ann) => (
-                <div key={ann.id} className="announcement-card">
-                  <div className="announcement-header">
-                    {ann.is_pinned && <Pin size={14} className="text-gold" />}
-                    <span className="announcement-author">{ann.author.full_name}</span>
-                    <span className="announcement-time">
-                      {new Date(ann.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                  <h4 className="announcement-title">{ann.title}</h4>
-                  <div className={`announcement-body ${expandedAnnouncements.has(ann.id) ? 'expanded' : ''}`}>
-                    <ReactMarkdown>{ann.body}</ReactMarkdown>
-                  </div>
-                  {ann.body.length > 120 && (
-                    <button className="read-more-btn" onClick={() => toggleExpanded(ann.id)}>
-                      {expandedAnnouncements.has(ann.id) ? t('show_less') || 'Show less' : t('read_more') || 'Read more'}
+        {/* Tab Content */}
+        <div className="room-content">
+
+          {/* ── CONTENT TAB ── */}
+          {tab === 'content' && (
+            <div className="content-sections">
+              {isTeacher && (
+                <div className="teacher-actions-row">
+                  <button className="fab-inline" onClick={() => setShowAddSection(true)}>
+                    <BookOpen size={15} /> {t('add_section')}
+                  </button>
+                  {sections.length > 0 && (
+                    <button className="fab-inline" onClick={() => setShowAddContent(true)}>
+                      <Plus size={15} /> {t('add_content')}
                     </button>
                   )}
-
-                  {/* Comments toggle */}
-                  <button
-                    className="comments-toggle-btn"
-                    onClick={() => toggleComments(ann.id)}
-                  >
-                    <MessageSquare size={15} />
-                    <span>{ann.comment_count} {t('comments')}</span>
-                    {openComments === ann.id ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-                  </button>
-
-                  {openComments === ann.id && (
-                    <div className="comments-section">
-                      {loadingComments && !commentsMap[ann.id] ? (
-                        <Loader2 size={18} className="animate-spin text-accent mx-auto my-2" />
-                      ) : (
-                        <>
-                          {(commentsMap[ann.id] || []).length === 0 ? (
-                            <p className="empty-hint">{t('no_comments')}</p>
-                          ) : (
-                            (commentsMap[ann.id] || []).map((c) => (
-                              <div key={c.id} className="comment-item">
-                                <div className="comment-header">
-                                  <span className="comment-author">{c.author.full_name}</span>
-                                  <span className="comment-time">{timeAgo(c.created_at)}</span>
-                                </div>
-                                <p className="comment-body">{c.body}</p>
-                              </div>
-                            ))
-                          )}
-                          <div className="comment-input-row">
-                            <input
-                              type="text"
-                              className="comment-input"
-                              placeholder={t('add_comment')}
-                              value={commentText}
-                              onChange={(e) => setCommentText(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(ann.id); }}
-                            />
-                            <button
-                              className="comment-send-btn"
-                              onClick={() => handlePostComment(ann.id)}
-                              disabled={postingComment || !commentText.trim()}
-                            >
-                              {postingComment ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
                 </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
+              )}
+              {sections.length === 0 ? (
+                <div className="empty-state-sm">
+                  <FileText size={32} strokeWidth={1} className="text-tertiary" />
+                  <p>{t('no_content')}</p>
+                </div>
+              ) : (
+                sections.map((section) => (
+                  <div key={section.id} className="content-section">
+                    <h3 className="section-title">{section.title}</h3>
+                    {section.contents.length === 0 ? (
+                      <p className="empty-hint">{isTeacher ? t('add_content') : t('no_content')}</p>
+                    ) : (
+                      <div className="content-items">
+                        {section.contents.map((item) => (
+                          <button
+                            key={item.id}
+                            className="content-item"
+                            onClick={() => {
+                              if (item.content_type === 'link' && item.link) {
+                                window.open(item.link, '_blank');
+                              } else if (item.file) {
+                                openFile(item.file, item.title, item.file_extension);
+                              }
+                            }}
+                          >
+                            <span className="content-type-icon">{getTypeIcon(item.content_type)}</span>
+                            <div className="content-item-info">
+                              <span className="content-item-title">{item.title}</span>
+                              <span className="content-item-meta">
+                                {getFileIcon(item.file_extension)}
+                                {item.file_extension?.toUpperCase()}
+                                {item.file_size_display && ` · ${item.file_size_display}`}
+                              </span>
+                            </div>
+                            {item.is_pinned && <Pin size={14} className="text-gold" />}
+                            {item.content_type === 'link' ? (
+                              <ExternalLink size={16} className="text-tertiary" />
+                            ) : (
+                              <Download size={16} className="text-tertiary" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
 
-      {/* ══ TEACHER MODALS ══ */}
+          {/* ── ASSIGNMENTS TAB ── */}
+          {tab === 'assignments' && (
+            <div className="assignments-list">
+              {isTeacher && (
+                <div className="teacher-actions-row">
+                  <button className="fab-inline" onClick={() => setShowAddAssignment(true)}>
+                    <Plus size={15} /> {t('add_assignment')}
+                  </button>
+                </div>
+              )}
+              {assignments.length === 0 ? (
+                <div className="empty-state-sm">
+                  <ClipboardList size={32} strokeWidth={1} className="text-tertiary" />
+                  <p>{t('no_assignments')}</p>
+                </div>
+              ) : (
+                assignments.map((assignment) => (
+                  <button
+                    key={assignment.id}
+                    className="assignment-card"
+                    onClick={() => navigate(`/room/${roomId}/assignment/${assignment.id}`, { state: { tab: 'assignments' } })}
+                  >
+                    <div className="assignment-card-top">
+                      <h4 className="assignment-title">{assignment.title}</h4>
+                      <ChevronRight size={18} className="text-tertiary" />
+                    </div>
+                    <div className="assignment-meta">
+                      <div className={`deadline-badge ${assignment.is_past_deadline ? 'overdue' : ''}`}>
+                        <Clock size={13} />
+                        <span>{formatDeadline(assignment.deadline)}</span>
+                      </div>
+                      <span className="assignment-grade">/{assignment.max_grade}</span>
+                    </div>
+                    {!isTeacher && assignment.my_submission && (
+                      <div className={`submission-status ${assignment.my_submission.status}`}>
+                        {assignment.my_submission.status === 'graded'
+                          ? `✓ ${assignment.my_submission.grade?.score}/${assignment.max_grade}`
+                          : `✓ ${t('submitted')}`}
+                      </div>
+                    )}
+                    {isTeacher && (
+                      <div className="assignment-stats">
+                        <span>{assignment.submissions_count} {t('submitted')}</span>
+                        <span>·</span>
+                        <span>{assignment.graded_count} {t('graded')}</span>
+                      </div>
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
 
-      {/* Add Section Modal */}
-      {showAddSection && (
-        <Modal title={t('add_section')} onClose={() => setShowAddSection(false)}>
-          <div className="modal-body">
-            <div className="input-group">
-              <label>{t('section_name')}</label>
-              <div className="input-wrapper">
-                <BookOpen size={18} />
-                <input
-                  type="text"
-                  placeholder={t('section_name')}
-                  value={sectionTitle}
-                  onChange={(e) => setSectionTitle(e.target.value)}
-                />
-              </div>
-            </div>
-            <button className="btn-primary" onClick={handleAddSection} disabled={saving || !sectionTitle.trim()}>
-              {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
-            </button>
-          </div>
-        </Modal>
-      )}
+          {/* ── ANNOUNCEMENTS TAB ── */}
+          {tab === 'announcements' && (
+            <div className="announcements-list">
+              {isTeacher && (
+                <div className="teacher-actions-row">
+                  <button className="fab-inline" onClick={() => setShowAddAnnouncement(true)}>
+                    <Edit3 size={15} /> {t('add_announcement')}
+                  </button>
+                </div>
+              )}
+              {announcements.length === 0 ? (
+                <div className="empty-state-sm">
+                  <Megaphone size={32} strokeWidth={1} className="text-tertiary" />
+                  <p>{t('no_announcements')}</p>
+                </div>
+              ) : (
+                announcements.map((ann) => (
+                  <div key={ann.id} className="announcement-card">
+                    <div className="announcement-header">
+                      {ann.is_pinned && <Pin size={14} className="text-gold" />}
+                      <span className="announcement-author">{ann.author.full_name}</span>
+                      <span className="announcement-time">
+                        {new Date(ann.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <h4 className="announcement-title">{ann.title}</h4>
+                    <div className={`announcement-body ${expandedAnnouncements.has(ann.id) ? 'expanded' : ''}`}>
+                      <ReactMarkdown>{ann.body}</ReactMarkdown>
+                    </div>
+                    {ann.body.length > 120 && (
+                      <button className="read-more-btn" onClick={() => toggleExpanded(ann.id)}>
+                        {expandedAnnouncements.has(ann.id) ? t('show_less') || 'Show less' : t('read_more') || 'Read more'}
+                      </button>
+                    )}
 
-      {/* Add Content Modal */}
-      {showAddContent && (
-        <Modal title={t('add_content')} onClose={() => setShowAddContent(false)}>
-          <div className="modal-body">
-            <div className="input-group">
-              <label>{t('title')}</label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  placeholder={t('title')}
-                  value={contentForm.title}
-                  onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })}
-                />
-              </div>
+                    {/* Comments toggle */}
+                    <button
+                      className="comments-toggle-btn"
+                      onClick={() => toggleComments(ann.id)}
+                    >
+                      <MessageSquare size={15} />
+                      <span>{ann.comment_count} {t('comments')}</span>
+                      {openComments === ann.id ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                    </button>
+
+                    {openComments === ann.id && (
+                      <div className="comments-section">
+                        {loadingComments && !commentsMap[ann.id] ? (
+                          <Loader2 size={18} className="animate-spin text-accent mx-auto my-2" />
+                        ) : (
+                          <>
+                            {(commentsMap[ann.id] || []).length === 0 ? (
+                              <p className="empty-hint">{t('no_comments')}</p>
+                            ) : (
+                              (commentsMap[ann.id] || []).map((c) => (
+                                <div key={c.id} className="comment-item">
+                                  <div className="comment-header">
+                                    <span className="comment-author">{c.author.full_name}</span>
+                                    <span className="comment-time">{timeAgo(c.created_at)}</span>
+                                  </div>
+                                  <p className="comment-body">{c.body}</p>
+                                </div>
+                              ))
+                            )}
+                            <div className="comment-input-row">
+                              <input
+                                type="text"
+                                className="comment-input"
+                                placeholder={t('add_comment')}
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(ann.id); }}
+                              />
+                              <button
+                                className="comment-send-btn"
+                                onClick={() => handlePostComment(ann.id)}
+                                disabled={postingComment || !commentText.trim()}
+                              >
+                                {postingComment ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
-            <div className="input-group">
-              <label>Section</label>
-              <select
-                className="input-wrapper select-native"
-                value={selectedSectionId ?? ''}
-                onChange={(e) => setSelectedSectionId(Number(e.target.value))}
-              >
-                {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
-              </select>
-            </div>
-            <div className="input-group">
-              <label>{t('content_type')}</label>
-              <select
-                className="input-wrapper select-native"
-                value={contentForm.content_type}
-                onChange={(e) => setContentForm({ ...contentForm, content_type: e.target.value })}
-              >
-                <option value="lecture">📖 Lecture</option>
-                <option value="tp">🔬 TP / Lab</option>
-                <option value="exam">📝 Exam</option>
-                <option value="link">🔗 Link</option>
-                <option value="other">📄 Other</option>
-              </select>
-            </div>
-            {contentForm.content_type === 'link' ? (
+          )}
+        </div>
+
+        {/* ══ TEACHER MODALS ══ */}
+
+        {/* Add Section Modal */}
+        {showAddSection && (
+          <Modal title={t('add_section')} onClose={() => setShowAddSection(false)}>
+            <div className="modal-body">
               <div className="input-group">
-                <label>{t('link')}</label>
+                <label>{t('section_name')}</label>
                 <div className="input-wrapper">
-                  <Link2 size={18} />
+                  <BookOpen size={18} />
                   <input
-                    type="url"
-                    placeholder="https://..."
-                    value={contentForm.link}
-                    onChange={(e) => setContentForm({ ...contentForm, link: e.target.value })}
+                    type="text"
+                    placeholder={t('section_name')}
+                    value={sectionTitle}
+                    onChange={(e) => setSectionTitle(e.target.value)}
                   />
                 </div>
               </div>
-            ) : (
+              <button className="btn-primary" onClick={handleAddSection} disabled={saving || !sectionTitle.trim()}>
+                {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
+              </button>
+            </div>
+          </Modal>
+        )}
+
+        {/* Add Content Modal */}
+        {showAddContent && (
+          <Modal title={t('add_content')} onClose={() => setShowAddContent(false)}>
+            <div className="modal-body">
+              <div className="input-group">
+                <label>{t('title')}</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    placeholder={t('title')}
+                    value={contentForm.title}
+                    onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="input-group">
+                <label>Section</label>
+                <select
+                  className="input-wrapper select-native"
+                  value={selectedSectionId ?? ''}
+                  onChange={(e) => setSelectedSectionId(Number(e.target.value))}
+                >
+                  {sections.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                </select>
+              </div>
+              <div className="input-group">
+                <label>{t('content_type')}</label>
+                <select
+                  className="input-wrapper select-native"
+                  value={contentForm.content_type}
+                  onChange={(e) => setContentForm({ ...contentForm, content_type: e.target.value })}
+                >
+                  <option value="lecture">📖 Lecture</option>
+                  <option value="tp">🔬 TP / Lab</option>
+                  <option value="exam">📝 Exam</option>
+                  <option value="link">🔗 Link</option>
+                  <option value="other">📄 Other</option>
+                </select>
+              </div>
+              {contentForm.content_type === 'link' ? (
+                <div className="input-group">
+                  <label>{t('link')}</label>
+                  <div className="input-wrapper">
+                    <Link2 size={18} />
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={contentForm.link}
+                      onChange={(e) => setContentForm({ ...contentForm, link: e.target.value })}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="input-group">
+                  <label>{t('file')} ({t('optional')})</label>
+                  <label className="file-upload-btn">
+                    <Paperclip size={16} />
+                    {contentFile ? contentFile.name : 'Choisir un fichier'}
+                    <input type="file" className="hidden" onChange={(e) => setContentFile(e.target.files?.[0] || null)} />
+                  </label>
+                </div>
+              )}
+              <div className="input-group">
+                <label>{t('description')} ({t('optional')})</label>
+                <div className="input-wrapper">
+                  <textarea
+                    rows={2}
+                    placeholder={t('description')}
+                    value={contentForm.description}
+                    onChange={(e) => setContentForm({ ...contentForm, description: e.target.value })}
+                  />
+                </div>
+              </div>
+              <button className="btn-primary" onClick={handleAddContent} disabled={saving || !contentForm.title.trim()}>
+                {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
+              </button>
+            </div>
+          </Modal>
+        )}
+
+        {/* Add Assignment Modal */}
+        {showAddAssignment && (
+          <Modal title={t('add_assignment')} onClose={() => setShowAddAssignment(false)}>
+            <div className="modal-body">
+              <div className="input-group">
+                <label>{t('title')}</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    placeholder={t('title')}
+                    value={assignForm.title}
+                    onChange={(e) => setAssignForm({ ...assignForm, title: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="input-group">
+                <label>{t('description')}</label>
+                <div className="input-wrapper">
+                  <textarea
+                    rows={3}
+                    placeholder={t('description')}
+                    value={assignForm.description}
+                    onChange={(e) => setAssignForm({ ...assignForm, description: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="input-group">
+                <label>{t('deadline')} ({t('optional')})</label>
+                <div className="input-wrapper">
+                  <input
+                    type="datetime-local"
+                    value={assignForm.deadline}
+                    onChange={(e) => setAssignForm({ ...assignForm, deadline: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="input-group">
+                <label>{t('max_score')}</label>
+                <div className="input-wrapper">
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="20"
+                    value={assignForm.max_grade}
+                    onChange={(e) => setAssignForm({ ...assignForm, max_grade: e.target.value })}
+                  />
+                </div>
+              </div>
               <div className="input-group">
                 <label>{t('file')} ({t('optional')})</label>
                 <label className="file-upload-btn">
                   <Paperclip size={16} />
-                  {contentFile ? contentFile.name : 'Choisir un fichier'}
-                  <input type="file" className="hidden" onChange={(e) => setContentFile(e.target.files?.[0] || null)} />
+                  {assignFile ? assignFile.name : 'Pièce jointe...'}
+                  <input type="file" className="hidden" onChange={(e) => setAssignFile(e.target.files?.[0] || null)} />
                 </label>
               </div>
-            )}
-            <div className="input-group">
-              <label>{t('description')} ({t('optional')})</label>
-              <div className="input-wrapper">
-                <textarea
-                  rows={2}
-                  placeholder={t('description')}
-                  value={contentForm.description}
-                  onChange={(e) => setContentForm({ ...contentForm, description: e.target.value })}
-                />
-              </div>
+              <button className="btn-primary" onClick={handleAddAssignment} disabled={saving || !assignForm.title.trim()}>
+                {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
+              </button>
             </div>
-            <button className="btn-primary" onClick={handleAddContent} disabled={saving || !contentForm.title.trim()}>
-              {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
-            </button>
-          </div>
-        </Modal>
-      )}
+          </Modal>
+        )}
 
-      {/* Add Assignment Modal */}
-      {showAddAssignment && (
-        <Modal title={t('add_assignment')} onClose={() => setShowAddAssignment(false)}>
-          <div className="modal-body">
-            <div className="input-group">
-              <label>{t('title')}</label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  placeholder={t('title')}
-                  value={assignForm.title}
-                  onChange={(e) => setAssignForm({ ...assignForm, title: e.target.value })}
-                />
+        {/* Add Announcement Modal */}
+        {showAddAnnouncement && (
+          <Modal title={t('add_announcement')} onClose={() => setShowAddAnnouncement(false)}>
+            <div className="modal-body">
+              <div className="input-group">
+                <label>{t('title')}</label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    placeholder={t('title')}
+                    value={annForm.title}
+                    onChange={(e) => setAnnForm({ ...annForm, title: e.target.value })}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="input-group">
-              <label>{t('description')}</label>
-              <div className="input-wrapper">
-                <textarea
-                  rows={3}
-                  placeholder={t('description')}
-                  value={assignForm.description}
-                  onChange={(e) => setAssignForm({ ...assignForm, description: e.target.value })}
-                />
+              <div className="input-group">
+                <label>Message</label>
+                <div className="input-wrapper">
+                  <textarea
+                    rows={4}
+                    placeholder="Écrivez votre annonce..."
+                    value={annForm.body}
+                    onChange={(e) => setAnnForm({ ...annForm, body: e.target.value })}
+                  />
+                </div>
               </div>
+              <button
+                className="btn-primary"
+                onClick={handleAddAnnouncement}
+                disabled={saving || !annForm.title.trim() || !annForm.body.trim()}
+              >
+                {saving ? <Loader2 size={18} className="animate-spin" /> : t('post')}
+              </button>
             </div>
-            <div className="input-group">
-              <label>{t('deadline')} ({t('optional')})</label>
-              <div className="input-wrapper">
-                <input
-                  type="datetime-local"
-                  value={assignForm.deadline}
-                  onChange={(e) => setAssignForm({ ...assignForm, deadline: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="input-group">
-              <label>{t('max_score')}</label>
-              <div className="input-wrapper">
-                <input
-                  type="number"
-                  min="1"
-                  placeholder="20"
-                  value={assignForm.max_grade}
-                  onChange={(e) => setAssignForm({ ...assignForm, max_grade: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="input-group">
-              <label>{t('file')} ({t('optional')})</label>
-              <label className="file-upload-btn">
-                <Paperclip size={16} />
-                {assignFile ? assignFile.name : 'Pièce jointe...'}
-                <input type="file" className="hidden" onChange={(e) => setAssignFile(e.target.files?.[0] || null)} />
-              </label>
-            </div>
-            <button className="btn-primary" onClick={handleAddAssignment} disabled={saving || !assignForm.title.trim()}>
-              {saving ? <Loader2 size={18} className="animate-spin" /> : t('save')}
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {/* Add Announcement Modal */}
-      {showAddAnnouncement && (
-        <Modal title={t('add_announcement')} onClose={() => setShowAddAnnouncement(false)}>
-          <div className="modal-body">
-            <div className="input-group">
-              <label>{t('title')}</label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  placeholder={t('title')}
-                  value={annForm.title}
-                  onChange={(e) => setAnnForm({ ...annForm, title: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="input-group">
-              <label>Message</label>
-              <div className="input-wrapper">
-                <textarea
-                  rows={4}
-                  placeholder="Écrivez votre annonce..."
-                  value={annForm.body}
-                  onChange={(e) => setAnnForm({ ...annForm, body: e.target.value })}
-                />
-              </div>
-            </div>
-            <button
-              className="btn-primary"
-              onClick={handleAddAnnouncement}
-              disabled={saving || !annForm.title.trim() || !annForm.body.trim()}
-            >
-              {saving ? <Loader2 size={18} className="animate-spin" /> : t('post')}
-            </button>
-          </div>
-        </Modal>
-      )}
-    </div>
+          </Modal>
+        )}
+      </div>
     </PullToRefresh>
   );
 }
