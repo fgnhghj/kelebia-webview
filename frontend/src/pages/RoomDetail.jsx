@@ -683,11 +683,11 @@ export default function RoomDetail() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 0, letterSpacing: '-0.5px' }}>{room.name}</h1>
                         {isTeacher ? (
-                            <button onClick={openRoomSettings} title={t('room.roomSettings')} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', transition: 'all 0.2s' }}>
+                            <button onClick={openRoomSettings} title={t('room.roomSettings')} style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', transition: 'all 0.2s' }}>
                                 <FiEdit3 size={16} />
                             </button>
                         ) : (
-                            <button onClick={handleLeaveRoom} title={t('room.leaveRoom') || 'Leave Room'} style={{ background: 'rgba(220,53,69,0.25)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: '8px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ff6b6b', transition: 'all 0.2s' }}
+                            <button onClick={handleLeaveRoom} title={t('room.leaveRoom') || 'Leave Room'} style={{ background: 'rgba(220,53,69,0.25)', backdropFilter: 'blur(10px)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ff6b6b', transition: 'all 0.2s' }}
                                 onMouseOver={e => { e.currentTarget.style.background = 'rgba(220,53,69,0.4)'; }}
                                 onMouseOut={e => { e.currentTarget.style.background = 'rgba(220,53,69,0.25)'; }}
                             >
@@ -701,74 +701,77 @@ export default function RoomDetail() {
                     {isTeacher && (
                         <div style={{ marginTop: 24 }}>
                             <div className="invite-code-container" style={{
-                                background: 'rgba(0,0,0,0.2)',
-                                backdropFilter: 'blur(8px)',
-                                borderRadius: '8px',
+                                background: 'rgba(255,255,255,0.05)',
+                                backdropFilter: 'blur(12px)',
+                                borderRadius: 'var(--radius-full)',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                padding: '8px 16px',
+                                padding: '6px 6px 6px 20px',
                                 gap: 16,
-                                border: '1px solid rgba(255,255,255,0.1)'
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
                             }}>
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.7 }}>{t('room.inviteCode')}</span>
                                     <span style={{ color: 'white', fontWeight: 600, letterSpacing: '1px', fontSize: 15, fontFamily: 'monospace' }}>{room.invite_code}</span>
                                 </div>
-                                <button
-                                    onClick={() => copyToClipboard(room.invite_code, t('room.codeCopied'), t('room.copyFailed'))}
-                                    style={{
-                                        background: 'rgba(255,255,255,0.1)', color: 'white',
-                                        border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px',
-                                        padding: '6px 14px', fontSize: 13, fontWeight: 500,
-                                        display: 'flex', alignItems: 'center', gap: 6,
-                                        cursor: 'pointer', transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
-                                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-                                >
-                                    <FiCopy size={14} /> {t('room.copy')}
-                                </button>
-                                <button
-                                    onClick={() => setShowFullscreenCode(true)}
-                                    title={t('room.fullscreenCode')}
-                                    style={{
-                                        background: 'rgba(255,255,255,0.1)', color: 'white',
-                                        border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px',
-                                        padding: '6px 10px', fontSize: 13, fontWeight: 500,
-                                        display: 'flex', alignItems: 'center', gap: 6,
-                                        cursor: 'pointer', transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
-                                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-                                >
-                                    <FiMaximize2 size={14} />
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            if (room.is_archived) {
-                                                await roomsAPI.unarchive(room.id);
-                                                toast.success('Room unarchived');
-                                            } else {
-                                                await roomsAPI.archive(room.id);
-                                                toast.success('Room archived');
-                                            }
-                                            loadAll();
-                                        } catch { toast.error('Failed'); }
-                                    }}
-                                    title={room.is_archived ? 'Unarchive' : 'Archive'}
-                                    style={{
-                                        background: room.is_archived ? 'rgba(255,200,0,0.2)' : 'rgba(255,255,255,0.1)', color: 'white',
-                                        border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px',
-                                        padding: '6px 10px', fontSize: 13, fontWeight: 500,
-                                        display: 'flex', alignItems: 'center', gap: 6,
-                                        cursor: 'pointer', transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
-                                    onMouseOut={e => { e.currentTarget.style.background = room.is_archived ? 'rgba(255,200,0,0.2)' : 'rgba(255,255,255,0.1)'; }}
-                                >
-                                    <FiArchive size={14} />
-                                </button>
+                                <div style={{ display: 'flex', gap: 4 }}>
+                                    <button
+                                        onClick={() => copyToClipboard(room.invite_code, t('room.codeCopied'), t('room.copyFailed'))}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.1)', color: 'white',
+                                            border: '1px solid rgba(255,255,255,0.2)', borderRadius: 'var(--radius-full)',
+                                            padding: '8px 16px', fontSize: 13, fontWeight: 500,
+                                            display: 'flex', alignItems: 'center', gap: 6,
+                                            cursor: 'pointer', transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                                        onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                                    >
+                                        <FiCopy size={14} /> {t('room.copy')}
+                                    </button>
+                                    <button
+                                        onClick={() => setShowFullscreenCode(true)}
+                                        title={t('room.fullscreenCode')}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.1)', color: 'white',
+                                            border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%',
+                                            width: 34, height: 34,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                            cursor: 'pointer', transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                                        onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                                    >
+                                        <FiMaximize2 size={14} />
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                if (room.is_archived) {
+                                                    await roomsAPI.unarchive(room.id);
+                                                    toast.success('Room unarchived');
+                                                } else {
+                                                    await roomsAPI.archive(room.id);
+                                                    toast.success('Room archived');
+                                                }
+                                                loadAll();
+                                            } catch { toast.error('Failed'); }
+                                        }}
+                                        title={room.is_archived ? 'Unarchive' : 'Archive'}
+                                        style={{
+                                            background: room.is_archived ? 'rgba(255,200,0,0.2)' : 'rgba(255,255,255,0.1)', color: 'white',
+                                            border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%',
+                                            width: 34, height: 34,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                            cursor: 'pointer', transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+                                        onMouseOut={e => { e.currentTarget.style.background = room.is_archived ? 'rgba(255,200,0,0.2)' : 'rgba(255,255,255,0.1)'; }}
+                                    >
+                                        <FiArchive size={14} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
