@@ -43,9 +43,11 @@ export default function Login() {
         {/* Header */}
         <div className="auth-header">
           <div className="auth-logo">
-            <svg width="48" height="48" viewBox="0 0 72 72" fill="none">
-              <rect width="72" height="72" rx="18" fill="#D97757" fillOpacity="0.15" />
-              <path d="M16 18H26V54H16ZM26 26L56 18V27L26 36ZM26 36L56 45V54L26 46Z" fill="#D97757" />
+            <svg width="48" height="48" viewBox="0 0 88 88" fill="none">
+              <path d="M26 18 L26 70" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" />
+              <path d="M26 44 L58 18" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" />
+              <path d="M34 38 L58 70" stroke="var(--accent)" strokeWidth="8" strokeLinecap="round" />
+              <circle cx="62" cy="18" r="6" fill="var(--accent)" />
             </svg>
           </div>
           <h1 className="auth-title">Welcome back</h1>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "101429959201",
+    "project_id": "iset-classroom",
+    "storage_bucket": "iset-classroom.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101429959201:android:ebd1a631ddf8ae6c9a6160",
+        "android_client_info": {
+          "package_name": "com.kelebia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY0M_IsPRcbMUT0naKexr2ABQKsVfruig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

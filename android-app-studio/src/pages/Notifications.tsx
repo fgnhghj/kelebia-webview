@@ -119,81 +119,83 @@ export default function Notifications() {
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh}>
-    <div className="page-container">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">{t('notifications')}</h1>
-          {unreadCount > 0 && (
-            <p className="page-subtitle">{unreadCount} {t('unread')}</p>
-          )}
-        </div>
-        <div className="header-actions">
-          {unreadCount > 0 && (
-            <button className="icon-btn-ghost" onClick={markAllRead} title="Mark all read">
-              <CheckCheck size={20} />
-            </button>
-          )}
-          {notifications.length > 0 && (
-            <button className="icon-btn-ghost" onClick={deleteAll} title="Delete all">
-              <Trash2 size={20} />
-            </button>
-          )}
-        </div>
-      </header>
+      <div className="page-container">
+        <header className="page-header">
+          <div>
+            <h1 className="page-title">{t('notifications')}</h1>
+            {unreadCount > 0 && (
+              <p className="page-subtitle">{unreadCount} {t('unread')}</p>
+            )}
+          </div>
+          <div className="header-actions">
+            {unreadCount > 0 && (
+              <button className="icon-btn-ghost" onClick={markAllRead} title="Mark all read">
+                <CheckCheck size={20} />
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button className="icon-btn-ghost" onClick={deleteAll} title="Delete all">
+                <Trash2 size={20} />
+              </button>
+            )}
+          </div>
+        </header>
 
-      {loading ? (
-        <div className="notification-list">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skeleton-notification">
-              <div className="skeleton skeleton-notification-icon" />
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div className="skeleton skeleton-line w-60" />
-                <div className="skeleton skeleton-line w-80 h-10" />
-                <div className="skeleton skeleton-line w-30 h-10" />
+        {loading ? (
+          <div className="notification-list">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="skeleton-notification">
+                <div className="skeleton skeleton-notification-icon" />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div className="skeleton skeleton-line w-60" />
+                  <div className="skeleton skeleton-line w-80 h-10" />
+                  <div className="skeleton skeleton-line w-30 h-10" />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : notifications.length === 0 ? (
-        <div className="empty-state">
-          <BellOff size={48} strokeWidth={1} className="text-tertiary" />
-          <h3>{t('all_caught_up')}</h3>
-          <p>{t('no_notif_desc')}</p>
-        </div>
-      ) : (
-        <div className="notification-list">
-          {notifications.map((notif) => {
-            const Icon = typeIcons[notif.notification_type] || Bell;
-            const color = typeColors[notif.notification_type] || 'var(--text-secondary)';
+            ))}
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="empty-state">
+            <BellOff size={48} strokeWidth={1} className="text-tertiary" />
+            <h3>{t('all_caught_up')}</h3>
+            <p>{t('no_notif_desc')}</p>
+          </div>
+        ) : (
+          <div className="notification-list">
+            {notifications.map((notif) => {
+              const Icon = typeIcons[notif.notification_type] || Bell;
+              const color = typeColors[notif.notification_type] || 'var(--text-secondary)';
 
-            return (
-              <div
-                key={notif.id}
-                className={`notification-item ${!notif.is_read ? 'unread' : ''}`}
-              >
-                <div className="notification-icon" style={{ color, backgroundColor: color + '18' }}>
-                  <Icon size={18} />
-                </div>
-                <div className="notification-body" onClick={() => {
-                  if (!notif.is_read) markRead(notif.id);
-                  if (notif.link) navigate(notif.link);
-                }}>
-                  <h4 className="notification-title">{notif.title}</h4>
-                  <p className="notification-message">{notif.message}</p>
-                  <span className="notification-time">{formatTime(notif.created_at)}</span>
-                </div>
-                <button
-                  className="notification-delete"
-                  onClick={() => deleteNotification(notif.id)}
+              return (
+                <div
+                  key={notif.id}
+                  className={`notification-item ${!notif.is_read ? 'unread' : ''}`}
                 >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                  <div className="notification-icon" style={{ color, backgroundColor: color + '18' }}>
+                    <Icon size={18} />
+                  </div>
+                  <div className="notification-body" onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!notif.is_read) markRead(notif.id);
+                    if (notif.link) navigate(notif.link);
+                  }}>
+                    <h4 className="notification-title">{notif.title}</h4>
+                    <p className="notification-message">{notif.message}</p>
+                    <span className="notification-time">{formatTime(notif.created_at)}</span>
+                  </div>
+                  <button
+                    className="notification-delete"
+                    onClick={() => deleteNotification(notif.id)}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </PullToRefresh>
   );
 }

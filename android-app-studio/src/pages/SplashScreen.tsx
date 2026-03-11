@@ -70,34 +70,34 @@ export default function SplashScreen() {
               >
                 <path
                   className="k-line k-line-1"
-                  d="M22 14 L22 74"
-                  stroke="#D97757"
-                  strokeWidth="8"
+                  d="M26 18 L26 70"
+                  stroke="var(--accent)"
+                  strokeWidth="6"
                   strokeLinecap="round"
                   fill="none"
                 />
                 <path
                   className="k-line k-line-2"
-                  d="M26 44 L62 14"
-                  stroke="#D97757"
-                  strokeWidth="7"
+                  d="M26 44 L58 18"
+                  stroke="var(--accent)"
+                  strokeWidth="6"
                   strokeLinecap="round"
                   fill="none"
                 />
                 <path
                   className="k-line k-line-3"
-                  d="M26 44 L62 74"
-                  stroke="#D97757"
-                  strokeWidth="7"
+                  d="M34 38 L58 70"
+                  stroke="var(--accent)"
+                  strokeWidth="6"
                   strokeLinecap="round"
                   fill="none"
                 />
                 <circle
                   className="k-dot"
-                  cx="66"
-                  cy="14"
-                  r="4"
-                  fill="#D97757"
+                  cx="62"
+                  cy="18"
+                  r="5"
+                  fill="var(--accent)"
                 />
               </svg>
             </div>

@@ -109,7 +109,15 @@ export default function Notifications() {
                             <motion.div
                                 key={n.id}
                                 className={`notif-item ${!n.is_read ? 'unread' : ''}`}
-                                onClick={() => !n.is_read ? markRead(n.id, n.link) : n.link && navigate(n.link)}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!n.is_read) {
+                                        markRead(n.id, n.link);
+                                    } else if (n.link) {
+                                        navigate(n.link);
+                                    }
+                                }}
                                 style={{ cursor: 'pointer' }}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
