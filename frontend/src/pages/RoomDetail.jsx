@@ -687,11 +687,11 @@ export default function RoomDetail() {
                                 <FiEdit3 size={16} />
                             </button>
                         ) : (
-                            <button onClick={handleLeaveRoom} title={t('room.leaveRoom') || 'Leave Room'} style={{ background: 'rgba(220,53,69,0.25)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: '8px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', color: '#ff6b6b', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' }}
+                            <button onClick={handleLeaveRoom} title={t('room.leaveRoom') || 'Leave Room'} style={{ background: 'rgba(220,53,69,0.25)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: '8px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ff6b6b', transition: 'all 0.2s' }}
                                 onMouseOver={e => { e.currentTarget.style.background = 'rgba(220,53,69,0.4)'; }}
                                 onMouseOut={e => { e.currentTarget.style.background = 'rgba(220,53,69,0.25)'; }}
                             >
-                                <FiLogOut size={14} /> {t('room.leave') || 'Leave'}
+                                <FiLogOut size={16} />
                             </button>
                         )}
                     </div>

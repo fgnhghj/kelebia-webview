@@ -1,11 +1,11 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UserProfileSerializer
-from .models import AppVersionConfig
+from .models import AppVersion
+from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UserProfileSerializer, AppVersionSerializer
 import secrets
 import pyotp
 import qrcode
@@ -231,69 +231,50 @@ def api_reset_password(request):
     except User.DoesNotExist:
         return Response({'detail': 'Code invalide.'}, status=400)
 
-
-def _compare_versions(app_ver: str, min_ver: str) -> bool:
-    """Return True if app_ver < min_ver (needs update)."""
-    try:
-        app_parts = [int(x) for x in app_ver.split('.')]
-        min_parts = [int(x) for x in min_ver.split('.')]
-        # Pad to same length
-        while len(app_parts) < len(min_parts):
-            app_parts.append(0)
-        while len(min_parts) < len(app_parts):
-            min_parts.append(0)
-        return app_parts < min_parts
-    except (ValueError, AttributeError):
-        return False
-
-
-@api_view(['GET'])
+@api_view(['GET', 'POST', 'PATCH', 'DELETE'])
 @permission_classes([AllowAny])
-def api_version_check(request):
-    """Public endpoint — check if the app version is outdated.
-
-    Query param: ?v=1.0.0
-    Returns: { needs_update, message, update_url }
-    """
-    config = AppVersionConfig.load()
-    app_version = request.query_params.get('v', '0.0.0')
-    needs_update = config.is_locked and _compare_versions(app_version, config.min_version)
-    return Response({
-        'needs_update': needs_update,
-        'min_version': config.min_version,
-        'message': config.lock_message if needs_update else '',
-        'update_url': config.update_url if needs_update else '',
-    })
-
-
-@api_view(['GET', 'PUT'])
-@permission_classes([IsAdminUser])
-def api_version_config(request):
-    """Admin-only endpoint to get/update version lock configuration."""
-    config = AppVersionConfig.load()
+def api_app_version(request):
+    """Get or update app versions."""
+    
     if request.method == 'GET':
-        return Response({
-            'min_version': config.min_version,
-            'is_locked': config.is_locked,
-            'lock_message': config.lock_message,
-            'update_url': config.update_url,
-            'updated_at': config.updated_at,
-        })
-    # PUT
-    data = request.data
-    if 'min_version' in data:
-        config.min_version = data['min_version']
-    if 'is_locked' in data:
-        config.is_locked = data['is_locked']
-    if 'lock_message' in data:
-        config.lock_message = data['lock_message']
-    if 'update_url' in data:
-        config.update_url = data['update_url']
-    config.save()
-    return Response({
-        'min_version': config.min_version,
-        'is_locked': config.is_locked,
-        'lock_message': config.lock_message,
-        'update_url': config.update_url,
-        'updated_at': config.updated_at,
-    })
+        version_param = request.query_params.get('version')
+        if version_param:
+            try:
+                version = AppVersion.objects.get(version_name=version_param)
+                return Response(AppVersionSerializer(version).data)
+            except AppVersion.DoesNotExist:
+                return Response({'is_locked': False})
+        else:
+            versions = AppVersion.objects.all().order_by('-updated_at')
+            return Response(AppVersionSerializer(versions, many=True).data)
+
+    # Admin only below this point
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return Response({'detail': 'Non autorisé. Admin only.'}, status=403)
+
+    if request.method == 'POST':
+        serializer = AppVersionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    if request.method == 'PATCH':
+        version_id = request.data.get('id')
+        if not version_id:
+            return Response({"detail": "ID required for PATCH"}, status=400)
+        try:
+            version = AppVersion.objects.get(id=version_id)
+        except AppVersion.DoesNotExist:
+            return Response({"detail": "Not found"}, status=404)
+        
+        serializer = AppVersionSerializer(version, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    if request.method == 'DELETE':
+        version_id = request.data.get('id')
+        if not version_id:
+            return Response({"detail": "ID required for DELETE"}, status=400)
+        AppVersion.objects.filter(id=version_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User
+from .models import User, AppVersion
+
+class AppVersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppVersion
+        fields = ['id', 'version_name', 'is_locked', 'message', 'update_link', 'updated_at']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -10,8 +15,8 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'username', 'first_name', 'last_name',
                   'full_name', 'role', 'avatar', 'bio', 'institution',
-                  'email_verified', 'is_2fa_enabled', 'is_staff', 'date_joined']
-        read_only_fields = ['id', 'date_joined', 'is_staff']
+                  'email_verified', 'is_2fa_enabled', 'date_joined']
+        read_only_fields = ['id', 'date_joined']
 
     def get_full_name(self, obj):
         return obj.get_full_name() or obj.username

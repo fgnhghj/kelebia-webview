@@ -13,6 +13,7 @@ source venv/bin/activate
 
 # --- 2. Run migrations ---
 echo "[2/4] Migrations..."
+python fix_db.py 2>&1
 python manage.py migrate --run-syncdb 2>&1 | tail -5
 
 # --- 3. Rebuild frontend ---
@@ -34,7 +35,7 @@ nohup gunicorn \
     --error-logfile /home/ubuntu/eduroom/gunicorn.error.log \
     --env DJANGO_SECRET_KEY='@ayx7oag43h42wz7rcd0b90a2dxw9fnc6@(1wma_vq0sqabo4-' \
     --env DJANGO_DEBUG=False \
-    --env DJANGO_ALLOWED_HOSTS=isetkl-classroom.gleeze.com,localhost \
+    --env DJANGO_ALLOWED_HOSTS=isetkl-classroom.gleeze.com,localhost,127.0.0.1 \
     --env DATABASE_URL=postgres \
     --env DB_NAME=eduroom \
     --env DB_USER=eduroom_user \

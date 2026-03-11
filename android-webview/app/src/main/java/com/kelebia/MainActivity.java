@@ -74,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
         ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
+        // Inject custom User-Agent to identify the Android App vs the Website to the server
+        String defaultUserAgent = ws.getUserAgentString();
+        ws.setUserAgentString(defaultUserAgent + " KelebiaApp/" + BuildConfig.VERSION_NAME);
+
         // Enable cookies (needed for JWT / session auth)
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);

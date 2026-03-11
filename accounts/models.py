@@ -57,40 +57,12 @@ class User(AbstractUser):
     def is_student(self):
         return self.role == 'student'
 
-
-class AppVersionConfig(models.Model):
-    """Singleton model to manage forced app updates."""
-    min_version = models.CharField(
-        max_length=20, default='1.0.0',
-        help_text='Minimum required app version (semver, e.g. 2.1.0)',
-    )
-    is_locked = models.BooleanField(
-        default=False,
-        help_text='When enabled, users with an older version will be forced to update.',
-    )
-    lock_message = models.TextField(
-        default='A new version of the app is available. Please update to continue.',
-        help_text='Message displayed to users when the app is locked.',
-    )
-    update_url = models.URLField(
-        blank=True, default='',
-        help_text='URL where users can download the latest APK.',
-    )
+class AppVersion(models.Model):
+    version_name = models.CharField(max_length=50, unique=True, default='1.0')
+    is_locked = models.BooleanField(default=False)
+    message = models.TextField(default="Une nouvelle mise \u00e0 jour est disponible. Veuillez l'installer pour continuer.")
+    update_link = models.URLField(default="https://isetkl-classroom.gleeze.com/download")
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        verbose_name = 'App Version Config'
-        verbose_name_plural = 'App Version Config'
-
     def __str__(self):
-        return f'App v{self.min_version} (locked={self.is_locked})'
-
-    def save(self, *args, **kwargs):
-        # Enforce singleton: always use pk=1
-        self.pk = 1
-        super().save(*args, **kwargs)
-
-    @classmethod
-    def load(cls):
-        obj, _ = cls.objects.get_or_create(pk=1)
-        return obj
+        return f"Version {self.version_name} - {'Locked' if self.is_locked else 'Unlocked'}"

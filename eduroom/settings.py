@@ -160,7 +160,7 @@ if not DEBUG:
             CORS_ALLOWED_ORIGINS.append(origin)
     # Capacitor Android WebView runs from https://localhost (androidScheme: 'https')
     # Also allow http://localhost fallback and capacitor://localhost for iOS
-    for cap_origin in ['https://localhost', 'http://localhost', 'capacitor://localhost']:
+    for cap_origin in ['https://localhost', 'http://localhost', 'capacitor://localhost', 'null']:
         if cap_origin not in CORS_ALLOWED_ORIGINS:
             CORS_ALLOWED_ORIGINS.append(cap_origin)
 CORS_ALLOW_CREDENTIALS = True

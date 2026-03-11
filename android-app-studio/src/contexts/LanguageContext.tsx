@@ -139,9 +139,6 @@ const translations = {
     completion: "Achèvement",
     assignments_completed: "devoirs rendus",
     deadline_reminder: "Rappel de date limite",
-    update_required: "Mise à jour requise",
-    minimum_version: "Version minimale",
-    download_update: "Télécharger la mise à jour",
   },
   en: {
     good_morning: "Good morning",
@@ -279,9 +276,6 @@ const translations = {
     completion: "Completion",
     assignments_completed: "assignments submitted",
     deadline_reminder: "Deadline reminder",
-    update_required: "Update Required",
-    minimum_version: "Minimum version",
-    download_update: "Download Update",
   },
   ar_tn: {
     good_morning: "صباح الخير",
@@ -418,9 +412,6 @@ const translations = {
     completion: "الإنجاز",
     assignments_completed: "واجبات مسلّمة",
     deadline_reminder: "تذكير بالأجل",
-    update_required: "تحديث مطلوب",
-    minimum_version: "الحد الأدنى للنسخة",
-    download_update: "حمّل التحديث",
   },
 };
 

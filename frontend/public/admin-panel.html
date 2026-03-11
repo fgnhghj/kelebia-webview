@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelebia Classroom - Admin Panel</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --danger: #EF4444;
+            --danger-hover: #DC2626;
+            --bg: #0F172A;
+            --bg-card: #1E293B;
+            --border: #334155;
+            --text: #F8FAFC;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin-top: 0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="email"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-container input {
+            width: 1.2rem;
+            height: 1.2rem;
+        }
+
+        button {
+            padding: 0.75rem 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 1rem;
+        }
+
+        button.full-width {
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.btn-danger {
+            background-color: var(--danger);
+        }
+
+        button.btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid #EF4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--bg);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #0f172a88;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-locked {
+            background: #ef4444;
+            color: white;
+        }
+
+        .badge-unlocked {
+            background: #10b981;
+            color: white;
+        }
+
+        .version-row td {
+            vertical-align: top;
+        }
+
+        .row-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #1e293b55;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card" id="loginView">
+        <h1>Connexion Admin</h1>
+        <div id="loginAlert" class="alert hidden"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email Admin</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="full-width">Se connecter</button>
+        </form>
+    </div>
+
+    <div class="card hidden" id="panelView">
+        <h1>Contrôle de Versions Android</h1>
+        <div id="alert" class="alert hidden"></div>
+
+        <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border);">
+            <h3>Ajouter une nouvelle version</h3>
+            <form id="addVersionForm" style="display: flex; gap: 10px; align-items: flex-end;">
+                <div style="flex-grow: 1;">
+                    <label>Nom de la version (ex: 1.0)</label>
+                    <input type="text" id="newVersionName" required>
+                </div>
+                <button type="submit">Ajouter</button>
+            </form>
+        </div>
+
+        <h3>Versions existantes</h3>
+        <div style="overflow-x: auto;">
+            <table id="versionsTable">
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="versionsList">
+                    <!-- Dynamic -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="text-align:center; margin-top:2rem;">
+            <a href="#" id="logoutBtn" style="color:#94a3b8; text-decoration:none; font-size:0.9rem;">Se déconnecter</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : '/api';
+        let token = localStorage.getItem('admin_token');
+
+        const loginView = document.getElementById('loginView');
+        const panelView = document.getElementById('panelView');
+        const alertBox = document.getElementById('alert');
+        const loginAlertBox = document.getElementById('loginAlert');
+        const versionsList = document.getElementById('versionsList');
+
+        function showAlert(msg, isError, isLogin = false) {
+            const box = isLogin ? loginAlertBox : alertBox;
+            box.textContent = msg;
+            box.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+            box.classList.remove('hidden');
+            setTimeout(() => box.classList.add('hidden'), 5000);
+        }
+
+        function showPanel() {
+            loginView.classList.add('hidden');
+            panelView.classList.remove('hidden');
+            fetchVersions();
+        }
+
+        function showLogin() {
+            token = null;
+            localStorage.removeItem('admin_token');
+            panelView.classList.add('hidden');
+            loginView.classList.remove('hidden');
+        }
+
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            const headers = { 'Authorization': `Bearer ${token}` };
+            if (body) headers['Content-Type'] = 'application/json';
+
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : null
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                showLogin();
+                throw new Error("Session expirée");
+            }
+            if (!res.ok) throw new Error("Erreur réseau");
+
+            if (res.status !== 204) return await res.json();
+            return null;
+        }
+
+        async function fetchVersions() {
+            try {
+                const data = await apiRequest('/app-version/');
+                renderVersions(data);
+            } catch (err) {
+                if (token) showAlert("Erreur de récupération des données", true);
+            }
+        }
+
+        function renderVersions(versions) {
+            versionsList.innerHTML = '';
+
+            if (versions.length === 0) {
+                versionsList.innerHTML = '<tr><td colspan="3" style="text-align:center;">Aucune version trouvée</td></tr>';
+                return;
+            }
+
+            versions.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.className = 'version-row';
+
+                const badgeClass = v.is_locked ? 'badge-locked' : 'badge-unlocked';
+                const badgeText = v.is_locked ? 'Verrouillée' : 'Active';
+
+                tr.innerHTML = `
+                    <td style="font-weight:bold; font-size:1.1rem;">${v.version_name}</td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                    <td>
+                        <button type="button" onclick="toggleEdit(${v.id})" style="background:#3b82f6; padding:0.4rem 0.8rem; font-size:0.85rem;">Modifier</button>
+                        <button type="button" onclick="deleteVersion(${v.id})" class="btn-danger" style="padding:0.4rem 0.8rem; font-size:0.85rem; margin-left:5px;">Supprimer</button>
+                    </td>
+                `;
+
+                // Hidden edit form row
+                const editTr = document.createElement('tr');
+                editTr.id = `edit-row-${v.id}`;
+                editTr.className = 'hidden';
+                editTr.innerHTML = `
+                    <td colspan="3">
+                        <form class="row-form" onsubmit="saveVersion(event, ${v.id})">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="locked-${v.id}" ${v.is_locked ? 'checked' : ''}>
+                                <label for="locked-${v.id}" style="margin:0;">Verrouiller cette version</label>
+                            </div>
+                            <div>
+                                <label style="font-size:0.85rem;">Message</label>
+                                <textarea id="msg-${v.id}" required>${v.message}</textarea>
+                            </div>
+                            <div>
+                                <label style="font-size:0.85rem;">Lien de téléchargement</label>
+                                <input type="url" id="link-${v.id}" value="${v.update_link}" required>
+                            </div>
+                            <div style="display:flex; gap:10px; margin-top:5px;">
+                                <button type="submit">Sauvegarder</button>
+                                <button type="button" style="background:transparent; color:var(--text); border:1px solid var(--border);" onclick="toggleEdit(${v.id})">Annuler</button>
+                            </div>
+                        </form>
+                    </td>
+                `;
+
+                versionsList.appendChild(tr);
+                versionsList.appendChild(editTr);
+            });
+        }
+
+        window.toggleEdit = (id) => {
+            const row = document.getElementById(`edit-row-${id}`);
+            row.classList.toggle('hidden');
+        };
+
+        window.saveVersion = async (e, id) => {
+            e.preventDefault();
+            const data = {
+                id: id,
+                is_locked: document.getElementById(`locked-${id}`).checked,
+                message: document.getElementById(`msg-${id}`).value,
+                update_link: document.getElementById(`link-${id}`).value
+            };
+
+            try {
+                await apiRequest('/app-version/', 'PATCH', data);
+                showAlert("Version mise à jour avec succès", false);
+                fetchVersions();
+            } catch (err) {
+                if (token) showAlert("Erreur lors de la mise à jour", true);
+            }
+        };
+
+        window.deleteVersion = async (id) => {
+            if (!confirm("Voulez-vous vraiment supprimer cette version ?")) return;
+            try {
+                await apiRequest('/app-version/', 'DELETE', { id });
+                showAlert("Version supprimée", false);
+                fetchVersions();
+            } catch (err) {
+                if (token) showAlert("Erreur lors de la suppression", true);
+            }
+        };
+
+        document.getElementById('addVersionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('newVersionName');
+            try {
+                await apiRequest('/app-version/', 'POST', {
+                    version_name: input.value,
+                    // Default values are handled by the model, but we can pass them if needed
+                });
+                input.value = '';
+                showAlert("Version ajoutée", false);
+                fetchVersions();
+            } catch (err) {
+                if (token) showAlert("Erreur (la version existe peut-être déjà)", true);
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch(`${API_URL}/auth/login/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    if (data.user.role !== 'teacher' && !data.user.is_superuser) {
+                        showAlert("Vous n'êtes pas administrateur", true, true);
+                        return;
+                    }
+                    token = data.tokens.access;
+                    localStorage.setItem('admin_token', token);
+                    showPanel();
+                } else {
+                    showAlert(data.detail || "Email ou mot de passe incorrect", true, true);
+                }
+            } catch (err) {
+                showAlert("Erreur réseau", true, true);
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            showLogin();
+        });
+
+        if (token) {
+            showPanel();
+        }
+    </script>
+</body>
+
+</html>
