@@ -3,7 +3,7 @@ import { useAuth } from '../AuthContext';
 import { useTranslation } from '../LanguageContext';
 import { useEffect, useState } from 'react';
 import { notificationsAPI } from '../api';
-import { FiPieChart, FiBell, FiUser, FiMoon, FiSun, FiLogOut, FiMenu, FiX, FiAward, FiShield } from 'react-icons/fi';
+import { FiPieChart, FiBell, FiUser, FiMoon, FiSun, FiLogOut, FiMenu, FiX, FiAward } from 'react-icons/fi';
 
 export default function Sidebar() {
     const { user, logout } = useAuth();
@@ -74,11 +74,6 @@ export default function Sidebar() {
                         <Link to="/profile" className={`nav-item ${isActive('/profile') ? 'active' : ''}`}>
                             <span className="icon"><FiUser /></span> {t('sidebar.profile')}
                         </Link>
-                        {user?.is_staff && (
-                            <Link to="/admin" className={`nav-item ${isActive('/admin') ? 'active' : ''}`}>
-                                <span className="icon"><FiShield /></span> {t('sidebar.admin')}
-                            </Link>
-                        )}
                     </div>
 
                     <div className="nav-section">

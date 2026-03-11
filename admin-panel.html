@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kelebia — Admin Panel</title>
+<style>
+  :root {
+    --bg: #1A1714;
+    --bg2: #23201c;
+    --bg3: #2d2924;
+    --border: #3a3530;
+    --text: #e8e0d8;
+    --text2: #a89e94;
+    --text3: #7a7068;
+    --accent: #D97757;
+    --accent-hover: #c5654a;
+    --green: #4ade80;
+    --red: #f87171;
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 36px;
+    max-width: 520px;
+    width: 100%;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+
+  .header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(217,119,87,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-icon svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .subtitle { color: var(--text2); font-size: 14px; margin-bottom: 28px; }
+
+  /* Login section */
+  .login-section { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Card */
+  .card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .card-header svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+
+  /* Inputs */
+  label.field { display: block; margin-bottom: 14px; }
+  label.field .label { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="email"],
+  input[type="password"],
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle-track {
+    width: 52px;
+    height: 28px;
+    border-radius: 14px;
+    background: var(--border);
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .toggle-track.on { background: var(--accent); }
+
+  .toggle-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .toggle-track.on .toggle-thumb { transform: translateX(24px); }
+
+  .toggle-label { font-size: 14px; font-weight: 500; }
+  .toggle-label .status { font-size: 12px; color: var(--text3); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    width: 100%;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-login { background: var(--accent); color: #fff; margin-top: 4px; }
+  .btn-login:hover { background: var(--accent-hover); }
+
+  .btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Status */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .status-bar.connected { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .status-bar.disconnected { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .connected .status-dot { background: var(--green); }
+  .disconnected .status-dot { background: var(--red); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    animation: toast-in 0.3s ease-out;
+    pointer-events: none;
+  }
+
+  .toast.success { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .toast.error { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .last-updated {
+    font-size: 12px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h1>Kelebia Admin</h1>
+  </div>
+  <p class="subtitle">App version lock &amp; forced update manager</p>
+
+  <!-- LOGIN -->
+  <div id="loginView" class="login-section">
+    <label class="field">
+      <div class="label">Admin Email</div>
+      <input type="email" id="email" placeholder="admin@example.com" />
+    </label>
+    <label class="field">
+      <div class="label">Password</div>
+      <input type="password" id="password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" />
+    </label>
+    <button class="btn btn-login" onclick="doLogin()">
+      <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Sign In
+    </button>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  <div id="configView" class="hidden">
+    <div id="statusBar" class="status-bar connected">
+      <div class="status-dot"></div>
+      <span>Connected as admin</span>
+    </div>
+
+    <!-- Version Lock Toggle -->
+    <div class="card">
+      <div class="card-header">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Version Lock
+      </div>
+      <p class="card-desc">When enabled, users with an older app version will be forced to update before using the app.</p>
+      <div class="toggle-row" onclick="toggleLock()">
+        <div class="toggle-track" id="lockToggle">
+          <div class="toggle-thumb"></div>
+        </div>
+        <div class="toggle-label">
+          <div id="lockStatus">Unlocked</div>
+          <div class="status" id="lockHint">No forced update</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Min Version -->
+    <div class="card">
+      <div class="card-header">
+        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        Minimum Version
+      </div>
+      <p class="card-desc">App versions below this will see the update screen.</p>
+      <input type="text" id="minVersion" placeholder="e.g. 2.1.0" />
+    </div>
+
+    <!-- Lock Message -->
+    <div class="card">
+      <div class="card-header">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Lock Message
+      </div>
+      <p class="card-desc">This message will be shown to users when the app is locked.</p>
+      <textarea id="lockMessage" rows="3" placeholder="A new version is available. Please update to continue."></textarea>
+    </div>
+
+    <!-- Update URL -->
+    <div class="card">
+      <div class="card-header">
+        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Update URL
+      </div>
+      <p class="card-desc">Link to the new APK file or download page.</p>
+      <input type="url" id="updateUrl" placeholder="https://example.com/app.apk" />
+    </div>
+
+    <!-- Save -->
+    <button class="btn btn-primary" id="saveBtn" onclick="doSave()">
+      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save Configuration
+    </button>
+
+    <div class="last-updated" id="lastUpdated"></div>
+
+    <button class="btn" style="margin-top:12px; background:var(--bg); color:var(--text3); font-size:13px;" onclick="doLogout()">
+      Sign Out
+    </button>
+  </div>
+</div>
+
+<script>
+const API = 'https://isetkl-classroom.gleeze.com/api';
+let accessToken = '';
+let refreshToken = '';
+let isLocked = false;
+
+// ── Login ──
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return toast('Please fill in both fields', 'error');
+
+  try {
+    const res = await fetch(`${API}/auth/login/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
+
+    accessToken = data.tokens.access;
+    refreshToken = data.tokens.refresh;
+
+    // Check if user is staff
+    if (!data.user.is_staff) {
+      accessToken = '';
+      refreshToken = '';
+      throw new Error('Access denied — admin only');
+    }
+
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('configView').classList.remove('hidden');
+    loadConfig();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ── Logout ──
+function doLogout() {
+  accessToken = '';
+  refreshToken = '';
+  document.getElementById('configView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('email').value = '';
+  document.getElementById('password').value = '';
+}
+
+// ── Load config ──
+async function loadConfig() {
+  try {
+    const res = await apiFetch('/app/version-config/');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to load');
+
+    isLocked = data.is_locked;
+    document.getElementById('minVersion').value = data.min_version || '';
+    document.getElementById('lockMessage').value = data.lock_message || '';
+    document.getElementById('updateUrl').value = data.update_url || '';
+    updateToggleUI();
+
+    if (data.updated_at) {
+      document.getElementById('lastUpdated').textContent =
+        'Last saved: ' + new Date(data.updated_at).toLocaleString();
+    }
+  } catch (err) {
+    toast('Failed to load config: ' + err.message, 'error');
+  }
+}
+
+// ── Save config ──
+async function doSave() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const body = {
+      min_version: document.getElementById('minVersion').value.trim(),
+      is_locked: isLocked,
+      lock_message: document.getElementById('lockMessage').value,
+      update_url: document.getElementById('updateUrl').value.trim(),
+    };
+
+    const res = await apiFetch('/app/version-config/', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Save failed');
+
+    if (data.updated_at) {
+      document.getElementById('lastUpdated').textContent =
+        'Last saved: ' + new Date(data.updated_at).toLocaleString();
+    }
+    toast('Configuration saved!', 'success');
+  } catch (err) {
+    toast('Save failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Configuration';
+  }
+}
+
+// ── Toggle ──
+function toggleLock() {
+  isLocked = !isLocked;
+  updateToggleUI();
+}
+
+function updateToggleUI() {
+  const track = document.getElementById('lockToggle');
+  const status = document.getElementById('lockStatus');
+  const hint = document.getElementById('lockHint');
+  if (isLocked) {
+    track.classList.add('on');
+    status.textContent = 'Locked';
+    hint.textContent = 'Forced update active';
+    status.style.color = 'var(--accent)';
+  } else {
+    track.classList.remove('on');
+    status.textContent = 'Unlocked';
+    hint.textContent = 'No forced update';
+    status.style.color = '';
+  }
+}
+
+// ── Authenticated fetch with auto-refresh ──
+async function apiFetch(path, options = {}) {
+  const headers = { ...options.headers, Authorization: `Bearer ${accessToken}` };
+  let res = await fetch(`${API}${path}`, { ...options, headers });
+
+  if (res.status === 401 && refreshToken) {
+    const rr = await fetch(`${API}/auth/token/refresh/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+    if (rr.ok) {
+      const rd = await rr.json();
+      accessToken = rd.access;
+      headers.Authorization = `Bearer ${accessToken}`;
+      res = await fetch(`${API}${path}`, { ...options, headers });
+    } else {
+      doLogout();
+      toast('Session expired — please log in again', 'error');
+    }
+  }
+  return res;
+}
+
+// ── Toast ──
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// Enter key on password → login
+document.getElementById('password').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>
