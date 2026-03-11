@@ -231,6 +231,9 @@ def api_reset_password(request):
     except User.DoesNotExist:
         return Response({'detail': 'Code invalide.'}, status=400)
 
+from django.views.decorators.cache import never_cache
+
+@never_cache
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
 @permission_classes([AllowAny])
 def api_app_version(request):
