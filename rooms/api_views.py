@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import SimpleRateThrottle
 from django.db.models import Count, Q, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from .models import Room, RoomMembership
@@ -13,8 +14,17 @@ from content.models import Section
 from notifications.models import Notification
 
 
+class JoinRateThrottle(SimpleRateThrottle):
+    scope = 'join'
+
+
 class RoomViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.action == 'join':
+            return [JoinRateThrottle()]
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
