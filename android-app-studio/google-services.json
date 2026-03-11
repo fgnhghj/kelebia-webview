@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "242360240271",
+    "project_id": "isetclassroom",
+    "storage_bucket": "isetclassroom.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:242360240271:android:7b3f849ad733c08bdac8fa",
+        "android_client_info": {
+          "package_name": "app.aymen.isetclassroom"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYK1fKVvfQjKik2t-UpuEQb1cpRE8faRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
