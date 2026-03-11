@@ -138,6 +138,11 @@ export const authAPI = {
     api.post('/auth/reset-password/', data),
 };
 
+/* ─── App Version ───────────────────────────────────── */
+export const appVersionAPI = {
+  checkLock: (version: string) => api.get<{ is_locked: boolean; message?: string; update_link?: string }>(`/app-version/?version=${version}`),
+};
+
 /* ─── Rooms ─────────────────────────────────────────── */
 export const roomsAPI = {
   list: (params?: { search?: string; archived?: boolean }) => {

@@ -1,0 +1,356 @@
+deploy	Set up job	﻿2026-03-11T14:54:45.2946969Z Current runner version: '2.332.0'
+deploy	Set up job	2026-03-11T14:54:45.2977693Z ##[group]Runner Image Provisioner
+deploy	Set up job	2026-03-11T14:54:45.2978909Z Hosted Compute Agent
+deploy	Set up job	2026-03-11T14:54:45.2979714Z Version: 20260213.493
+deploy	Set up job	2026-03-11T14:54:45.2980718Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+deploy	Set up job	2026-03-11T14:54:45.2981758Z Build Date: 2026-02-13T00:28:41Z
+deploy	Set up job	2026-03-11T14:54:45.2982694Z Worker ID: {570b9c44-85c0-4e70-aa28-bdf1551fb22a}
+deploy	Set up job	2026-03-11T14:54:45.2983996Z Azure Region: eastus
+deploy	Set up job	2026-03-11T14:54:45.2984822Z ##[endgroup]
+deploy	Set up job	2026-03-11T14:54:45.2986606Z ##[group]Operating System
+deploy	Set up job	2026-03-11T14:54:45.2987460Z Ubuntu
+deploy	Set up job	2026-03-11T14:54:45.2988340Z 24.04.3
+deploy	Set up job	2026-03-11T14:54:45.2989120Z LTS
+deploy	Set up job	2026-03-11T14:54:45.2989796Z ##[endgroup]
+deploy	Set up job	2026-03-11T14:54:45.2990650Z ##[group]Runner Image
+deploy	Set up job	2026-03-11T14:54:45.2991447Z Image: ubuntu-24.04
+deploy	Set up job	2026-03-11T14:54:45.2992294Z Version: 20260302.42.1
+deploy	Set up job	2026-03-11T14:54:45.2994068Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260302.42/images/ubuntu/Ubuntu2404-Readme.md
+deploy	Set up job	2026-03-11T14:54:45.2996317Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260302.42
+deploy	Set up job	2026-03-11T14:54:45.2997504Z ##[endgroup]
+deploy	Set up job	2026-03-11T14:54:45.2999232Z ##[group]GITHUB_TOKEN Permissions
+deploy	Set up job	2026-03-11T14:54:45.3001804Z Contents: read
+deploy	Set up job	2026-03-11T14:54:45.3002664Z Metadata: read
+deploy	Set up job	2026-03-11T14:54:45.3003935Z Packages: read
+deploy	Set up job	2026-03-11T14:54:45.3004792Z ##[endgroup]
+deploy	Set up job	2026-03-11T14:54:45.3007181Z Secret source: Actions
+deploy	Set up job	2026-03-11T14:54:45.3008711Z Prepare workflow directory
+deploy	Set up job	2026-03-11T14:54:45.3356584Z Prepare all required actions
+deploy	Set up job	2026-03-11T14:54:45.3396019Z Getting action download info
+deploy	Set up job	2026-03-11T14:54:45.6946735Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+deploy	Set up job	2026-03-11T14:54:45.8678700Z Download action repository 'appleboy/ssh-action@v1' (SHA:0ff4204d59e8e51228ff73bce53f80d53301dee2)
+deploy	Set up job	2026-03-11T14:54:46.1941869Z Complete job name: deploy
+deploy	Run actions/checkout@v4	﻿2026-03-11T14:54:46.2737162Z ##[group]Run actions/checkout@v4
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2738324Z with:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2739045Z   repository: fgnhghj/kelebia-webview
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2740031Z   token: ***
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2740663Z   ssh-strict: true
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2741307Z   ssh-user: git
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2741957Z   persist-credentials: true
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2742652Z   clean: true
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2743464Z   sparse-checkout-cone-mode: true
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2744209Z   fetch-depth: 1
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2744827Z   fetch-tags: false
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2745464Z   show-progress: true
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2746122Z   lfs: false
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2746715Z   submodules: false
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2747373Z   set-safe-directory: true
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.2748445Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4055500Z Syncing repository: fgnhghj/kelebia-webview
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4059414Z ##[group]Getting Git version info
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4061391Z Working directory is '/home/runner/work/kelebia-webview/kelebia-webview'
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4064609Z [command]/usr/bin/git version
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4131386Z git version 2.53.0
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4160958Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4178655Z Temporarily overriding HOME='/home/runner/work/_temp/6c069d12-371a-4254-9017-a0ed0ec9606e' before making global git config changes
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4181546Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4193584Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kelebia-webview/kelebia-webview
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4235422Z Deleting the contents of '/home/runner/work/kelebia-webview/kelebia-webview'
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4239537Z ##[group]Initializing the repository
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4243831Z [command]/usr/bin/git init /home/runner/work/kelebia-webview/kelebia-webview
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4356944Z hint: Using 'master' as the name for the initial branch. This default branch name
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4358619Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4360872Z hint: to use in all of your new repositories, which will suppress this warning,
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4363185Z hint: call:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4364281Z hint:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4365462Z hint: 	git config --global init.defaultBranch <name>
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4366328Z hint:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4367380Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4368813Z hint: 'development'. The just-created branch can be renamed via this command:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4369818Z hint:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4370419Z hint: 	git branch -m <name>
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4371099Z hint:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4371986Z hint: Disable this message with "git config set advice.defaultBranchName false"
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4374157Z Initialized empty Git repository in /home/runner/work/kelebia-webview/kelebia-webview/.git/
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4376860Z [command]/usr/bin/git remote add origin https://github.com/fgnhghj/kelebia-webview
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4411550Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4414099Z ##[group]Disabling automatic garbage collection
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4416120Z [command]/usr/bin/git config --local gc.auto 0
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4447508Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4449714Z ##[group]Setting up auth
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4455904Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4490030Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4836990Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.4939699Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.5119383Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.5151554Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.5409896Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.5447556Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.5449768Z ##[group]Fetching the repository
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.5458344Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +66ac0b7be60ce76d7c1a55db8cf16dd54602eca1:refs/remotes/origin/master
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8189833Z From https://github.com/fgnhghj/kelebia-webview
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8192707Z  * [new ref]         66ac0b7be60ce76d7c1a55db8cf16dd54602eca1 -> origin/master
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8226081Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8228633Z ##[group]Determining the checkout info
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8230750Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8232589Z [command]/usr/bin/git sparse-checkout disable
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8274203Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8303335Z ##[group]Checking out the ref
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8306029Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8567733Z Reset branch 'master'
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8570173Z branch 'master' set up to track 'origin/master'.
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8583604Z ##[endgroup]
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8621552Z [command]/usr/bin/git log -1 --format=%H
+deploy	Run actions/checkout@v4	2026-03-11T14:54:46.8646487Z 66ac0b7be60ce76d7c1a55db8cf16dd54602eca1
+deploy	Deploy to server via SSH	﻿2026-03-11T14:54:46.9367309Z ##[group]Run appleboy/ssh-action@v1
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9368790Z with:
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9369901Z   host: 13.51.58.5
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9371082Z   username: ubuntu
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9398026Z   key: ***
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9399245Z   command_timeout: 30m
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9409105Z   script: # If directory exists but is NOT a git repo, back up .env and re-clone
+deploy	Deploy to server via SSH	if [ -d /home/ubuntu/eduroom ] && [ ! -d /home/ubuntu/eduroom/.git ]; then
+deploy	Deploy to server via SSH	  echo "Directory exists but is not a git repo — re-cloning..."
+deploy	Deploy to server via SSH	  # Preserve .env if it exists
+deploy	Deploy to server via SSH	  [ -f /home/ubuntu/eduroom/.env ] && cp /home/ubuntu/eduroom/.env /tmp/eduroom_env_backup
+deploy	Deploy to server via SSH	  sudo rm -rf /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	  git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	  [ -f /tmp/eduroom_env_backup ] && cp /tmp/eduroom_env_backup /home/ubuntu/eduroom/.env
+deploy	Deploy to server via SSH	elif [ ! -d /home/ubuntu/eduroom ]; then
+deploy	Deploy to server via SSH	  git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	fi
+deploy	Deploy to server via SSH	cd /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	git fetch origin master
+deploy	Deploy to server via SSH	git reset --hard origin/master
+deploy	Deploy to server via SSH	bash deploy.sh
+deploy	Deploy to server via SSH	
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9419337Z   port: 22
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9420470Z   protocol: tcp
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9421626Z   timeout: 30s
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9422774Z   proxy_port: 22
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9424117Z   proxy_protocol: tcp
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9425340Z   proxy_timeout: 30s
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9426557Z   curl_insecure: false
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9427814Z   capture_stdout: false
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9429034Z ##[endgroup]
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9555402Z ##[group]Run echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9557260Z [36;1mecho "$GITHUB_ACTION_PATH" >> $GITHUB_PATH[0m
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9613191Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9614947Z env:
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9616431Z   GITHUB_ACTION_PATH: /home/runner/work/_actions/appleboy/ssh-action/v1
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9618248Z ##[endgroup]
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9806440Z ##[group]Run entrypoint.sh
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9807794Z [36;1mentrypoint.sh[0m
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9862145Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9864112Z env:
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9865614Z   GITHUB_ACTION_PATH: /home/runner/work/_actions/appleboy/ssh-action/v1
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9867442Z   INPUT_HOST: 13.51.58.5
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9868687Z   INPUT_PORT: 22
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9869866Z   INPUT_PROTOCOL: tcp
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9871095Z   INPUT_USERNAME: ubuntu
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9872356Z   INPUT_PASSWORD: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9873855Z   INPUT_PASSPHRASE: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9899578Z   INPUT_KEY: ***
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9900801Z   INPUT_KEY_PATH: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9901996Z   INPUT_FINGERPRINT: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9903344Z   INPUT_PROXY_HOST: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9904567Z   INPUT_PROXY_PORT: 22
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9905795Z   INPUT_PROXY_USERNAME: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9907060Z   INPUT_PROXY_PASSWORD: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9908326Z   INPUT_PROXY_PASSPHRASE: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9909588Z   INPUT_PROXY_KEY: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9910789Z   INPUT_PROXY_KEY_PATH: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9912059Z   INPUT_PROXY_FINGERPRINT: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9913524Z   INPUT_TIMEOUT: 30s
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9914745Z   INPUT_PROXY_TIMEOUT: 30s
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9916041Z   INPUT_COMMAND_TIMEOUT: 30m
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9925581Z   INPUT_SCRIPT: # If directory exists but is NOT a git repo, back up .env and re-clone
+deploy	Deploy to server via SSH	if [ -d /home/ubuntu/eduroom ] && [ ! -d /home/ubuntu/eduroom/.git ]; then
+deploy	Deploy to server via SSH	  echo "Directory exists but is not a git repo — re-cloning..."
+deploy	Deploy to server via SSH	  # Preserve .env if it exists
+deploy	Deploy to server via SSH	  [ -f /home/ubuntu/eduroom/.env ] && cp /home/ubuntu/eduroom/.env /tmp/eduroom_env_backup
+deploy	Deploy to server via SSH	  sudo rm -rf /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	  git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	  [ -f /tmp/eduroom_env_backup ] && cp /tmp/eduroom_env_backup /home/ubuntu/eduroom/.env
+deploy	Deploy to server via SSH	elif [ ! -d /home/ubuntu/eduroom ]; then
+deploy	Deploy to server via SSH	  git clone https://github.com/fgnhghj/kelebia-webview.git /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	fi
+deploy	Deploy to server via SSH	cd /home/ubuntu/eduroom
+deploy	Deploy to server via SSH	git fetch origin master
+deploy	Deploy to server via SSH	git reset --hard origin/master
+deploy	Deploy to server via SSH	bash deploy.sh
+deploy	Deploy to server via SSH	
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9935725Z   INPUT_SCRIPT_FILE: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9936914Z   INPUT_ENVS: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9938061Z   INPUT_ENVS_FORMAT: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9939339Z   INPUT_DEBUG: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9940462Z   INPUT_ALL_ENVS: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9941620Z   INPUT_REQUEST_PTY: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9942835Z   INPUT_USE_INSECURE_CIPHER: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9944239Z   INPUT_CIPHER: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9945459Z   INPUT_PROXY_USE_INSECURE_CIPHER: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9947026Z   INPUT_PROXY_CIPHER: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9948217Z   INPUT_SYNC: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9949379Z   INPUT_CAPTURE_STDOUT: false
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9950675Z   INPUT_CURL_INSECURE: false
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9951941Z   DRONE_SSH_VERSION: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:46.9953212Z ##[endgroup]
+deploy	Deploy to server via SSH	2026-03-11T14:54:47.0106002Z Downloading drone-ssh-1.8.2-linux-amd64 from https://github.com/appleboy/drone-ssh/releases/download/v1.8.2
+deploy	Deploy to server via SSH	2026-03-11T14:54:47.1197049Z ======= CLI Version Information =======
+deploy	Deploy to server via SSH	2026-03-11T14:54:47.1216572Z Drone SSH version 1.8.2
+deploy	Deploy to server via SSH	2026-03-11T14:54:47.1220830Z =======================================
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1017142Z From https://github.com/fgnhghj/kelebia-webview
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1018283Z  * branch            master     -> FETCH_HEAD
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1028784Z    f3d3e9e..66ac0b7  master     -> origin/master
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1237550Z HEAD is now at 66ac0b7 Configure GitHub Actions for Capacitor Push Notifications
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1246990Z ==============================
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1247930Z   Kelebia Classroom Deploy
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1248481Z ==============================
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1248996Z [1/10] Installing system packages...
+deploy	Deploy to server via SSH	2026-03-11T14:54:49.1315670Z WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+deploy	Deploy to server via SSH	2026-03-11T14:54:54.6399962Z 56 packages can be upgraded. Run 'apt list --upgradable' to see them.
+deploy	Deploy to server via SSH	2026-03-11T14:54:54.6488849Z WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0181267Z python3 is already the newest version (3.12.3-0ubuntu2.1).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0182582Z python3-pip is already the newest version (24.0+dfsg-1ubuntu1.3).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0183824Z python3-venv is already the newest version (3.12.3-0ubuntu2.1).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0184795Z python3-dev is already the newest version (3.12.3-0ubuntu2.1).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0185975Z postgresql is already the newest version (16+257build1.1).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0187241Z postgresql-contrib is already the newest version (16+257build1.1).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0188072Z nginx is already the newest version (1.24.0-2ubuntu7.6).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0189208Z libpq-dev is already the newest version (16.13-0ubuntu0.24.04.1).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0189964Z build-essential is already the newest version (12.10ubuntu1).
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0190689Z The following additional packages will be installed:
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.0191333Z   libcurl3t64-gnutls libcurl4t64
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.1086998Z The following packages will be upgraded:
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.1089495Z   curl libcurl3t64-gnutls libcurl4t64
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.1821842Z 3 upgraded, 0 newly installed, 0 to remove and 53 not upgraded.
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.7678968Z debconf: unable to initialize frontend: Dialog
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.7680250Z debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.7681122Z debconf: falling back to frontend: Readline
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.8107787Z debconf: unable to initialize frontend: Readline
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.8109588Z debconf: (This frontend requires a controlling tty.)
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.8110593Z debconf: falling back to frontend: Teletype
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.8141685Z dpkg-preconfigure: unable to re-open stdin: 
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.8394547Z Need to get 902 kB of archives.
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.8395480Z After this operation, 0 B of additional disk space will be used.
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9159698Z (Reading database ... 
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9160532Z (Reading database ... 5%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9161134Z (Reading database ... 10%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9162250Z (Reading database ... 15%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9162642Z (Reading database ... 20%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9163288Z (Reading database ... 25%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9163672Z (Reading database ... 30%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9164095Z (Reading database ... 35%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9164486Z (Reading database ... 40%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9164886Z (Reading database ... 45%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9165277Z (Reading database ... 50%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9165848Z (Reading database ... 55%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9166235Z (Reading database ... 60%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9166616Z (Reading database ... 65%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9166999Z (Reading database ... 70%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9167384Z (Reading database ... 75%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9167764Z (Reading database ... 80%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9168160Z (Reading database ... 85%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9168544Z (Reading database ... 90%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9168925Z (Reading database ... 95%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9169315Z (Reading database ... 100%
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9169863Z (Reading database ... 119675 files and directories currently installed.)
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9170584Z Preparing to unpack .../curl_8.5.0-2ubuntu10.8_amd64.deb ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:55.9442867Z Unpacking curl (8.5.0-2ubuntu10.8) over (8.5.0-2ubuntu10.7) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:56.2186722Z Preparing to unpack .../libcurl4t64_8.5.0-2ubuntu10.8_amd64.deb ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:56.3360818Z Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.8) over (8.5.0-2ubuntu10.7) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:56.5754181Z Preparing to unpack .../libcurl3t64-gnutls_8.5.0-2ubuntu10.8_amd64.deb ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:56.6664142Z Unpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.8) over (8.5.0-2ubuntu10.7) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:56.8810374Z Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.8) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:56.9643903Z Setting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.8) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:57.0461942Z Setting up curl (8.5.0-2ubuntu10.8) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:57.1280116Z Processing triggers for man-db (2.12.0-4build2) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.0515701Z Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.4230226Z debconf: unable to initialize frontend: Dialog
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.4231652Z debconf: (Dialog frontend will not work on a dumb terminal, an emacs shell buffer, or without a controlling terminal.)
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.4232714Z debconf: falling back to frontend: Readline
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.4279991Z debconf: unable to initialize frontend: Readline
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.4281003Z debconf: (This frontend requires a controlling tty.)
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.4281605Z debconf: falling back to frontend: Teletype
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5306443Z Running kernel seems to be up-to-date.
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5327530Z Restarting services...
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5458925Z  systemctl restart packagekit.service
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5752359Z Service restarts being deferred:
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5753280Z  systemctl restart networkd-dispatcher.service
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5753912Z  systemctl restart unattended-upgrades.service
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5754485Z No containers need to be restarted.
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5755057Z No user sessions are running outdated binaries.
+deploy	Deploy to server via SSH	2026-03-11T14:54:58.5755768Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+deploy	Deploy to server via SSH	2026-03-11T14:54:59.4506820Z [2/10] Setting up PostgreSQL...
+deploy	Deploy to server via SSH	2026-03-11T14:54:59.5190083Z ALTER ROLE
+deploy	Deploy to server via SSH	2026-03-11T14:54:59.5878147Z GRANT
+deploy	Deploy to server via SSH	2026-03-11T14:54:59.5891013Z [3/10] Setting up project directory...
+deploy	Deploy to server via SSH	2026-03-11T14:54:59.6576856Z [4/10] Setting up Python virtual environment...
+deploy	Deploy to server via SSH	2026-03-11T14:55:01.6438200Z [5/10] Configuring environment...
+deploy	Deploy to server via SSH	2026-03-11T14:55:01.6498174Z [6/10] Building React frontend...
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.3052174Z found 0 vulnerabilities
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.3893330Z > frontend@0.0.0 build
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.3894055Z > vite build
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.5444502Z vite v8.0.0-beta.16 building client environment for production...
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.7377054Z [2K
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.7378214Z transforming...✓ 652 modules transformed.
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.8047922Z rendering chunks...
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9167456Z computing gzip size...
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9264309Z dist/index.html                   0.83 kB │ gzip:   0.41 kB
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9265165Z dist/assets/index-TytJ7g83.css   21.66 kB │ gzip:   4.90 kB
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9266009Z dist/assets/index-C9SgN3m0.js   709.26 kB │ gzip: 207.35 kB
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9273286Z [33m[INEFFECTIVE_DYNAMIC_IMPORT] Warning:[0m node_modules/axios/index.js is dynamically imported by src/AuthContext.jsx but also statically imported by src/api.js, dynamic import will not move module into another chunk.
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9275738Z [plugin builtin:vite-reporter] 
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9276313Z (!) Some chunks are larger than 500 kB after minification. Consider:
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9276987Z - Using dynamic import() to code-split the application
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9278038Z - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9279149Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9279856Z ✓ built in 382ms
+deploy	Deploy to server via SSH	2026-03-11T14:55:02.9477111Z [7/10] Running Django setup...
+deploy	Deploy to server via SSH	2026-03-11T14:55:03.3242374Z Operations to perform:
+deploy	Deploy to server via SSH	2026-03-11T14:55:03.3243738Z   Apply all migrations: accounts, admin, announcements, auth, content, contenttypes, notifications, rooms, sessions, token_blacklist
+deploy	Deploy to server via SSH	2026-03-11T14:55:03.3244882Z Running migrations:
+deploy	Deploy to server via SSH	2026-03-11T14:55:03.3245354Z   No migrations to apply.
+deploy	Deploy to server via SSH	2026-03-11T14:55:03.6025323Z 0 static files copied to '/home/ubuntu/eduroom/staticfiles', 163 unmodified.
+deploy	Deploy to server via SSH	2026-03-11T14:55:03.8580098Z 20 objects imported automatically (use -v 2 for details).
+deploy	Deploy to server via SSH	2026-03-11T14:55:04.1740070Z [8/10] Setting up Gunicorn service...
+deploy	Deploy to server via SSH	2026-03-11T14:55:04.5383380Z [9/10] Configuring Nginx...
+deploy	Deploy to server via SSH	2026-03-11T14:55:04.5899151Z [10/10] Setting up SSL...
+deploy	Deploy to server via SSH	2026-03-11T14:55:04.6207886Z nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+deploy	Deploy to server via SSH	2026-03-11T14:55:04.6208945Z nginx: configuration file /etc/nginx/nginx.conf test is successful
+deploy	Deploy to server via SSH	2026-03-11T14:55:04.6689297Z   Requesting SSL certificate...
+deploy	Deploy to server via SSH	2026-03-11T14:55:04.8586868Z Saving debug log to /var/log/letsencrypt/letsencrypt.log
+deploy	Deploy to server via SSH	2026-03-11T14:55:05.4145360Z Certificate not yet due for renewal
+deploy	Deploy to server via SSH	2026-03-11T14:55:05.4145996Z Deploying certificate
+deploy	Deploy to server via SSH	2026-03-11T14:55:05.6035468Z Successfully deployed certificate for isetkl-classroom.gleeze.com to /etc/nginx/sites-enabled/kelebia
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6256410Z Congratulations! You have successfully enabled HTTPS on https://isetkl-classroom.gleeze.com
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6257772Z - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6258619Z If you like Certbot, please consider supporting our work by:
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6259486Z  * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6260376Z  * Donating to EFF:                    https://eff.org/donate-le
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6261198Z - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6841375Z nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.6842508Z nginx: configuration file /etc/nginx/nginx.conf test is successful
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.9062483Z ==============================
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.9064098Z   ✅ Kelebia Classroom deployed!
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.9065196Z   Visit: https://isetkl-classroom.gleeze.com
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.9066277Z ==============================
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.9067071Z ===============================================
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.9068193Z ✅ Successfully executed commands to all hosts.
+deploy	Deploy to server via SSH	2026-03-11T14:55:07.9069093Z ===============================================
+deploy	Post Run actions/checkout@v4	﻿2026-03-11T14:55:07.9215961Z Post job cleanup.
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0177057Z [command]/usr/bin/git version
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0215459Z git version 2.53.0
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0259162Z Temporarily overriding HOME='/home/runner/work/_temp/5171bbdf-17b7-4cc9-8f77-2b6d55d8041d' before making global git config changes
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0260607Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0264978Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/kelebia-webview/kelebia-webview
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0301634Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0335810Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0581743Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0603913Z http.https://github.com/.extraheader
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0616263Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0647988Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0883472Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+deploy	Post Run actions/checkout@v4	2026-03-11T14:55:08.0916068Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+deploy	Complete job	﻿2026-03-11T14:55:08.1278059Z Cleaning up orphan processes
+deploy	Complete job	2026-03-11T14:55:08.1566517Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

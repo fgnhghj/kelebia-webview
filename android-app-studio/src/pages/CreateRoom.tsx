@@ -81,7 +81,7 @@ export default function CreateRoom() {
 
         <div className="input-group">
           <label>Room Name *</label>
-          <div className="input-wrapper">
+          <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
             <input
               type="text"
               placeholder="e.g. Mathematics 101"
@@ -94,7 +94,7 @@ export default function CreateRoom() {
 
         <div className="input-group">
           <label>Subject</label>
-          <div className="input-wrapper">
+          <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
             <input
               type="text"
               placeholder="e.g. Mathematics"
@@ -107,7 +107,7 @@ export default function CreateRoom() {
         <div className="input-group">
           <label>Description</label>
           <textarea
-            className="textarea-input"
+            className="textarea-input glass-panel w-full py-3 px-4 border border-white/10"
             placeholder="Describe your classroom..."
             value={form.description}
             onChange={(e) => update('description', e.target.value)}
@@ -118,7 +118,7 @@ export default function CreateRoom() {
         {/* Color Picker */}
         <div className="input-group">
           <label>Color Theme</label>
-          <div className="color-picker">
+          <div className="color-picker glass-panel p-3 border border-white/10 rounded-xl flex gap-2 overflow-x-auto">
             {COLORS.map((c) => (
               <button
                 key={c.value}
@@ -135,7 +135,7 @@ export default function CreateRoom() {
         {/* Cover Image */}
         <div className="input-group">
           <label>Cover Image (optional)</label>
-          <label className="file-upload-label">
+          <label className="file-upload-label glass-panel p-4 flex flex-col items-center gap-2 border border-white/10 rounded-xl cursor-pointer">
             <Image size={18} />
             <span>{coverImage ? coverImage.name : 'Choose image'}</span>
             <input

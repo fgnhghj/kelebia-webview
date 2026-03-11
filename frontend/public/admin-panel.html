@@ -406,8 +406,7 @@
             const input = document.getElementById('newVersionName');
             try {
                 await apiRequest('/app-version/', 'POST', {
-                    version_name: input.value,
-                    // Default values are handled by the model, but we can pass them if needed
+                    version_name: input.value
                 });
                 input.value = '';
                 showAlert("Version ajoutée", false);

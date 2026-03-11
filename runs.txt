@@ -1,0 +1,20 @@
+completed	failure	Configure GitHub Actions for Capacitor Push Notifications	Build Android APK	master	push	22958838939	50s	2026-03-11T14:54:41Z
+completed	success	Configure GitHub Actions for Capacitor Push Notifications	Deploy to Server	master	push	22958838905	28s	2026-03-11T14:54:41Z
+completed	success	Configure GitHub Actions for Capacitor Push Notifications	Build Capacitor APK (android-app-studio)	master	push	22958838902	4m18s	2026-03-11T14:54:41Z
+completed	failure	fix(ui): splash screen background and K logo paths\nfix(android): add…	Build Android APK	master	push	22957449105	1m20s	2026-03-11T14:24:20Z
+completed	success	fix(ui): splash screen background and K logo paths\nfix(android): add…	Deploy to Server	master	push	22957449055	24s	2026-03-11T14:24:20Z
+completed	success	fix(ui): splash screen background and K logo paths\nfix(android): add…	Build Capacitor APK (android-app-studio)	master	push	22957449045	3m59s	2026-03-11T14:24:20Z
+completed	success	feat: setup multiple app versions and target android webview for locks	Build Capacitor APK (android-app-studio)	master	push	22956367995	5m14s	2026-03-11T14:00:35Z
+completed	failure	feat: setup multiple app versions and target android webview for locks	Build Android APK	master	push	22956367977	47s	2026-03-11T14:00:35Z
+completed	success	feat: setup multiple app versions and target android webview for locks	Deploy to Server	master	push	22956367971	26s	2026-03-11T14:00:35Z
+completed	failure	refactor: move admin panel to standalone local HTML tool	Deploy to Server	master	push	22930321148	15s	2026-03-11T00:16:04Z
+completed	failure	refactor: move admin panel to standalone local HTML tool	Build Android APK	master	push	22930321147	45s	2026-03-11T00:16:04Z
+completed	success	feat: add admin version lock panel with forced update blocker	Build Capacitor APK (android-app-studio)	master	push	22929698737	4m0s	2026-03-10T23:55:26Z
+completed	failure	feat: add admin version lock panel with forced update blocker	Deploy to Server	master	push	22929698736	14s	2026-03-10T23:55:26Z
+completed	failure	feat: add admin version lock panel with forced update blocker	Build Android APK	master	push	22929698723	1m5s	2026-03-10T23:55:26Z
+completed	success	feat: add 9 suggested features - pull-to-refresh, search/filter rooms…	Build Capacitor APK (android-app-studio)	master	push	22928968011	2m48s	2026-03-10T23:29:33Z
+completed	failure	feat: add 9 suggested features - pull-to-refresh, search/filter rooms…	Deploy to Server	master	push	22928968010	18s	2026-03-10T23:29:33Z
+completed	failure	feat: add 9 suggested features - pull-to-refresh, search/filter rooms…	Build Android APK	master	push	22928968009	54s	2026-03-10T23:29:33Z
+completed	success	fix: restore missing 'en:' key in LanguageContext translations object	Build Capacitor APK (android-app-studio)	master	push	22928224421	3m51s	2026-03-10T23:03:18Z
+completed	failure	fix: restore missing 'en:' key in LanguageContext translations object	Build Android APK	master	push	22928224393	50s	2026-03-10T23:03:18Z
+completed	failure	feat: add style improvements - skeleton loaders, hover states, page t…	Build Capacitor APK (android-app-studio)	master	push	22927930313	32s	2026-03-10T22:53:30Z

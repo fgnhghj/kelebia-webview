@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kelebia Glass Dashboard Prototype</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-deep: #12100e;
+            --text-primary: #f0ebe4;
+            --text-secondary: rgba(240, 235, 228, 0.65);
+            --text-tertiary: rgba(240, 235, 228, 0.4);
+            --accent: #d97757;
+            --accent-glow: rgba(217, 119, 87, 0.3);
+            --glass-bg: rgba(255, 255, 255, 0.035);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --glass-highlight: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+
+            /* Emulate Mobile Dimensions on Desktop */
+            margin: 0 auto;
+            max-width: 480px;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ─── Animated Ambient Background ─── */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 100%, #1a1512 0%, var(--bg-deep) 100%);
+        }
+
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            will-change: transform;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+            background: rgba(217, 119, 87, 0.15);
+            /* Orange */
+            animation: float 14s ease-in-out infinite alternate;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            bottom: 100px;
+            right: -150px;
+            background: rgba(107, 155, 123, 0.12);
+            /* Subtle Green */
+            animation: float 18s ease-in-out infinite alternate-reverse;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            top: 40%;
+            left: 20%;
+            background: rgba(91, 139, 199, 0.1);
+            /* Subtle Blue */
+            animation: float 22s ease-in-out infinite alternate;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(40px, -40px) scale(1.1);
+            }
+        }
+
+        /* ─── Layout & Utility ─── */
+        .page-container {
+            padding: 32px 24px 120px;
+            /* Leave space for bottom nav */
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ─── Header ─── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .greeting {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .greeting-time {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .greeting-name {
+            font-family: "Playfair Display", serif;
+            font-size: 34px;
+            font-weight: 500;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            /* Anthropic serif tracking is very tight */
+            background: linear-gradient(90deg, #fff, #ebd3b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--glass-highlight);
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        /* ─── Search ─── */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-radius: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus-within {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--glass-highlight);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 15px;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        /* ─── Quick Actions (Pills) ─── */
+        .quick-actions {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            /* space for scrollbar */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .quick-actions::-webkit-scrollbar {
+            display: none;
+        }
+
+        .action-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: 100px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-pill:active {
+            transform: scale(0.96);
+        }
+
+        .action-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            /* Icon bg */
+        }
+
+        .action-pill span {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Specific Pill Colors */
+        .pill-create {
+            border-color: rgba(217, 119, 87, 0.3);
+            background: rgba(217, 119, 87, 0.05);
+        }
+
+        .pill-create .action-icon {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .pill-grades .action-icon {
+            color: #d4b896;
+        }
+
+        .pill-refresh .action-icon {
+            color: #5b8bc7;
+        }
+
+        /* ─── Rooms Section ─── */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+            padding: 0 4px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .section-count {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--glass-bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .room-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .room-card {
+            position: relative;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: left;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .room-card:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Subtly glowing accent line on the left side */
+        .room-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20px;
+            bottom: 20px;
+            width: 4px;
+            border-radius: 0 4px 4px 0;
+            background: var(--card-color, var(--text-tertiary));
+            box-shadow: 0 0 12px var(--card-color, transparent);
+            opacity: 0.8;
+        }
+
+        .room-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .room-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .room-subject {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .room-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 4px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 12px;
+            border-radius: 100px;
+        }
+
+        /* ─── Full Width Bottom Navigation ─── */
+        .bottom-nav-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+            padding-bottom: var(--safe-bottom);
+        }
+
+        .floating-nav {
+            display: flex;
+            justify-content: space-around;
+            /* Distribute evenly */
+            align-items: center;
+            width: 100%;
+            max-width: 480px;
+            /* Match body max-width */
+            padding: 12px 24px;
+            /* Extra heavy glass for the nav */
+            background: rgba(20, 18, 16, 0.65);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            /* Only top border needed now */
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 100%;
+            gap: 4px;
+            color: var(--text-tertiary);
+            position: relative;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            z-index: 2;
+        }
+
+        .nav-item:active {
+            transform: scale(0.94);
+        }
+
+        .nav-item i {
+            width: 22px;
+            height: 22px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        /* Active Nav Item State */
+        .nav-item.active {
+            color: #fff;
+        }
+
+        .nav-bubble {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 64px;
+            height: 52px;
+            margin-top: -26px;
+            /* center vertically */
+            background: rgba(255, 255, 255, 0.12);
+            /* sleek frosted pill */
+            border-radius: 16px;
+            z-index: 1;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            /* premium fluid easing */
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: -6px;
+            right: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            height: 16px;
+            min-width: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            box-shadow: 0 0 0 2px rgba(20, 18, 16, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Ambient Animated Background -->
+    <div class="ambient-bg">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+    </div>
+
+    <div class="page-container">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="greeting">
+                <span class="greeting-time">Good afternoon</span>
+                <h1 class="greeting-name">Aymen</h1>
+            </div>
+            <div class="avatar">AY</div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-bar glass-panel">
+            <i data-lucide="search" class="text-tertiary" style="width: 20px; height: 20px"></i>
+            <input type="text" placeholder="Search classrooms..." />
+        </div>
+
+        <!-- Quick Actions (Horizontal Pills) -->
+        <div class="quick-actions">
+            <!-- Accent Pill -->
+            <div class="action-pill glass-panel pill-create">
+                <div class="action-icon"><i data-lucide="plus" style="width: 16px; height: 16px"></i></div>
+                <span>Create Room</span>
+            </div>
+
+            <div class="action-pill glass-panel pill-grades">
+                <div class="action-icon"><i data-lucide="sparkles" style="width: 16px; height: 16px"></i></div>
+                <span>My Grades</span>
+            </div>
+
+            <div class="action-pill glass-panel pill-refresh">
+                <div class="action-icon"><i data-lucide="refresh-cw" style="width: 16px; height: 16px"></i></div>
+                <span>Refresh</span>
+            </div>
+        </div>
+
+        <!-- Rooms Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Your Rooms</h2>
+                <span class="section-count">3</span>
+            </div>
+
+            <div class="room-list">
+
+                <!-- Room 1 -->
+                <div class="room-card glass-panel" style="--card-color: #6b9b7b;">
+                    <div class="room-top">
+                        <div>
+                            <h3 class="room-title">Math 101</h3>
+                            <span class="room-subject">Mathematics</span>
+                        </div>
+                        <i data-lucide="more-horizontal" class="text-tertiary" style="width: 20px"></i>
+                    </div>
+
+                    <div class="room-meta">
+                        <div class="meta-item">
+                            <i data-lucide="users" style="width: 14px"></i>
+                            <span>24 Students</span>
+                        </div>
+                        <div class="meta-item">
+                            <i data-lucide="clock" style="width: 14px"></i>
+                            <span>Today</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room 2 -->
+                <div class="room-card glass-panel" style="--card-color: #d97757;">
+                    <div class="room-top">
+                        <div>
+                            <h3 class="room-title">Physics Adv</h3>
+                            <span class="room-subject">Science</span>
+                        </div>
+                        <i data-lucide="more-horizontal" class="text-tertiary" style="width: 20px"></i>
+                    </div>
+
+                    <div class="room-meta">
+                        <div class="meta-item">
+                            <i data-lucide="users" style="width: 14px"></i>
+                            <span>18 Students</span>
+                        </div>
+                        <div class="meta-item">
+                            <i data-lucide="clock" style="width: 14px"></i>
+                            <span>2d ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room 3 -->
+                <div class="room-card glass-panel" style="--card-color: #5b8bc7;">
+                    <div class="room-top">
+                        <div>
+                            <h3 class="room-title">Web Development</h3>
+                            <span class="room-subject">Computer Science</span>
+                        </div>
+                        <i data-lucide="more-horizontal" class="text-tertiary" style="width: 20px"></i>
+                    </div>
+
+                    <div class="room-meta">
+                        <div class="meta-item">
+                            <i data-lucide="users" style="width: 14px"></i>
+                            <span>42 Students</span>
+                        </div>
+                        <div class="meta-item">
+                            <i data-lucide="clock" style="width: 14px"></i>
+                            <span>Last week</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Floating Nav Bar Emulation -->
+    <div class="bottom-nav-wrapper">
+        <nav class="floating-nav" id="main-nav">
+            <!-- Animated Bubble -->
+            <div class="nav-bubble" id="nav-bubble"></div>
+
+            <a href="#" class="nav-item active" data-index="0">
+                <i data-lucide="home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item" data-index="1">
+                <i data-lucide="book-open"></i>
+                <span>Classes</span>
+            </a>
+            <a href="#" class="nav-item" data-index="2">
+                <i data-lucide="bell"></i>
+                <span>Alerts</span>
+                <span class="nav-badge">2</span>
+            </a>
+            <a href="#" class="nav-item" data-index="3">
+                <i data-lucide="settings"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Nav Bubble Animation Logic
+        const navItems = document.querySelectorAll('.nav-item');
+        const bubble = document.getElementById('nav-bubble');
+
+        function moveBubble(targetItem) {
+            // Get exact position relative to the floating-nav container
+            const navRect = document.getElementById('main-nav').getBoundingClientRect();
+            const itemRect = targetItem.getBoundingClientRect();
+
+            // Calculate center of the tapped icon, offset by half the pill's width (64px / 2 = 32)
+            const targetX = itemRect.left - navRect.left + (itemRect.width / 2) - 32;
+
+            // Apply CSS transform to smoothly slide the bubble
+            bubble.style.transform = `translateX(${targetX}px)`;
+        }
+
+        // Initialize bubble position on load
+        window.addEventListener('load', () => {
+            const activeItem = document.querySelector('.nav-item.active');
+            if (activeItem) {
+                // Remove transition briefly to prevent animating on load
+                bubble.style.transition = 'none';
+                moveBubble(activeItem);
+
+                // Restore transition after a tiny delay
+                setTimeout(() => {
+                    bubble.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+                }, 50);
+            }
+        });
+
+        // Add simple click interactions for the nav items to demonstrate active state & bubble slide
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                navItems.forEach(nav => nav.classList.remove('active'));
+
+                const target = e.currentTarget;
+                target.classList.add('active');
+
+                // Move the animated bubble pill to the new target
+                moveBubble(target);
+            });
+        });
+    </script>
+</body>
+
+</html>

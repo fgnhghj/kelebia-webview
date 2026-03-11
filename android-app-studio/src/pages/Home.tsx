@@ -111,66 +111,57 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh}>
-    <div className="page-container">
-      {/* Header */}
-      <header className="page-header">
-        <div className="header-greeting">
-          <p className="greeting-label">{getGreeting()}</p>
-          <h1 className="greeting-name">{user?.first_name || t("profile")}</h1>
-        </div>
-        <button className="header-avatar" onClick={() => navigate("/settings")}>
-          {user?.avatar ? (
-            <img src={getMediaUrl(user.avatar)} alt="" />
+      <div className="page-container">
+        {/* Header */}
+        <header className="header">
+          <div className="greeting">
+            <span className="greeting-time">{getGreeting()}</span>
+            <h1 className="greeting-name">{user?.first_name || t("profile")}</h1>
+          </div>
+          <button className="avatar" onClick={() => navigate("/settings")}>
+            {user?.avatar ? (
+              <img src={getMediaUrl(user.avatar)} alt="" className="w-full h-full object-cover rounded-full" />
+            ) : (
+              <span>{getInitials(user?.full_name || "U")}</span>
+            )}
+          </button>
+        </header>
+
+        {/* Quick Actions */}
+        <div className="quick-actions">
+          {isTeacher ? (
+            <button
+              className="action-pill glass-panel pill-create"
+              onClick={() => navigate("/room/create")}
+            >
+              <div className="action-icon"><Plus size={16} /></div>
+              <span>{t("create_room")}</span>
+            </button>
           ) : (
-            <span>{getInitials(user?.full_name || "U")}</span>
+            <button
+              className="action-pill glass-panel pill-create"
+              onClick={() => navigate("/explore")}
+            >
+              <div className="action-icon"><LogIn size={16} /></div>
+              <span>{t("join_room")}</span>
+            </button>
           )}
-        </button>
-      </header>
-
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        {isTeacher ? (
           <button
-            className="quick-action-card"
-            onClick={() => navigate("/room/create")}
+            className="action-pill glass-panel pill-grades"
+            onClick={() => navigate("/grades")}
           >
-            <div className="qa-icon accent">
-              <Plus size={20} />
-            </div>
-            <span>{t("create_room")}</span>
+            <div className="action-icon"><Sparkles size={16} /></div>
+            <span>{t("my_grades")}</span>
           </button>
-        ) : (
-          <button
-            className="quick-action-card"
-            onClick={() => navigate("/explore")}
-          >
-            <div className="qa-icon accent">
-              <LogIn size={20} />
-            </div>
-            <span>{t("join_room")}</span>
+          <button className={`action-pill glass-panel pill-refresh ${refreshing ? "opacity-50" : ""}`} onClick={() => fetchRooms(true)}>
+            <div className="action-icon"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /></div>
+            <span>{t("refresh")}</span>
           </button>
-        )}
-        <button
-          className="quick-action-card"
-          onClick={() => navigate("/grades")}
-        >
-          <div className="qa-icon gold">
-            <Sparkles size={20} />
-          </div>
-          <span>{t("my_grades")}</span>
-        </button>
-        <button className="quick-action-card" onClick={() => fetchRooms(true)}>
-          <div className={`qa-icon info ${refreshing ? "spinning" : ""}`}>
-            <RefreshCw size={20} />
-          </div>
-          <span>{t("refresh")}</span>
-        </button>
-      </div>
+        </div>
 
-      {/* Search Bar */}
-      <div className="search-bar-container">
-        <div className="search-bar">
-          <Search size={18} className="text-tertiary" />
+        {/* Search Bar */}
+        <div className="search-bar glass-panel" style={{ margin: '0 24px 24px', width: 'auto' }}>
+          <Search size={20} className="text-tertiary" />
           <input
             type="text"
             placeholder={t("search_rooms")}
@@ -183,122 +174,105 @@ export default function Home() {
             </button>
           )}
         </div>
-      </div>
 
-      {/* Rooms Section */}
-      <section className="section">
-        <div className="section-header">
-          <h2>{t("your_rooms")}</h2>
-          <span className="section-count">{rooms.length}</span>
-        </div>
+        {/* Rooms Section */}
+        <section className="section">
+          <div className="section-header">
+            <h2 className="section-title">{t("your_rooms")}</h2>
+            <span className="section-count">{rooms.length}</span>
+          </div>
 
-        {loading ? (
-          <div className="room-list">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="skeleton-card">
-                <div className="skeleton-card-accent" />
-                <div className="skeleton-card-body">
-                  <div className="skeleton skeleton-line w-60" />
-                  <div className="skeleton skeleton-line w-30 h-10" />
-                  <div className="skeleton skeleton-line w-80 h-10" />
+          {loading ? (
+            <div className="room-list">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="room-card glass-panel animate-pulse h-28" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : rooms.length === 0 ? (
-          <div className="empty-state">
-            <BookOpen size={48} strokeWidth={1} className="text-tertiary" />
-            <h3>{t("no_rooms")}</h3>
-            <p>{isTeacher ? t("create_first") : t("join_with_code")}</p>
-            <button
-              className="btn-primary btn-sm"
-              onClick={() => navigate(isTeacher ? "/room/create" : "/explore")}
-            >
-              {isTeacher ? t("create_room") : t("join_room")}
-            </button>
-          </div>
-        ) : (
-          <div className="room-list">
-            {rooms.map((room) => (
+              ))}
+            </div>
+          ) : rooms.length === 0 ? (
+            <div className="empty-state glass-panel text-center py-12 px-6 mx-6 rounded-2xl flex flex-col items-center gap-4">
+              <BookOpen size={48} strokeWidth={1} className="text-tertiary mb-2" />
+              <h3 className="text-xl font-medium text-white">{t("no_rooms")}</h3>
+              <p className="text-tertiary text-sm max-w-[240px] leading-relaxed">{isTeacher ? t("create_first") : t("join_with_code")}</p>
               <button
-                key={room.id}
-                className="room-card"
-                onClick={() => navigate(`/room/${room.id}`)}
+                className="mt-2 bg-white text-black font-medium py-2.5 px-6 rounded-full"
+                onClick={() => navigate(isTeacher ? "/room/create" : "/explore")}
               >
-                <div
-                  className="room-card-accent"
-                  style={{ backgroundColor: room.color_theme }}
-                />
-                <div className="room-card-body">
-                  <div className="room-card-top">
-                    <h3 className="room-card-name">{room.name}</h3>
-                    <ChevronRight size={18} className="text-tertiary" />
+                {isTeacher ? t("create_room") : t("join_room")}
+              </button>
+            </div>
+          ) : (
+            <div className="room-list">
+              {rooms.map((room) => (
+                <button
+                  key={room.id}
+                  className="room-card glass-panel w-full text-left"
+                  style={{ "--card-color": room.color_theme || "#6b9b7b" } as React.CSSProperties}
+                  onClick={() => navigate(`/room/${room.id}`)}
+                >
+                  <div className="room-top">
+                    <div>
+                      <h3 className="room-title">{room.name}</h3>
+                      {room.subject && <span className="room-subject">{room.subject}</span>}
+                    </div>
+                    <ChevronRight size={20} className="text-tertiary" />
                   </div>
-                  {room.subject && (
-                    <span className="room-card-subject">{room.subject}</span>
-                  )}
-                  <div className="room-card-meta">
-                    <div className="room-card-meta-item">
+                  <div className="room-meta">
+                    <div className="meta-item">
                       <Users size={14} />
                       <span>
                         {room.student_count} {t("students")}
                       </span>
                     </div>
-                    <div className="room-card-meta-item">
+                    <div className="meta-item">
                       <Clock size={14} />
                       <span>{formatDate(room.created_at)}</span>
                     </div>
-                  </div>
-                  {!isTeacher && (
-                    <p className="room-card-teacher">
-                      {room.teacher.full_name}
-                    </p>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Archived Rooms Section */}
-      {archivedRooms.length > 0 && (
-        <section className="section">
-          <div className="section-header">
-            <button className="section-toggle" onClick={() => setShowArchived(!showArchived)}>
-              <Archive size={16} className="text-tertiary" />
-              <h2>{t("archived_rooms")}</h2>
-              <span className="section-count">{archivedRooms.length}</span>
-            </button>
-          </div>
-          {showArchived && (
-            <div className="room-list">
-              {archivedRooms.map((room) => (
-                <button
-                  key={room.id}
-                  className="room-card archived"
-                  onClick={() => navigate(`/room/${room.id}`)}
-                >
-                  <div
-                    className="room-card-accent"
-                    style={{ backgroundColor: room.color_theme, opacity: 0.5 }}
-                  />
-                  <div className="room-card-body">
-                    <div className="room-card-top">
-                      <h3 className="room-card-name">{room.name}</h3>
-                      <Archive size={16} className="text-tertiary" />
-                    </div>
-                    {room.subject && (
-                      <span className="room-card-subject">{room.subject}</span>
-                    )}
                   </div>
                 </button>
               ))}
             </div>
           )}
         </section>
-      )}
-    </div>
+
+        {/* Archived Rooms Section */}
+        {archivedRooms.length > 0 && (
+          <section className="section">
+            <div className="section-header">
+              <button className="section-toggle" onClick={() => setShowArchived(!showArchived)}>
+                <Archive size={16} className="text-tertiary" />
+                <h2>{t("archived_rooms")}</h2>
+                <span className="section-count">{archivedRooms.length}</span>
+              </button>
+            </div>
+            {showArchived && (
+              <div className="room-list">
+                {archivedRooms.map((room) => (
+                  <button
+                    key={room.id}
+                    className="room-card archived"
+                    onClick={() => navigate(`/room/${room.id}`)}
+                  >
+                    <div
+                      className="room-card-accent"
+                      style={{ backgroundColor: room.color_theme, opacity: 0.5 }}
+                    />
+                    <div className="room-card-body">
+                      <div className="room-card-top">
+                        <h3 className="room-card-name">{room.name}</h3>
+                        <Archive size={16} className="text-tertiary" />
+                      </div>
+                      {room.subject && (
+                        <span className="room-card-subject">{room.subject}</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
     </PullToRefresh>
   );
 }

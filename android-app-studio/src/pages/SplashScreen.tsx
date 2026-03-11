@@ -48,37 +48,9 @@ export default function SplashScreen() {
                 fill="none"
                 className={`splash-k-svg ${animStage >= 1 ? "draw" : ""}`}
               >
-                <path
-                  className="k-line k-line-1"
-                  d="M26 18 L26 70"
-                  stroke="var(--accent)"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  className="k-line k-line-2"
-                  d="M26 44 L58 18"
-                  stroke="var(--accent)"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  className="k-line k-line-3"
-                  d="M34 38 L58 70"
-                  stroke="var(--accent)"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <circle
-                  className="k-dot"
-                  cx="62"
-                  cy="18"
-                  r="5"
-                  fill="var(--accent)"
-                />
+                <path className="k-line k-line-1" d="M26 18 L26 70" />
+                <path className="k-line k-line-2" d="M26 44 L58 18" />
+                <path className="k-line k-line-3" d="M34 38 L58 70" />
               </svg>
             </div>
           </div>
@@ -92,9 +64,9 @@ export default function SplashScreen() {
             <span className="splash-title-shine" />
           </h1>
 
-          <p className={`splash-tagline ${animStage >= 3 ? "visible" : ""}`}>
-            Focused learning. Elegant classrooms. Anywhere.
-          </p>
+          <div className={`splash-tagline ${animStage >= 3 ? "visible" : ""}`}>
+            BETA
+          </div>
         </div>
 
         <div className={`splash-loader ${animStage >= 4 ? "visible" : ""}`}>

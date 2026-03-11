@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage, type Lang } from "../contexts/LanguageContext";
 import { assignmentsAPI, submissionsAPI } from "../api/client";
@@ -173,15 +175,19 @@ export default function AssignmentDetail() {
         {assignment.file && (
           <button
             className="file-download-btn"
-            onClick={() => {
-              const ext =
-                assignment.file?.split(".").pop()?.split("?")[0] || "";
-              const params = new URLSearchParams({
-                url: assignment.file!,
-                title: assignment.title || t("file"),
-                ext,
-              });
-              navigate(`/file-view?${params.toString()}`);
+            onClick={async () => {
+              if (Capacitor.isNativePlatform()) {
+                await Browser.open({ url: assignment.file });
+              } else {
+                const ext =
+                  assignment.file?.split(".").pop()?.split("?")[0] || "";
+                const params = new URLSearchParams({
+                  url: assignment.file!,
+                  title: assignment.title || t("file"),
+                  ext,
+                });
+                navigate(`/file-view?${params.toString()}`);
+              }
             }}
           >
             <Download size={16} />
@@ -329,18 +335,22 @@ export default function AssignmentDetail() {
                     <button
                       key={f.id}
                       className="file-download-btn sm"
-                      onClick={() => {
-                        const ext =
-                          (f.filename || f.file || "")
-                            .split(".")
-                            .pop()
-                            ?.split("?")[0] || "";
-                        const params = new URLSearchParams({
-                          url: f.file,
-                          title: f.filename || t("file"),
-                          ext,
-                        });
-                        navigate(`/file-view?${params.toString()}`);
+                      onClick={async () => {
+                        if (Capacitor.isNativePlatform()) {
+                          await Browser.open({ url: f.file });
+                        } else {
+                          const ext =
+                            (f.filename || f.file || "")
+                              .split(".")
+                              .pop()
+                              ?.split("?")[0] || "";
+                          const params = new URLSearchParams({
+                            url: f.file,
+                            title: f.filename || t("file"),
+                            ext,
+                          });
+                          navigate(`/file-view?${params.toString()}`);
+                        }
                       }}
                     >
                       <FileText size={14} />
