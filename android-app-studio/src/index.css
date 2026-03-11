@@ -3653,6 +3653,13 @@
     color: #fff;
 }
 
+[data-theme="light"] .room-header-nav .icon-btn-ghost,
+[data-theme="light"] .room-header-nav .room-code-btn {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
 /* Notification item clickable cursor */
 .notification-item {
     cursor: pointer;
@@ -4347,18 +4354,85 @@ body {
     background: rgba(217, 119, 87, 0.05);
 }
 
+[data-theme="light"] .pill-create {
+    border-color: rgba(217, 119, 87, 0.2);
+    background: rgba(217, 119, 87, 0.1);
+}
+
 .pill-create .action-icon {
     background: var(--accent);
     color: #fff;
     box-shadow: 0 0 12px var(--accent-glow);
 }
 
+.pill-grades {
+    border-color: rgba(212, 184, 150, 0.3);
+    background: rgba(212, 184, 150, 0.05);
+}
+
+[data-theme="light"] .pill-grades {
+    border-color: rgba(212, 184, 150, 0.2);
+    background: rgba(212, 184, 150, 0.1);
+}
+
 .pill-grades .action-icon {
     color: #d4b896;
 }
 
+.pill-refresh {
+    border-color: rgba(91, 139, 199, 0.3);
+    background: rgba(91, 139, 199, 0.05);
+}
+
+[data-theme="light"] .pill-refresh {
+    border-color: rgba(91, 139, 199, 0.2);
+    background: rgba(91, 139, 199, 0.1);
+}
+
 .pill-refresh .action-icon {
     color: #5b8bc7;
+}
+
+/* ─── Android Room UI Fixes ─── */
+.icon-btn-ghost {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s;
+}
+
+[data-theme="light"] .icon-btn-ghost {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+}
+
+.room-code-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s;
+}
+
+[data-theme="light"] .room-code-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
 }
 
 /* ─── Rooms Section ─── */
@@ -4487,6 +4561,12 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+[data-theme="light"] .floating-nav {
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+}
+
 .nav-item {
     display: flex;
     flex-direction: column;
@@ -4511,6 +4591,10 @@ body {
 
 .nav-item.active {
     color: #fff;
+}
+
+[data-theme="light"] .nav-item.active {
+    color: var(--text-primary);
 }
 
 /* The actual glass bubble behind the icon */
