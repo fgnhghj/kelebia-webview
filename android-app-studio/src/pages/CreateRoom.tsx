@@ -81,7 +81,7 @@ export default function CreateRoom() {
 
         <div className="input-group">
           <label>Room Name *</label>
-          <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
+          <div className="input-wrapper">
             <input
               type="text"
               placeholder="e.g. Mathematics 101"
@@ -94,7 +94,7 @@ export default function CreateRoom() {
 
         <div className="input-group">
           <label>Subject</label>
-          <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
+          <div className="input-wrapper">
             <input
               type="text"
               placeholder="e.g. Mathematics"
@@ -107,7 +107,7 @@ export default function CreateRoom() {
         <div className="input-group">
           <label>Description</label>
           <textarea
-            className="textarea-input glass-panel w-full py-3 px-4 border border-white/10"
+            className="textarea-input"
             placeholder="Describe your classroom..."
             value={form.description}
             onChange={(e) => update('description', e.target.value)}

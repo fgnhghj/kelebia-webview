@@ -43,7 +43,7 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      <div className="auth-container glass-panel relative z-10 mx-6">
+      <div className="auth-container">
         <div className="auth-header">
           <div className="auth-logo">
             <svg width="48" height="48" viewBox="0 0 72 72" fill="none">
@@ -86,8 +86,8 @@ export default function Register() {
           <div className="input-row">
             <div className="input-group">
               <label>First Name</label>
-              <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
-                <User size={18} className="input-icon text-tertiary" />
+              <div className="input-wrapper">
+                <User size={18} className="input-icon" />
                 <input
                   type="text"
                   placeholder="First"
@@ -99,8 +99,8 @@ export default function Register() {
             </div>
             <div className="input-group">
               <label>Last Name</label>
-              <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
-                <User size={18} className="input-icon text-tertiary" />
+              <div className="input-wrapper">
+                <User size={18} className="input-icon" />
                 <input
                   type="text"
                   placeholder="Last"
@@ -115,7 +115,7 @@ export default function Register() {
           <div className="input-group">
             <label>Email</label>
             <div className="input-wrapper">
-              <Mail size={18} className="input-icon text-tertiary" />
+              <Mail size={18} className="input-icon" />
               <input
                 type="email"
                 placeholder="your@email.com"
@@ -130,7 +130,7 @@ export default function Register() {
           <div className="input-group">
             <label>Password</label>
             <div className="input-wrapper">
-              <Lock size={18} className="input-icon text-tertiary" />
+              <Lock size={18} className="input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="At least 8 characters"

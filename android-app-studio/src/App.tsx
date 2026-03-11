@@ -44,7 +44,9 @@ function AppVersionCheck({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (checking) {
-    return <LoadingScreen />;
+    // Render children so that SplashScreen can mount and orchestrate its own animation
+    // without being interrupted by a component swap.
+    return <>{children}</>;
   }
 
   if (lockedData) {
@@ -82,18 +84,11 @@ import Grades from "./pages/Grades";
 import FileViewer from "./pages/FileViewer";
 
 function LoadingScreen() {
+  // A simple, non-intrusive loader for auth state changes
+  // to avoid flashing the full SVG splash-screen.
   return (
-    <div className="splash-screen">
-      <div className="splash-content">
-        <div className="splash-icon visible">
-          <svg width="88" height="88" viewBox="0 0 88 88" fill="none" className="splash-k-svg draw">
-            <path className="k-line k-line-1" d="M22 14 L22 74" stroke="#D97757" strokeWidth="8" strokeLinecap="round" fill="none" />
-            <path className="k-line k-line-2" d="M26 44 L62 14" stroke="#D97757" strokeWidth="7" strokeLinecap="round" fill="none" />
-            <path className="k-line k-line-3" d="M26 44 L62 74" stroke="#D97757" strokeWidth="7" strokeLinecap="round" fill="none" />
-            <circle className="k-dot" cx="66" cy="14" r="4" fill="#D97757" />
-          </svg>
-        </div>
-      </div>
+    <div className="fixed inset-0 bg-[#1A1714] z-[9999] flex items-center justify-center">
+      <div className="w-10 h-10 border-2 border-[#D97757] border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
 }

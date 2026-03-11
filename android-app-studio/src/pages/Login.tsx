@@ -39,7 +39,7 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-      <div className="auth-container glass-panel relative z-10 mx-6">
+      <div className="auth-container">
         {/* Header */}
         <div className="auth-header">
           <div className="auth-logo">
@@ -68,8 +68,8 @@ export default function Login() {
             <>
               <div className="input-group">
                 <label>Email</label>
-                <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
-                  <Mail size={18} className="input-icon text-tertiary" />
+                <div className="input-wrapper">
+                  <Mail size={18} className="input-icon" />
                   <input
                     type="email"
                     placeholder="your@email.com"
@@ -83,8 +83,8 @@ export default function Login() {
 
               <div className="input-group">
                 <label>Password</label>
-                <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
-                  <Lock size={18} className="input-icon text-tertiary" />
+                <div className="input-wrapper">
+                  <Lock size={18} className="input-icon" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
@@ -111,8 +111,8 @@ export default function Login() {
             <div className="input-group">
               <label>2FA Code</label>
               <p className="input-hint">Enter the 6-digit code from your authenticator app</p>
-              <div className="input-wrapper glass-panel py-1 px-2 border-white/10">
-                <Lock size={18} className="input-icon text-tertiary" />
+              <div className="input-wrapper">
+                <Lock size={18} className="input-icon" />
                 <input
                   type="text"
                   inputMode="numeric"
