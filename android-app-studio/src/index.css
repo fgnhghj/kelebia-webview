@@ -3595,7 +3595,7 @@
 /* ══════════════════════════════════════════════════════
    LIGHT MODE
    ══════════════════════════════════════════════════════ */
-[data-theme="light"] {
+:root[data-theme="light"] {
     --bg-deep: #faf8f5;
     --bg-surface: #ffffff;
     --bg-elevated: #f2eeea;
@@ -3626,7 +3626,7 @@
     --glass-highlight: rgba(255, 255, 255, 0.4);
 }
 
-[data-theme="light"] .bottom-nav-inner {
+:root[data-theme="light"] .bottom-nav-inner {
     background: #ffffff;
     border-color: rgba(0, 0, 0, 0.08);
     box-shadow:
@@ -3634,22 +3634,22 @@
         0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
-[data-theme="light"] .nav-fab {
+:root[data-theme="light"] .nav-fab {
     border-color: #ffffff;
 }
 
-[data-theme="light"] .splash-screen {
+:root[data-theme="light"] .splash-screen {
     background:
         radial-gradient(circle at 20% 20%, rgba(196, 98, 63, 0.12), transparent 32%),
         radial-gradient(circle at 80% 22%, rgba(160, 128, 80, 0.08), transparent 30%),
         linear-gradient(180deg, #faf8f5 0%, #f2eeea 50%, #e8e3dd 100%);
 }
 
-[data-theme="light"] .room-header-nav {
+:root[data-theme="light"] .room-header-nav {
     color: #fff;
 }
 
-[data-theme="light"] .room-header-actions {
+:root[data-theme="light"] .room-header-actions {
     color: #fff;
 }
 
@@ -4534,7 +4534,7 @@ body {
     color: #fff;
 }
 
-[data-theme="light"] .nav-item.active .nav-icon-container {
+:root[data-theme="light"] .nav-item.active .nav-icon-container {
     background: var(--accent);
     color: #fff;
     box-shadow:
